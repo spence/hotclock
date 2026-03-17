@@ -1,0 +1,28 @@
+[package]
+name = "cputicks"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+authors = ["Spencer Creasey"]
+repository = "https://github.com/spence/cputicks"
+description = "Cross-platform cycle tick counter with runtime auto-selection"
+keywords = ["rdtsc", "cycles", "ticks", "counter", "benchmark"]
+categories = ["hardware-support", "development-tools::profiling"]
+
+[dev-dependencies]
+criterion = "0.8"
+
+[[bin]]
+name = "cputicks"
+path = "src/bin/cputicks.rs"
+
+[[bench]]
+name = "ticks"
+harness = false
+
+[[example]]
+name = "basic"
+
+[[example]]
+name = "benchmark"

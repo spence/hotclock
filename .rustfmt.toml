@@ -1,0 +1,8 @@
+# https://github.com/rust-lang/rustfmt/blob/main/Configurations.md
+max_width = 100
+tab_spaces = 2
+edition = "2024"
+use_small_heuristics = "Max"
+chain_width = 80
+overflow_delimited_expr = true
+use_field_init_shorthand = true
