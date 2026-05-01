@@ -1,12 +1,8 @@
-use core::arch::x86_64::{__rdtscp, _rdtsc};
+use core::arch::x86_64::_rdtsc;
 
 #[inline(always)]
 pub fn rdtsc() -> u64 {
-  unsafe { _rdtsc() as u64 }
-}
-
-#[inline(always)]
-pub fn rdtscp() -> u64 {
-  let mut aux: u32 = 0;
-  unsafe { __rdtscp(&mut aux) }
+  // SAFETY: `_rdtsc` emits the CPU counter read instruction and has no Rust memory safety
+  // preconditions. Runtime selection validates monotonic behavior before installing it.
+  unsafe { _rdtsc() }
 }

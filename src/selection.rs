@@ -1,11 +1,12 @@
 use std::panic::{AssertUnwindSafe, catch_unwind};
+use std::sync::Arc;
+use std::sync::Barrier;
+use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 
 use crate::arch::{self, fallback};
 
 #[cfg(target_arch = "aarch64")]
 use crate::arch::aarch64;
-#[cfg(all(target_arch = "aarch64", target_os = "linux"))]
-use crate::arch::aarch64_linux;
 #[cfg(target_arch = "loongarch64")]
 use crate::arch::loongarch64;
 #[cfg(target_arch = "powerpc64")]
@@ -66,11 +67,6 @@ fn candidates() -> &'static [Candidate] {
 #[cfg(all(target_arch = "aarch64", target_os = "linux"))]
 fn candidates() -> &'static [Candidate] {
   &[
-    Candidate {
-      name: "aarch64-pmccntr",
-      index: arch::indices::PMCCNTR,
-      counter: aarch64_linux::pmccntr,
-    },
     Candidate { name: "aarch64-cntvct", index: arch::indices::CNTVCT, counter: aarch64::cntvct },
     Candidate {
       name: "unix-monotonic",
@@ -307,6 +303,72 @@ fn test_works(counter: fn() -> u64) -> bool {
   .is_ok()
 }
 
+fn test_cross_thread_ordering(counter: fn() -> u64) -> bool {
+  const CALLS: usize = 1000;
+
+  catch_unwind(AssertUnwindSafe(|| {
+    let published = Arc::new(AtomicU64::new(0));
+    let sequence = Arc::new(AtomicUsize::new(0));
+    let acknowledged = Arc::new(AtomicUsize::new(0));
+    let failed = Arc::new(AtomicBool::new(false));
+    let start = Arc::new(Barrier::new(2));
+
+    let reader = {
+      let published = Arc::clone(&published);
+      let sequence = Arc::clone(&sequence);
+      let acknowledged = Arc::clone(&acknowledged);
+      let failed = Arc::clone(&failed);
+      let start = Arc::clone(&start);
+
+      std::thread::spawn(move || {
+        start.wait();
+
+        let mut seen = 0;
+        while seen < CALLS {
+          let next = sequence.load(Ordering::Acquire);
+          if next == seen {
+            std::hint::spin_loop();
+            continue;
+          }
+
+          let before = published.load(Ordering::Acquire);
+          let after = counter();
+          seen = next;
+          if after < before {
+            failed.store(true, Ordering::Relaxed);
+            acknowledged.store(seen, Ordering::Release);
+            break;
+          }
+
+          acknowledged.store(seen, Ordering::Release);
+        }
+      })
+    };
+
+    start.wait();
+
+    for i in 1..=CALLS {
+      if failed.load(Ordering::Relaxed) {
+        break;
+      }
+
+      let before = counter();
+      published.store(before, Ordering::Release);
+      sequence.store(i, Ordering::Release);
+
+      while acknowledged.load(Ordering::Acquire) != i {
+        if failed.load(Ordering::Relaxed) {
+          break;
+        }
+        std::hint::spin_loop();
+      }
+    }
+
+    reader.join().is_ok() && !failed.load(Ordering::Relaxed)
+  }))
+  .unwrap_or(false)
+}
+
 fn measure_precision(counter: fn() -> u64) -> Option<u64> {
   const CALLS: usize = 1000;
 
@@ -323,13 +385,13 @@ fn measure_precision(counter: fn() -> u64) -> Option<u64> {
     return None;
   }
 
-  let mut non_monotonic = 0;
   for i in 0..CALLS {
     if times[i] > times[i + 1] {
-      non_monotonic += 1;
+      return None;
     }
   }
-  if non_monotonic > CALLS / 10 {
+
+  if !test_cross_thread_ordering(counter) {
     return None;
   }
 
@@ -364,55 +426,4 @@ pub fn select_best() -> (u8, &'static str) {
     Some((candidate, _)) => (candidate.index, candidate.name),
     None => panic!("cputicks: no working counter found"),
   }
-}
-
-pub fn calibrate_frequency() -> u64 {
-  use std::time::{Duration, Instant};
-
-  const CALIBRATION_TIME_MS: u64 = 10;
-  const NUM_SAMPLES: usize = 5;
-
-  let mut estimates = [0u64; NUM_SAMPLES];
-
-  for estimate in &mut estimates {
-    let t0 = arch::ticks();
-    let start = Instant::now();
-
-    while start.elapsed() < Duration::from_millis(CALIBRATION_TIME_MS) {
-      std::hint::spin_loop();
-    }
-
-    let t1 = arch::ticks();
-    let elapsed = start.elapsed();
-
-    let ticks = t1.wrapping_sub(t0);
-    let nanos = elapsed.as_nanos() as u64;
-
-    if nanos > 0 {
-      *estimate = (ticks as u128 * 1_000_000_000 / nanos as u128) as u64;
-    }
-  }
-
-  estimates.sort();
-  estimates[NUM_SAMPLES / 2]
-}
-
-#[cfg(all(target_family = "unix", not(target_os = "macos"), not(target_os = "ios")))]
-#[used]
-#[unsafe(link_section = ".init_array")]
-static INIT: extern "C" fn() = init;
-
-#[cfg(any(target_os = "macos", target_os = "ios"))]
-#[used]
-#[unsafe(link_section = "__DATA,__mod_init_func")]
-static INIT: extern "C" fn() = init;
-
-#[cfg(target_os = "windows")]
-#[used]
-#[unsafe(link_section = ".CRT$XCU")]
-static INIT: extern "C" fn() = init;
-
-extern "C" fn init() {
-  let (idx, name) = select_best();
-  arch::set_selected(idx, name);
 }

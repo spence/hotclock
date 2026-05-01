@@ -1,390 +1,265 @@
-//! Cross-platform CPU cycle/tick counter with runtime auto-selection.
+#![warn(clippy::undocumented_unsafe_blocks)]
+#![warn(rustdoc::broken_intra_doc_links)]
+
+//! Cross-platform CPU cycle/tick counter with direct and runtime-selected paths.
 //!
 //! A Rust port of [libcpucycles](https://cpucycles.cr.yp.to/) that provides sub-nanosecond
-//! timing by directly reading hardware counters (RDTSC, CNTVCT\_EL0, etc.). The best available
-//! counter is selected automatically at process startup via static initializers.
+//! timing by directly reading hardware counters (RDTSC, CNTVCT\_EL0, etc.). Deterministic
+//! targets use a compiled-in counter path; targets with meaningful runtime variation select the
+//! best available counter lazily on first use and cache it for the lifetime of the process.
 //!
 //! Roughly **~30x faster** than [`std::time::Instant`] on typical hardware.
 //!
 //! # Quick start
 //!
 //! ```
-//! use cputicks::Ticks;
+//! use cputicks::Instant;
 //!
-//! let start = Ticks::now();
+//! let start = Instant::now();
 //! // ... do some work ...
 //! let elapsed = start.elapsed();
-//! println!("Elapsed: {:?}", elapsed.as_duration());
+//! println!("Elapsed: {:?}", elapsed);
 //! ```
 //!
 //! # Platform support
 //!
-//! | Architecture    | Primary        | Fallback       |
-//! |-----------------|----------------|----------------|
-//! | x86\_64         | RDTSC          | OS timer       |
-//! | x86             | RDTSC          | OS timer       |
-//! | aarch64         | CNTVCT\_EL0    | OS timer       |
-//! | aarch64 (Linux) | PMCCNTR\_EL0   | CNTVCT\_EL0    |
-//! | riscv64         | rdcycle        | OS timer       |
-//! | powerpc64       | mftb           | OS timer       |
-//! | s390x           | stckf          | OS timer       |
-//! | loongarch64     | rdtime.d       | OS timer       |
-//! | other           | —              | OS timer       |
+//! | Architecture        | Primary        | Fallback       |
+//! |---------------------|----------------|----------------|
+//! | aarch64 macOS       | CNTVCT\_EL0    | none           |
+//! | x86\_64             | RDTSC          | OS timer       |
+//! | x86                 | RDTSC          | OS timer       |
+//! | aarch64 non-macOS   | CNTVCT\_EL0    | OS timer       |
+//! | riscv64             | rdcycle        | OS timer       |
+//! | powerpc64           | mftb           | OS timer       |
+//! | s390x               | stckf          | OS timer       |
+//! | loongarch64         | rdtime.d       | OS timer       |
+//! | other               | OS timer       | none           |
 //!
 //! OS timers: `mach_absolute_time` (macOS), `clock_gettime` (Unix), [`Instant`](std::time::Instant) (other).
 //!
+//! # Timing contract
+//!
+//! `cputicks::Instant` is a `Copy + Send + Sync` opaque `u64` wrapper around a counter
+//! sample. Its raw value is not a civil-time or OS timestamp. Use it as a point in the
+//! process-wide counter timeline.
+//!
+//! [`Instant::now()`] reads the process-wide counter. Runtime-selected targets require the
+//! selected counter to be nondecreasing for repeated reads on one thread and for reads ordered
+//! across threads by a release/acquire handoff. Selection falls back to the OS timer when the
+//! preferred hardware counter does not satisfy that contract during validation.
+//!
+//! Standard `Instant` methods return [`std::time::Duration`] to match the familiar Rust timing
+//! API. `cputicks::Ticks` is the explicit raw counter-delta type for hot paths that want hardware
+//! tick units directly. Use [`Instant::elapsed_ticks()`] or [`Instant::ticks_since()`] when raw
+//! counter deltas are required.
+//!
 //! # Frequency calibration
 //!
-//! [`Ticks::frequency()`] is lazily calibrated on first call by measuring tick rate against
-//! the system clock. The result is cached for the lifetime of the process. Time-conversion
-//! methods ([`as_nanos`](Ticks::as_nanos), [`as_duration`](Ticks::as_duration), etc.) call
-//! `frequency()` internally and therefore trigger calibration on first use.
+//! [`Instant::frequency()`] is lazily calibrated on first call by measuring tick rate against
+//! the system clock. Calibration is thread-safe and the result is cached for the lifetime of
+//! the process. Calling it pre-warms calibration and, on runtime-selected targets, counter
+//! selection. Time-conversion methods ([`Ticks::as_nanos`], [`Ticks::as_duration`], etc.) call
+//! `frequency()` internally and therefore trigger calibration on first use. Wall-unit
+//! conversions return `u128`; [`Ticks::as_duration()`] saturates at [`std::time::Duration::MAX`],
+//! and [`Ticks::checked_duration()`] reports overflow with [`None`].
 
 mod arch;
+mod calibration;
+mod convert;
+mod instant;
+#[cfg(not(any(
+  all(target_arch = "aarch64", target_os = "macos"),
+  not(any(
+    target_arch = "x86_64",
+    target_arch = "x86",
+    target_arch = "aarch64",
+    target_arch = "riscv64",
+    target_arch = "powerpc64",
+    target_arch = "s390x",
+    target_arch = "loongarch64",
+  )),
+)))]
 mod selection;
+mod ticks;
 
-/// A lightweight wrapper around a raw hardware tick count.
-///
-/// `Ticks` is a `#[repr(transparent)]` newtype over [`u64`], so it has zero runtime cost
-/// beyond the underlying counter read. Values are comparable, hashable, and support basic
-/// arithmetic (`+`, `-`, `*`, `/`, [`Sum`](core::iter::Sum)).
-///
-/// # Obtaining ticks
-///
-/// Use [`Ticks::now()`] to sample the current counter. Use [`elapsed()`](Ticks::elapsed) or
-/// subtraction to compute intervals:
-///
-/// ```
-/// use cputicks::Ticks;
-///
-/// let start = Ticks::now();
-/// // ... work ...
-/// let delta = start.elapsed();        // or: Ticks::now() - start
-/// println!("{} ns", delta.as_nanos());
-/// ```
-///
-/// # Converting to wall-clock time
-///
-/// [`as_nanos`](Ticks::as_nanos), [`as_micros`](Ticks::as_micros),
-/// [`as_millis`](Ticks::as_millis), [`as_secs_f64`](Ticks::as_secs_f64), and
-/// [`as_duration`](Ticks::as_duration) all divide by the counter frequency. The frequency
-/// is calibrated lazily on first call and cached thereafter.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
-#[repr(transparent)]
-pub struct Ticks(pub u64);
-
-impl Ticks {
-  /// Reads the current value of the selected hardware tick counter.
-  ///
-  /// This is an extremely lightweight operation — typically a single inline assembly
-  /// instruction (e.g. `rdtsc` on x86\_64, `mrs cntvct_el0` on aarch64).
-  ///
-  /// # Example
-  ///
-  /// ```
-  /// use cputicks::Ticks;
-  /// let t = Ticks::now();
-  /// assert!(t.as_raw() > 0);
-  /// ```
-  #[inline(always)]
-  pub fn now() -> Self {
-    Ticks(arch::ticks())
-  }
-
-  /// Returns the number of ticks that have elapsed since `self` was sampled.
-  ///
-  /// Equivalent to `Ticks::now() - self`, but uses wrapping subtraction to
-  /// handle counter rollover gracefully.
-  ///
-  /// # Example
-  ///
-  /// ```
-  /// use cputicks::Ticks;
-  /// let start = Ticks::now();
-  /// // ... work ...
-  /// let elapsed = start.elapsed();
-  /// println!("{:?}", elapsed.as_duration());
-  /// ```
-  #[inline(always)]
-  pub fn elapsed(&self) -> Self {
-    Ticks(arch::ticks().wrapping_sub(self.0))
-  }
-
-  /// Returns the tick counter frequency in Hz.
-  ///
-  /// Calibrated lazily on first call by measuring the tick rate against the system clock
-  /// over a short spin-wait. The result is cached for the lifetime of the process.
-  ///
-  /// # Example
-  ///
-  /// ```
-  /// use cputicks::Ticks;
-  /// let freq = Ticks::frequency();
-  /// println!("{:.2} MHz", freq as f64 / 1e6);
-  /// ```
-  #[inline]
-  pub fn frequency() -> u64 {
-    arch::frequency()
-  }
-
-  /// Returns the name of the selected counter implementation (e.g. `"aarch64-cntvct"`,
-  /// `"x86_64-rdtsc"`, `"macos-mach"`).
-  ///
-  /// Useful for diagnostics and logging.
-  #[inline]
-  pub fn implementation() -> &'static str {
-    arch::implementation()
-  }
-
-  /// Converts the tick count to nanoseconds using the calibrated frequency.
-  #[inline]
-  pub fn as_nanos(&self) -> u64 {
-    let freq = Self::frequency();
-    (self.0 as u128 * 1_000_000_000 / freq as u128) as u64
-  }
-
-  /// Converts the tick count to microseconds using the calibrated frequency.
-  #[inline]
-  pub fn as_micros(&self) -> u64 {
-    let freq = Self::frequency();
-    (self.0 as u128 * 1_000_000 / freq as u128) as u64
-  }
-
-  /// Converts the tick count to milliseconds using the calibrated frequency.
-  #[inline]
-  pub fn as_millis(&self) -> u64 {
-    let freq = Self::frequency();
-    (self.0 as u128 * 1_000 / freq as u128) as u64
-  }
-
-  /// Converts the tick count to seconds as a floating-point value.
-  #[inline]
-  pub fn as_secs_f64(&self) -> f64 {
-    let freq = Self::frequency();
-    self.0 as f64 / freq as f64
-  }
-
-  /// Converts the tick count to a [`std::time::Duration`].
-  ///
-  /// This is a convenience wrapper around [`as_nanos`](Ticks::as_nanos).
-  #[inline]
-  pub fn as_duration(&self) -> std::time::Duration {
-    std::time::Duration::from_nanos(self.as_nanos())
-  }
-
-  /// Creates a `Ticks` value from a raw `u64` counter reading.
-  #[inline]
-  pub const fn from_raw(ticks: u64) -> Self {
-    Ticks(ticks)
-  }
-
-  /// Returns the underlying raw tick count.
-  #[inline]
-  pub const fn as_raw(&self) -> u64 {
-    self.0
-  }
-
-  /// Returns `true` if the tick count is zero.
-  #[inline]
-  pub const fn is_zero(&self) -> bool {
-    self.0 == 0
-  }
-
-  /// Saturating subtraction. Returns `Ticks(0)` on underflow instead of wrapping.
-  #[inline]
-  pub const fn saturating_sub(&self, other: Self) -> Self {
-    Ticks(self.0.saturating_sub(other.0))
-  }
-
-  /// Wrapping subtraction. Useful when the counter may have rolled over between samples.
-  #[inline]
-  pub const fn wrapping_sub(&self, other: Self) -> Self {
-    Ticks(self.0.wrapping_sub(other.0))
-  }
-
-  /// Checked subtraction. Returns [`None`] on underflow.
-  #[inline]
-  pub const fn checked_sub(&self, other: Self) -> Option<Self> {
-    match self.0.checked_sub(other.0) {
-      Some(v) => Some(Ticks(v)),
-      None => None,
-    }
-  }
-
-  /// Saturating addition. Returns [`u64::MAX`] ticks on overflow.
-  #[inline]
-  pub const fn saturating_add(&self, other: Self) -> Self {
-    Ticks(self.0.saturating_add(other.0))
-  }
-
-  /// Resets this value to the current tick counter, equivalent to `*self = Ticks::now()`.
-  #[inline]
-  pub fn reset(&mut self) {
-    self.0 = arch::ticks();
-  }
-}
-
-impl core::fmt::Display for Ticks {
-  fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-    write!(f, "{} ticks", self.0)
-  }
-}
-
-impl From<u64> for Ticks {
-  #[inline]
-  fn from(ticks: u64) -> Self {
-    Ticks(ticks)
-  }
-}
-
-impl From<Ticks> for u64 {
-  #[inline]
-  fn from(ticks: Ticks) -> Self {
-    ticks.0
-  }
-}
-
-impl core::ops::Add for Ticks {
-  type Output = Self;
-
-  #[inline]
-  fn add(self, other: Self) -> Self {
-    Ticks(self.0 + other.0)
-  }
-}
-
-impl core::ops::AddAssign for Ticks {
-  #[inline]
-  fn add_assign(&mut self, other: Self) {
-    self.0 += other.0;
-  }
-}
-
-impl core::ops::Sub for Ticks {
-  type Output = Self;
-
-  #[inline]
-  fn sub(self, other: Self) -> Self {
-    Ticks(self.0 - other.0)
-  }
-}
-
-impl core::ops::SubAssign for Ticks {
-  #[inline]
-  fn sub_assign(&mut self, other: Self) {
-    self.0 -= other.0;
-  }
-}
-
-impl core::ops::Mul<u64> for Ticks {
-  type Output = Self;
-
-  #[inline]
-  fn mul(self, rhs: u64) -> Self {
-    Ticks(self.0 * rhs)
-  }
-}
-
-impl core::ops::Div<u64> for Ticks {
-  type Output = Self;
-
-  #[inline]
-  fn div(self, rhs: u64) -> Self {
-    Ticks(self.0 / rhs)
-  }
-}
-
-impl core::iter::Sum for Ticks {
-  fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-    iter.fold(Ticks(0), |acc, x| acc + x)
-  }
-}
+pub use instant::Instant;
+pub use ticks::Ticks;
 
 /// Returns the tick counter frequency in Hz.
 ///
-/// This is the free-function form of [`Ticks::frequency()`]. See that method for details.
+/// This is the free-function form of [`Instant::frequency()`]. See that method for details.
 pub use arch::frequency;
 /// Returns the name of the selected counter implementation.
 ///
-/// This is the free-function form of [`Ticks::implementation()`]. See that method for details.
+/// This is the free-function form of [`Instant::implementation()`]. See that method for details.
 pub use arch::implementation;
 
-#[cfg(all(test))]
+#[cfg(test)]
 mod tests {
   use super::*;
+  use std::time::Duration;
+
+  fn assert_send_sync<T: Send + Sync>() {}
 
   #[test]
-  fn test_ticks_now() {
-    let c = Ticks::now();
-    assert!(c.0 > 0);
+  fn test_instant_now() {
+    let c = Instant::now();
+    assert!(c.as_raw() > 0);
   }
 
   #[test]
-  fn test_ticks_elapsed() {
-    let start = Ticks::now();
+  fn test_instant_is_send_sync() {
+    assert_send_sync::<Instant>();
+    assert_send_sync::<Ticks>();
+  }
+
+  #[test]
+  fn test_instant_elapsed() {
+    let start = Instant::now();
     let mut sum = 0u64;
     for i in 0..1000 {
       sum = sum.wrapping_add(i);
     }
     let _ = std::hint::black_box(sum);
     let elapsed = start.elapsed();
-    assert!(elapsed.0 > 0);
+    assert!(elapsed > Duration::ZERO);
   }
 
   #[test]
-  fn test_ticks_monotonic() {
-    let a = Ticks::now();
-    let b = Ticks::now();
-    let c = Ticks::now();
-    // Should be monotonically increasing (or at least not decreasing much)
-    assert!(b.0 >= a.0 || a.0.wrapping_sub(b.0) < 1000);
-    assert!(c.0 >= b.0 || b.0.wrapping_sub(c.0) < 1000);
+  fn test_instant_elapsed_ticks() {
+    let start = Instant::now();
+    let mut sum = 0u64;
+    for i in 0..1000 {
+      sum = sum.wrapping_add(i);
+    }
+    let _ = std::hint::black_box(sum);
+    let elapsed = start.elapsed_ticks();
+    assert!(elapsed.as_raw() > 0);
+  }
+
+  #[test]
+  fn test_instant_monotonic() {
+    let mut previous = Instant::now();
+    for _ in 0..10_000 {
+      let current = Instant::now();
+      assert!(
+        current.as_raw() >= previous.as_raw(),
+        "tick counter moved backward: previous={} current={}",
+        previous.as_raw(),
+        current.as_raw()
+      );
+      previous = current;
+    }
+  }
+
+  #[test]
+  fn test_instant_cross_thread_ordering() {
+    use std::sync::Arc;
+    use std::sync::Barrier;
+    use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
+
+    const CALLS: usize = 1000;
+
+    let published = Arc::new(AtomicU64::new(0));
+    let sequence = Arc::new(AtomicUsize::new(0));
+    let acknowledged = Arc::new(AtomicUsize::new(0));
+    let failed = Arc::new(AtomicBool::new(false));
+    let start = Arc::new(Barrier::new(2));
+
+    let reader = {
+      let published = Arc::clone(&published);
+      let sequence = Arc::clone(&sequence);
+      let acknowledged = Arc::clone(&acknowledged);
+      let failed = Arc::clone(&failed);
+      let start = Arc::clone(&start);
+
+      std::thread::spawn(move || {
+        start.wait();
+
+        let mut seen = 0;
+        while seen < CALLS {
+          let next = sequence.load(Ordering::Acquire);
+          if next == seen {
+            std::hint::spin_loop();
+            continue;
+          }
+
+          let before = published.load(Ordering::Acquire);
+          let after = Instant::now().as_raw();
+          seen = next;
+          if after < before {
+            failed.store(true, Ordering::Relaxed);
+            acknowledged.store(seen, Ordering::Release);
+            break;
+          }
+
+          acknowledged.store(seen, Ordering::Release);
+        }
+      })
+    };
+
+    start.wait();
+
+    for i in 1..=CALLS {
+      if failed.load(Ordering::Relaxed) {
+        break;
+      }
+
+      published.store(Instant::now().as_raw(), Ordering::Release);
+      sequence.store(i, Ordering::Release);
+
+      while acknowledged.load(Ordering::Acquire) != i {
+        if failed.load(Ordering::Relaxed) {
+          break;
+        }
+        std::hint::spin_loop();
+      }
+    }
+
+    assert!(reader.join().is_ok());
+    assert!(!failed.load(Ordering::Relaxed));
   }
 
   #[test]
   fn test_implementation() {
-    let impl_name = Ticks::implementation();
+    let impl_name = Instant::implementation();
     assert!(!impl_name.is_empty());
-    println!("Implementation: {}", impl_name);
+    #[cfg(all(target_arch = "aarch64", target_os = "macos"))]
+    assert_eq!(impl_name, "aarch64-cntvct");
+    println!("Implementation: {impl_name}");
   }
 
   #[test]
+  #[allow(clippy::cast_precision_loss)]
   fn test_frequency() {
-    let freq = Ticks::frequency();
-    println!("Frequency: {} Hz ({:.2} MHz)", freq, freq as f64 / 1e6);
+    let freq = Instant::frequency();
+    println!("Frequency: {freq} Hz ({:.2} MHz)", freq as f64 / 1e6);
     // Sanity check: between 1 MHz and 100 GHz
-    assert!(freq >= 1_000_000);
-    assert!(freq <= 100_000_000_000);
+    assert!((1_000_000..=100_000_000_000).contains(&freq));
   }
 
   #[test]
-  fn test_ticks_arithmetic() {
-    let a = Ticks(100);
-    let b = Ticks(50);
+  fn test_frequency_concurrent_initialization() {
+    let threads: Vec<_> = (0..8).map(|_| std::thread::spawn(Instant::frequency)).collect();
+    let expected = Instant::frequency();
 
-    assert_eq!(a + b, Ticks(150));
-    assert_eq!(a - b, Ticks(50));
-    assert_eq!(a * 2, Ticks(200));
-    assert_eq!(a / 2, Ticks(50));
-  }
-
-  #[test]
-  fn test_ticks_display() {
-    let c = Ticks(12345);
-    assert_eq!(format!("{}", c), "12345 ticks");
+    for thread in threads {
+      assert_eq!(thread.join().expect("frequency thread panicked"), expected);
+    }
   }
 
   #[test]
   fn test_as_duration() {
-    let start = Ticks::now();
-    std::thread::sleep(std::time::Duration::from_millis(10));
-    let elapsed = start.elapsed();
+    let start = Instant::now();
+    std::thread::sleep(Duration::from_millis(10));
+    let duration = start.elapsed();
+    let elapsed = start.elapsed_ticks();
 
-    let duration = elapsed.as_duration();
-    println!("Slept for {:?}", duration);
+    println!("Slept for {duration:?}");
     // Should be at least 10ms
     assert!(duration.as_millis() >= 9);
     // But not more than 100ms (allowing for scheduler delays)
     assert!(duration.as_millis() < 100);
+    assert!(elapsed.as_duration().as_millis() >= 9);
   }
 }

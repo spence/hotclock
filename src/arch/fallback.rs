@@ -1,4 +1,4 @@
-#[cfg(target_os = "macos")]
+#[cfg(all(target_os = "macos", not(target_arch = "aarch64")))]
 mod mach {
   unsafe extern "C" {
     fn mach_absolute_time() -> u64;
@@ -6,11 +6,13 @@ mod mach {
 
   #[inline(always)]
   pub fn mach_time() -> u64 {
+    // SAFETY: `mach_absolute_time` takes no arguments, has no Rust-side aliasing
+    // requirements, and returns the host monotonic tick value.
     unsafe { mach_absolute_time() }
   }
 }
 
-#[cfg(target_os = "macos")]
+#[cfg(all(target_os = "macos", not(target_arch = "aarch64")))]
 pub use mach::*;
 
 #[cfg(all(unix, not(target_os = "macos")))]
@@ -30,9 +32,9 @@ mod monotonic {
   #[inline(always)]
   pub fn clock_monotonic() -> u64 {
     let mut ts = Timespec { tv_sec: 0, tv_nsec: 0 };
-    unsafe {
-      clock_gettime(CLOCK_MONOTONIC, &mut ts);
-    }
+    // SAFETY: `ts` is a valid, writable `timespec` pointer for the duration of the call.
+    let rc = unsafe { clock_gettime(CLOCK_MONOTONIC, &mut ts) };
+    debug_assert_eq!(rc, 0);
     ts.tv_sec as u64 * 1_000_000_000 + ts.tv_nsec as u64
   }
 }

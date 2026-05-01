@@ -6,19 +6,28 @@ license = "MIT OR Apache-2.0"
 readme = "README.md"
 authors = ["Spencer Creasey"]
 repository = "https://github.com/spence/cputicks"
-description = "Cross-platform cycle tick counter with runtime auto-selection"
+description = "Fast cross-platform timer with direct counters and validated selection"
 keywords = ["rdtsc", "cycles", "ticks", "counter", "benchmark"]
 categories = ["hardware-support", "development-tools::profiling"]
 
 [dev-dependencies]
+chrono = "0.4.44"
+clock = "0.4.0"
+clocksource = "1.0.0"
+coarsetime = "0.1.37"
 criterion = "0.8"
+fastant = "0.1.11"
+minstant = "0.1.7"
+quanta = "0.12.6"
+tick_counter = "0.4.5"
+time = "0.3.47"
 
 [[bin]]
 name = "cputicks"
 path = "src/bin/cputicks.rs"
 
 [[bench]]
-name = "ticks"
+name = "instant"
 harness = false
 
 [[example]]

@@ -4,6 +4,8 @@ use core::arch::asm;
 #[inline(always)]
 pub fn rdcycle() -> u64 {
   let cnt: u64;
+  // SAFETY: `rdcycle` reads a counter CSR into a general-purpose register and does not access
+  // Rust memory. Platforms that disable user-mode access are rejected by runtime selection.
   unsafe {
     asm!(
         "rdcycle {}",
@@ -17,6 +19,8 @@ pub fn rdcycle() -> u64 {
 #[inline(always)]
 pub fn rdtime() -> u64 {
   let cnt: u64;
+  // SAFETY: `rdtime` reads a timer CSR into a general-purpose register and does not access
+  // Rust memory.
   unsafe {
     asm!(
         "rdtime {}",
