@@ -55,18 +55,10 @@ by machine, kernel, or hypervisor.
 
 ### 0.2.0
 
-- `cputicks` is now `hotclock`
-- `Instant` is the sampled time API
-- `Ticks` is the elapsed counter-delta API
-- direct fast paths for fixed-counter targets
-- runtime clock selection for variable hardware and hypervisors
-- thread-safe clock initialization
-- cross-thread monotonicity validation
-- opaque raw tick access
+- `Instant` API compatability
+- skip selection for known fast hardware counters
+- thread-safe `OnceLock` timer selection
 - overflow-safe unit conversions
-- platform CI across macOS, Windows, Linux, and cross targets
-- benchmark chart against popular timer crates
-- feature comparison against popular timer crates
 
 ### 0.1.0
 
