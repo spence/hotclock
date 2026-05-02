@@ -30,6 +30,10 @@ path = "src/bin/hotclock.rs"
 name = "instant"
 harness = false
 
+[[bench]]
+name = "selection_dispatch"
+harness = false
+
 [[example]]
 name = "basic"
 
