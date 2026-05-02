@@ -1,11 +1,17 @@
 # Charter
 
-cputicks provides a zero-dependency Rust API for reading fast CPU or platform tick counters and converting elapsed ticks into wall-clock units. The crate should be safe to use in hot runtime paths, explicit about timing guarantees and caveats, and validated on supported platforms before release.
+hotclock provides a zero-dependency Rust API for reading fast CPU or platform tick counters and converting elapsed ticks into wall-clock units. The crate should be safe to use in hot runtime paths, explicit about timing guarantees and caveats, and validated on supported platforms before release.
 
 # Milestones
 
 ## Runtime-ready timing contract
 
+- [x] Rename crate to `hotclock`
+- [x] Remove redundant README detail sections
+- [x] Treat tick_counter as performance-equivalent in README
+- [x] Clarify raw tick access and relative benchmark scores
+- [x] Remove cautious dependency wording from README
+- [x] Clarify README elapsed timing labels
 - [x] Make public API invariants and conversions idiomatic
 - [x] Make `Instant` duration-first with explicit raw tick access
 - [x] Add direct fast paths and tighten safety commentary

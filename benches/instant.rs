@@ -3,8 +3,8 @@
 use std::hint::black_box;
 use std::time::Instant as StdInstant;
 
-use cputicks::Instant;
 use criterion::{Criterion, criterion_group, criterion_main};
+use hotclock::Instant;
 
 fn bench_instant(c: &mut Criterion) {
   println!("Using: {}", Instant::implementation());

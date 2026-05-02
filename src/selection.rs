@@ -424,6 +424,6 @@ pub fn select_best() -> (u8, &'static str) {
 
   match best {
     Some((candidate, _)) => (candidate.index, candidate.name),
-    None => panic!("cputicks: no working counter found"),
+    None => panic!("hotclock: no working counter found"),
   }
 }

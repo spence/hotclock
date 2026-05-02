@@ -1,7 +1,7 @@
-use cputicks::Instant;
+use hotclock::Instant;
 
 fn main() {
-  println!("cputicks v{}", env!("CARGO_PKG_VERSION"));
+  println!("hotclock v{}", env!("CARGO_PKG_VERSION"));
   println!("==================\n");
 
   println!("Implementation: {}", Instant::implementation());

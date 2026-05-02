@@ -1,9 +1,9 @@
-use cputicks::Instant;
+use hotclock::Instant;
 
 fn main() {
   let freq = Instant::frequency();
 
-  println!("cputicks v{}", env!("CARGO_PKG_VERSION"));
+  println!("hotclock v{}", env!("CARGO_PKG_VERSION"));
   println!();
   println!("Implementation: {}", Instant::implementation());
   println!("Frequency:      {freq} Hz ({:.2} MHz)", mhz(freq));

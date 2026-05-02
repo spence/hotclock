@@ -1,4 +1,4 @@
-use cputicks::Instant;
+use hotclock::Instant;
 
 const ITERATIONS: usize = 10_000_000;
 
