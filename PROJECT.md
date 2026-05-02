@@ -6,6 +6,26 @@ hotclock provides a zero-dependency Rust API for reading fast CPU or platform ti
 
 ## Runtime-ready timing contract
 
+- [x] Refine README performance framing
+- [x] Reframe README rationale around when to choose hotclock
+- [x] Move benchmark-generated assets under benches
+- [x] Retarget crate keywords for timer and profiling search
+- [x] Retarget crate positioning around benchmarks, profilers, and hot loops
+- [x] Simplify the top README feature comparison
+- [x] Use Node 24-compatible GitHub Actions checkout
+- [x] Add GitHub Actions CI across supported platforms
+- [x] Add spacing between benchmark bars and metrics
+- [x] Compact benchmark image layout
+- [x] Remove rendered benchmark title
+- [x] Scale README benchmark bars by slowdown
+- [x] Render README benchmark as a PNG image
+- [x] Separate README benchmark image from feature comparison
+- [x] Move comparator versions to the top README comparison
+- [x] Add comparator versions to feature matrix
+- [x] Reorder platform support columns
+- [x] Clarify direct macOS aarch64 platform support
+- [x] Sort platform table by OS priority
+- [x] Clarify non-mainstream platform rows
 - [x] Rename crate to `hotclock`
 - [x] Remove redundant README detail sections
 - [x] Treat tick_counter as performance-equivalent in README
