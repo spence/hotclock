@@ -1,0 +1,163 @@
+digraph benchmark {
+  graph [
+    bgcolor="#FBF6EC",
+    margin=0,
+    pad=0.12,
+    rankdir=TB
+  ];
+
+  node [
+    shape=plain,
+    fontname="Avenir Next, Helvetica, Arial, sans-serif",
+    fontsize=13
+  ];
+
+  benchmark [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="3">
+        <TR>
+          <TD ALIGN="LEFT" COLSPAN="2">
+            <FONT POINT-SIZE="14"><B>now()</B></FONT>
+          </TD>
+        </TR>
+        <TR>
+          <TD ALIGN="RIGHT" WIDTH="140">hotclock</TD>
+          <TD ALIGN="LEFT" WIDTH="437">
+            <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+              <TR>
+                <TD BGCOLOR="#075A4A" WIDTH="3" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+                <TD BGCOLOR="#FBF6EC" WIDTH="7" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+                <TD ALIGN="LEFT" WIDTH="100">343 ps (1.0x)</TD>
+                <TD BGCOLOR="#FBF6EC" WIDTH="327" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+              </TR>
+            </TABLE>
+          </TD>
+        </TR>
+        <TR>
+          <TD ALIGN="RIGHT">tick_counter@0.4.5</TD>
+          <TD ALIGN="LEFT" WIDTH="437">
+            <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+              <TR>
+                <TD BGCOLOR="#0E7C66" WIDTH="3" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+                <TD BGCOLOR="#FBF6EC" WIDTH="7" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+                <TD ALIGN="LEFT" WIDTH="100">346 ps (1.0x)</TD>
+                <TD BGCOLOR="#FBF6EC" WIDTH="327" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+              </TR>
+            </TABLE>
+          </TD>
+        </TR>
+        <TR>
+          <TD ALIGN="RIGHT">quanta@0.12.6</TD>
+          <TD ALIGN="LEFT" WIDTH="437">
+            <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+              <TR>
+                <TD BGCOLOR="#D48A22" WIDTH="42" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+                <TD BGCOLOR="#FBF6EC" WIDTH="7" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+                <TD ALIGN="LEFT" WIDTH="115">4.51 ns (13.1x)</TD>
+                <TD BGCOLOR="#FBF6EC" WIDTH="273" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+              </TR>
+            </TABLE>
+          </TD>
+        </TR>
+        <TR>
+          <TD ALIGN="RIGHT">std::time</TD>
+          <TD ALIGN="LEFT" WIDTH="437">
+            <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+              <TR>
+                <TD BGCOLOR="#B95032" WIDTH="186" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+                <TD BGCOLOR="#FBF6EC" WIDTH="7" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+                <TD ALIGN="LEFT" WIDTH="125">19.72 ns (57.5x)</TD>
+                <TD BGCOLOR="#FBF6EC" WIDTH="119" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+              </TR>
+            </TABLE>
+          </TD>
+        </TR>
+        <TR>
+          <TD ALIGN="RIGHT">minstant@0.1.7</TD>
+          <TD ALIGN="LEFT" WIDTH="437">
+            <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+              <TR>
+                <TD BGCOLOR="#8F2E2E" WIDTH="252" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+                <TD BGCOLOR="#FBF6EC" WIDTH="7" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+                <TD ALIGN="LEFT" WIDTH="125">26.76 ns (78.0x)</TD>
+                <TD BGCOLOR="#FBF6EC" WIDTH="53" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+              </TR>
+            </TABLE>
+          </TD>
+        </TR>
+        <TR><TD HEIGHT="4"></TD></TR>
+
+        <TR>
+          <TD ALIGN="LEFT" COLSPAN="2">
+            <FONT POINT-SIZE="14"><B>Elapsed</B></FONT>
+          </TD>
+        </TR>
+        <TR>
+          <TD ALIGN="RIGHT">hotclock</TD>
+          <TD ALIGN="LEFT" WIDTH="437">
+            <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+              <TR>
+                <TD BGCOLOR="#075A4A" WIDTH="3" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+                <TD BGCOLOR="#FBF6EC" WIDTH="7" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+                <TD ALIGN="LEFT" WIDTH="100">640 ps (1.0x)</TD>
+                <TD BGCOLOR="#FBF6EC" WIDTH="327" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+              </TR>
+            </TABLE>
+          </TD>
+        </TR>
+        <TR>
+          <TD ALIGN="RIGHT">tick_counter@0.4.5</TD>
+          <TD ALIGN="LEFT" WIDTH="437">
+            <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+              <TR>
+                <TD BGCOLOR="#0E7C66" WIDTH="3" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+                <TD BGCOLOR="#FBF6EC" WIDTH="7" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+                <TD ALIGN="LEFT" WIDTH="100">643 ps (1.0x)</TD>
+                <TD BGCOLOR="#FBF6EC" WIDTH="327" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+              </TR>
+            </TABLE>
+          </TD>
+        </TR>
+        <TR>
+          <TD ALIGN="RIGHT">quanta@0.12.6</TD>
+          <TD ALIGN="LEFT" WIDTH="437">
+            <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+              <TR>
+                <TD BGCOLOR="#D48A22" WIDTH="46" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+                <TD BGCOLOR="#FBF6EC" WIDTH="7" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+                <TD ALIGN="LEFT" WIDTH="115">9.04 ns (14.1x)</TD>
+                <TD BGCOLOR="#FBF6EC" WIDTH="269" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+              </TR>
+            </TABLE>
+          </TD>
+        </TR>
+        <TR>
+          <TD ALIGN="RIGHT">std::time</TD>
+          <TD ALIGN="LEFT" WIDTH="437">
+            <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+              <TR>
+                <TD BGCOLOR="#B95032" WIDTH="217" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+                <TD BGCOLOR="#FBF6EC" WIDTH="7" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+                <TD ALIGN="LEFT" WIDTH="125">42.86 ns (67.0x)</TD>
+                <TD BGCOLOR="#FBF6EC" WIDTH="88" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+              </TR>
+            </TABLE>
+          </TD>
+        </TR>
+        <TR>
+          <TD ALIGN="RIGHT">minstant@0.1.7</TD>
+          <TD ALIGN="LEFT" WIDTH="437">
+            <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+              <TR>
+                <TD BGCOLOR="#8F2E2E" WIDTH="300" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+                <TD BGCOLOR="#FBF6EC" WIDTH="7" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+                <TD ALIGN="LEFT" WIDTH="125">59.32 ns (92.7x)</TD>
+                <TD BGCOLOR="#FBF6EC" WIDTH="5" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
+              </TR>
+            </TABLE>
+          </TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
