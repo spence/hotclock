@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  native:
+    name: native / ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-x86_64
+            runner: ubuntu-24.04
+          - name: linux-aarch64
+            runner: ubuntu-24.04-arm
+          - name: macos-x86_64
+            runner: macos-15-intel
+          - name: macos-aarch64
+            runner: macos-15
+          - name: windows-x86_64
+            runner: windows-2025
+          - name: windows-aarch64
+            runner: windows-11-arm
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+
+      - name: Test library and binary
+        run: cargo test --lib --bins
+
+      - name: Test docs
+        run: cargo test --doc
+
+      - name: Check examples
+        run: cargo check --examples
+
+      - name: Run diagnostics binary
+        run: cargo run --bin hotclock --release
+
+      - name: Run basic example
+        run: cargo run --example basic --release
+
+  benchmark-check:
+    name: benchmark check
+    runs-on: macos-15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+
+      - name: Check benchmarks
+        run: cargo check --benches
+
+  cross-check:
+    name: cross-check / ${{ matrix.target }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - i686-unknown-linux-gnu
+          - i686-pc-windows-msvc
+          - s390x-unknown-linux-gnu
+          - loongarch64-unknown-linux-gnu
+          - riscv64gc-unknown-linux-gnu
+          - powerpc64-unknown-linux-gnu
+          - armv7-unknown-linux-gnueabihf
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust target
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustup target add ${{ matrix.target }}
+
+      - name: Check target
+        run: cargo check --lib --target ${{ matrix.target }}
