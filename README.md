@@ -53,24 +53,12 @@ by machine, kernel, or hypervisor.
 
 ## changelog
 
-### unreleased
+### 0.2.0
 
-- renamed the crate from `cputicks` to `hotclock`
-- split the public API into `Instant` for sampled points and `Ticks` for elapsed counter deltas
-- made `Instant` and `Ticks` opaque wrappers with explicit `from_raw()` / `as_raw()` access
-- made standard `Instant` methods duration-first and moved raw deltas to explicit `*_ticks` APIs
-- made `Ticks` wall-unit conversions return `u128` and added checked/saturating duration conversion
-- split public type implementations into focused modules and tightened lint coverage
-- renamed the Criterion bench target from `ticks` to `instant`
-- added direct fast paths for Apple Silicon macOS and fallback-only targets
-- tightened unsafe-block safety comments and removed unused `rdtscp` helpers
-- hardened counter selection with same-thread and cross-thread monotonicity validation
-- switched selected-counter state from mutable globals to thread-safe lazy initialization
-- stopped probing Linux aarch64 `PMCCNTR_EL0` by default because it can trap when unavailable
-- documented platform support and deployment caveats
-- added comparator benchmarks for `quanta`, `coarsetime`, `minstant`, `fastant`, `clocksource`, `clock`, `time`, `chrono`, `tick_counter`, and `std::time::Instant`
-- added performance and emoji feature-matrix comparisons for popular timing and date-time crates, including cross-thread, thread-safety, test-clock mocking, and no-std behavior
-- fixed stale example version and `Cycles::now()` wording
+- `Instant` API compatability
+- skip selection for known fast hardware counters
+- thread-safe `OnceLock` timer selection
+- overflow-safe unit conversions
 
 ### 0.1.0
 
