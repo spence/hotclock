@@ -6,6 +6,7 @@ hotclock provides a zero-dependency Rust API for reading fast CPU or platform ti
 
 ## Runtime-ready timing contract
 
+- [x] Cut concise 0.2.0 release notes
 - [x] Refine README performance framing
 - [x] Reframe README rationale around when to choose hotclock
 - [x] Move benchmark-generated assets under benches
@@ -14,6 +15,7 @@ hotclock provides a zero-dependency Rust API for reading fast CPU or platform ti
 - [x] Simplify the top README feature comparison
 - [x] Use Node 24-compatible GitHub Actions checkout
 - [x] Add GitHub Actions CI across supported platforms
+- [x] Collapse unreleased changelog
 - [x] Add spacing between benchmark bars and metrics
 - [x] Compact benchmark image layout
 - [x] Remove rendered benchmark title
