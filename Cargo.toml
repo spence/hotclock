@@ -6,8 +6,8 @@ license = "MIT OR Apache-2.0"
 readme = "README.md"
 authors = ["Spencer Creasey"]
 repository = "https://github.com/spence/hotclock"
-description = "Fast cross-platform timer with direct counters and validated selection"
-keywords = ["rdtsc", "cycles", "ticks", "counter", "benchmark"]
+description = "ultra-fast timer for benchmarks, profilers, and hot loops"
+keywords = ["timer", "clock", "benchmark", "profiling", "rdtsc"]
 categories = ["hardware-support", "development-tools::profiling"]
 
 [dev-dependencies]
