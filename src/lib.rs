@@ -1,12 +1,15 @@
 #![warn(clippy::undocumented_unsafe_blocks)]
 #![warn(rustdoc::broken_intra_doc_links)]
 
-//! Cross-platform CPU cycle/tick counter with direct and runtime-selected paths.
+//! Cross-platform CPU cycle/tick counter with direct, runtime-selected, and patched-selected
+//! paths.
 //!
 //! A Rust port of [libcpucycles](https://cpucycles.cr.yp.to/) that provides sub-nanosecond
 //! timing by directly reading hardware counters (RDTSC, CNTVCT\_EL0, etc.). Deterministic
 //! targets use a compiled-in counter path; targets with meaningful runtime variation select the
-//! best available counter lazily on first use and cache it for the lifetime of the process.
+//! best available counter lazily on first use and cache it for the lifetime of the process. On
+//! Linux x86_64, hardware-counter selections also patch crate-owned call sites so warmed RDTSC
+//! reads do not keep selected-index dispatch on the hot path.
 //!
 //! Roughly **~30x faster** than [`std::time::Instant`] on typical hardware.
 //!

@@ -37,6 +37,11 @@ For common modern systems, hotclock uses a direct counter where the target has
 one clear path and uses runtime selection when the hardware counter can vary
 by machine, kernel, or hypervisor.
 
+On Linux x86_64, runtime selection is thread-safe on the first racing call and
+warmed RDTSC selections patch crate-owned call sites to direct clock bytes, so
+later hardware-counter reads do not keep selected-index dispatch on the hot
+path.
+
 | Platform               | Hardware counter | OS fallback | CI tests |
 |------------------------|------------------|-------------|----------|
 | macOS (x86/x86_64)     | ✅ RDTSC         | ✅          | ✅       |
@@ -57,7 +62,7 @@ by machine, kernel, or hypervisor.
 
 - `Instant` API compatability
 - skip selection for known fast hardware counters
-- thread-safe `OnceLock` timer selection
+- thread-safe timer selection, including patched warmed RDTSC call sites on Linux x86_64
 - overflow-safe unit conversions
 
 ### 0.1.0

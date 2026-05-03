@@ -18,6 +18,12 @@ pub mod x86_64;
 
 static FREQUENCY: OnceLock<u64> = OnceLock::new();
 
+#[cfg(all(target_arch = "x86_64", target_os = "linux"))]
+mod x86_64_linux;
+
+#[cfg(all(target_arch = "x86_64", target_os = "linux"))]
+pub use x86_64_linux::{implementation, indices, ticks};
+
 // These targets have one useful counter path: Apple Silicon uses CNTVCT_EL0, and
 // unsupported architectures have only the OS fallback. Runtime selection would only add
 // hot-path dispatch.
@@ -50,8 +56,11 @@ mod direct;
 pub use direct::{implementation, ticks};
 
 // Runtime-selected targets keep the fallback path because the fastest compiled counter can
-// fail the monotonicity contract on some CPUs, kernels, or hypervisors.
+// fail the monotonicity contract on some CPUs, kernels, or hypervisors. Linux x86_64 uses a
+// private call-site patchpoint instead so warmed RDTSC selections do not keep selected-index
+// dispatch on the hot path.
 #[cfg(not(any(
+  all(target_arch = "x86_64", target_os = "linux"),
   all(target_arch = "aarch64", target_os = "macos"),
   not(any(
     target_arch = "x86_64",
@@ -66,6 +75,7 @@ pub use direct::{implementation, ticks};
 mod selected;
 
 #[cfg(not(any(
+  all(target_arch = "x86_64", target_os = "linux"),
   all(target_arch = "aarch64", target_os = "macos"),
   not(any(
     target_arch = "x86_64",
