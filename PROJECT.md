@@ -4,6 +4,10 @@ hotclock provides a zero-dependency Rust API for reading fast CPU or platform ti
 
 # Milestones
 
+## Thread-safe inline Linux clock selection
+
+- [x] Linux x86_64 runtime-selected clocks patch warmed hardware-counter calls to direct inline clock bytes
+
 ## Runtime-ready timing contract
 
 - [x] Benchmark selected-clock dispatch overhead
