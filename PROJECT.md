@@ -4,6 +4,11 @@ hotclock provides a zero-dependency Rust API for reading fast CPU or platform ti
 
 # Milestones
 
+## Runtime clock selection proof
+
+- [x] Prove same-target runtime clock divergence with CI artifacts
+- [x] Add same-target runtime selection proof tooling and CI artifacts
+
 ## Runtime-ready timing contract
 
 - [x] Benchmark selected-clock dispatch overhead

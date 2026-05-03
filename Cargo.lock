@@ -310,6 +310,7 @@ dependencies = [
  "fastant",
  "minstant",
  "quanta",
+ "serde_json",
  "tick_counter",
  "time",
 ]

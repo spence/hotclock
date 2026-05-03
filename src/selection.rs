@@ -1,9 +1,5 @@
-use std::panic::{AssertUnwindSafe, catch_unwind};
-use std::sync::Arc;
-use std::sync::Barrier;
-use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
-
 use crate::arch::{self, fallback};
+use crate::counter_eval::{CounterScore, score_counter, score_is_better};
 
 #[cfg(target_arch = "aarch64")]
 use crate::arch::aarch64;
@@ -295,127 +291,16 @@ fn candidates() -> &'static [Candidate] {
   }
 }
 
-fn test_works(counter: fn() -> u64) -> bool {
-  catch_unwind(AssertUnwindSafe(|| {
-    let _ = counter();
-    let _ = counter();
-  }))
-  .is_ok()
-}
-
-fn test_cross_thread_ordering(counter: fn() -> u64) -> bool {
-  const CALLS: usize = 1000;
-
-  catch_unwind(AssertUnwindSafe(|| {
-    let published = Arc::new(AtomicU64::new(0));
-    let sequence = Arc::new(AtomicUsize::new(0));
-    let acknowledged = Arc::new(AtomicUsize::new(0));
-    let failed = Arc::new(AtomicBool::new(false));
-    let start = Arc::new(Barrier::new(2));
-
-    let reader = {
-      let published = Arc::clone(&published);
-      let sequence = Arc::clone(&sequence);
-      let acknowledged = Arc::clone(&acknowledged);
-      let failed = Arc::clone(&failed);
-      let start = Arc::clone(&start);
-
-      std::thread::spawn(move || {
-        start.wait();
-
-        let mut seen = 0;
-        while seen < CALLS {
-          let next = sequence.load(Ordering::Acquire);
-          if next == seen {
-            std::hint::spin_loop();
-            continue;
-          }
-
-          let before = published.load(Ordering::Acquire);
-          let after = counter();
-          seen = next;
-          if after < before {
-            failed.store(true, Ordering::Relaxed);
-            acknowledged.store(seen, Ordering::Release);
-            break;
-          }
-
-          acknowledged.store(seen, Ordering::Release);
-        }
-      })
-    };
-
-    start.wait();
-
-    for i in 1..=CALLS {
-      if failed.load(Ordering::Relaxed) {
-        break;
-      }
-
-      let before = counter();
-      published.store(before, Ordering::Release);
-      sequence.store(i, Ordering::Release);
-
-      while acknowledged.load(Ordering::Acquire) != i {
-        if failed.load(Ordering::Relaxed) {
-          break;
-        }
-        std::hint::spin_loop();
-      }
-    }
-
-    reader.join().is_ok() && !failed.load(Ordering::Relaxed)
-  }))
-  .unwrap_or(false)
-}
-
-fn measure_precision(counter: fn() -> u64) -> Option<u64> {
-  const CALLS: usize = 1000;
-
-  if !test_works(counter) {
-    return None;
-  }
-
-  let mut times = [0u64; CALLS + 1];
-  for t in &mut times {
-    *t = counter();
-  }
-
-  if times[0] == times[CALLS] {
-    return None;
-  }
-
-  for i in 0..CALLS {
-    if times[i] > times[i + 1] {
-      return None;
-    }
-  }
-
-  if !test_cross_thread_ordering(counter) {
-    return None;
-  }
-
-  let mut smallest = u64::MAX;
-  for i in 0..CALLS {
-    let diff = times[i + 1].wrapping_sub(times[i]);
-    if diff > 0 && diff < smallest && diff < 1_000_000 {
-      smallest = diff;
-    }
-  }
-
-  if smallest == u64::MAX { None } else { Some(smallest) }
-}
-
 pub fn select_best() -> (u8, &'static str) {
   let candidates = candidates();
-  let mut best: Option<(&Candidate, u64)> = None;
+  let mut best: Option<(&Candidate, CounterScore)> = None;
 
   for candidate in candidates {
-    if let Some(precision) = measure_precision(candidate.counter) {
+    if let Some(score) = score_counter(candidate.counter) {
       match best {
-        None => best = Some((candidate, precision)),
-        Some((_, best_precision)) if precision < best_precision => {
-          best = Some((candidate, precision));
+        None => best = Some((candidate, score)),
+        Some((_, best_score)) if score_is_better(score, best_score) => {
+          best = Some((candidate, score))
         }
         _ => {}
       }

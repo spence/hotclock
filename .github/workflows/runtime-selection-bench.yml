@@ -1,0 +1,233 @@
+name: Runtime Selection Benchmarks
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - runtime-selection-proof
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  native:
+    name: native / ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-x86_64
+            runner: ubuntu-24.04
+          - name: linux-aarch64
+            runner: ubuntu-24.04-arm
+          - name: macos-x86_64
+            runner: macos-15-intel
+          - name: macos-aarch64
+            runner: macos-15
+          - name: windows-x86_64
+            runner: windows-2025
+          - name: windows-aarch64
+            runner: windows-11-arm
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+
+      - name: Check benchmark internals
+        run: cargo check --benches --examples --features bench-internals
+
+      - name: Generate runtime selection report
+        run: cargo run --features bench-internals --example runtime_selection_report --release
+        env:
+          HOTCLOCK_REPORT_DIR: target/hotclock-runtime-selection-report
+          HOTCLOCK_SKIP_COMPARISONS: 1
+
+      - name: Upload benchmark artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-selection-native-${{ matrix.name }}
+          path: target/hotclock-runtime-selection-report/**
+
+  translated:
+    name: translated / ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macos-x86_64-on-aarch64
+            runner: macos-15
+            target: x86_64-apple-darwin
+            report: target/hotclock-runtime-selection-report-rosetta
+          - name: windows-x86_64-on-aarch64
+            runner: windows-11-arm
+            target: x86_64-pc-windows-msvc
+            report: target/hotclock-runtime-selection-report-x64-emulated
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustup target add ${{ matrix.target }}
+
+      - name: Install Rosetta
+        if: runner.os == 'macOS'
+        run: softwareupdate --install-rosetta --agree-to-license
+
+      - name: Build translated report binary
+        run: cargo build --features bench-internals --example runtime_selection_report --release --target ${{ matrix.target }}
+
+      - name: Run translated report on macOS
+        if: runner.os == 'macOS'
+        run: arch -x86_64 target/x86_64-apple-darwin/release/examples/runtime_selection_report
+        env:
+          HOTCLOCK_REPORT_DIR: ${{ matrix.report }}
+          HOTCLOCK_SKIP_COMPARISONS: 1
+
+      - name: Run translated report on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force "${{ matrix.report }}" | Out-Null
+          $env:HOTCLOCK_REPORT_DIR = "${{ matrix.report }}"
+          $env:HOTCLOCK_SKIP_COMPARISONS = "1"
+          & target\x86_64-pc-windows-msvc\release\examples\runtime_selection_report.exe
+
+      - name: Upload translated artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-selection-translated-${{ matrix.name }}
+          path: ${{ matrix.report }}/**
+
+  build-linux-x86_64-report:
+    name: build / linux-x86_64 report binary
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+
+      - name: Build report binary
+        run: cargo build --features bench-internals --example runtime_selection_report --release
+
+      - name: Upload report binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-selection-report-binary-linux-x86_64
+          path: target/release/examples/runtime_selection_report
+
+  containers:
+    name: container / ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    needs:
+      - build-linux-x86_64-report
+    continue-on-error: ${{ matrix.allow_failure }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-arm64-native
+            runner: ubuntu-24.04-arm
+            platform: linux/arm64
+            allow_failure: false
+          - name: linux-amd64-on-arm64
+            runner: ubuntu-24.04-arm
+            platform: linux/amd64
+            allow_failure: true
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up QEMU
+        if: matrix.platform == 'linux/amd64'
+        uses: docker/setup-qemu-action@v3
+
+      - name: Download x86_64 report binary
+        if: matrix.platform == 'linux/amd64'
+        uses: actions/download-artifact@v4
+        with:
+          name: runtime-selection-report-binary-linux-x86_64
+          path: target/prebuilt
+
+      - name: Generate runtime selection report in Docker
+        shell: bash
+        run: |
+          if [ "${{ matrix.platform }}" = "linux/amd64" ]; then
+            chmod +x target/prebuilt/runtime_selection_report
+            docker run --rm \
+              --platform "${{ matrix.platform }}" \
+              -v "$PWD:/work" \
+              -w /work \
+              -e HOTCLOCK_REPORT_DIR=/work/target/hotclock-runtime-selection-report-docker \
+              -e HOTCLOCK_SKIP_COMPARISONS=1 \
+              ubuntu:24.04 \
+              /work/target/prebuilt/runtime_selection_report
+          else
+            docker run --rm \
+              --platform "${{ matrix.platform }}" \
+              -v "$PWD:/work" \
+              -w /work \
+              -e HOTCLOCK_REPORT_DIR=/work/target/hotclock-runtime-selection-report-docker \
+              -e HOTCLOCK_SKIP_COMPARISONS=1 \
+              rust:latest \
+              bash -c "export PATH=/usr/local/cargo/bin:\$PATH && rustup default stable && cargo run --features bench-internals --example runtime_selection_report --release"
+          fi
+
+      - name: Upload container artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-selection-container-${{ matrix.name }}
+          path: target/hotclock-runtime-selection-report-docker/**
+
+  analyze:
+    name: analyze proof
+    runs-on: ubuntu-24.04
+    needs:
+      - native
+      - translated
+      - containers
+    if: always()
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download benchmark artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: target/runtime-selection-artifacts
+
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+
+      - name: Analyze same-target divergence
+        run: cargo run --features bench-internals --example runtime_selection_analyze -- target/runtime-selection-artifacts
+        env:
+          HOTCLOCK_PROOF_DIR: target/hotclock-proof
+
+      - name: Upload proof summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-selection-proof
+          path: target/hotclock-proof/**

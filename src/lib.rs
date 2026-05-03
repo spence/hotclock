@@ -66,6 +66,22 @@
 mod arch;
 mod calibration;
 mod convert;
+#[cfg(any(
+  feature = "bench-internals",
+  not(any(
+    all(target_arch = "aarch64", target_os = "macos"),
+    not(any(
+      target_arch = "x86_64",
+      target_arch = "x86",
+      target_arch = "aarch64",
+      target_arch = "riscv64",
+      target_arch = "powerpc64",
+      target_arch = "s390x",
+      target_arch = "loongarch64",
+    )),
+  )),
+))]
+mod counter_eval;
 mod instant;
 #[cfg(not(any(
   all(target_arch = "aarch64", target_os = "macos"),
@@ -81,6 +97,10 @@ mod instant;
 )))]
 mod selection;
 mod ticks;
+
+#[cfg(feature = "bench-internals")]
+#[doc(hidden)]
+pub mod bench_internals;
 
 pub use instant::Instant;
 pub use ticks::Ticks;
