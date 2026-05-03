@@ -5,6 +5,8 @@ use std::sync::OnceLock;
 use std::sync::atomic::{AtomicU8, Ordering};
 
 use criterion::{Criterion, criterion_group, criterion_main};
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+use hotclock::Instant;
 
 const FAST_COUNTER: u8 = 0;
 const SLOW_COUNTER: u8 = 1;
@@ -156,5 +158,55 @@ fn bench_selected_counter(c: &mut Criterion) {
   group.finish();
 }
 
-criterion_group!(benches, bench_selected_index, bench_selected_counter);
+fn bench_linux_x86_64_patchpoint_counter(c: &mut Criterion) {
+  #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+  {
+    install_constructor_selected(black_box(FAST_COUNTER));
+    let _ = current_style_now();
+    let _ = Instant::now();
+
+    let mut group = c.benchmark_group("linux x86_64 patched counter");
+    group.bench_function("raw rdtsc", |b| b.iter(|| black_box(platform_counter())));
+    group.bench_function("warmed hotclock", |b| b.iter(|| black_box(Instant::now().as_raw())));
+    group.bench_function("atomic dispatch baseline", |b| b.iter(|| black_box(current_style_now())));
+    group.bench_function("clock_gettime fallback", |b| {
+      b.iter(|| black_box(clock_monotonic_counter()))
+    });
+    group.finish();
+  }
+
+  #[cfg(not(all(target_os = "linux", target_arch = "x86_64")))]
+  {
+    let _ = c;
+  }
+}
+
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+#[repr(C)]
+struct Timespec {
+  tv_sec: i64,
+  tv_nsec: i64,
+}
+
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+unsafe extern "C" {
+  fn clock_gettime(clk_id: i32, tp: *mut Timespec) -> i32;
+}
+
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+fn clock_monotonic_counter() -> u64 {
+  const CLOCK_MONOTONIC: i32 = 1;
+  let mut ts = Timespec { tv_sec: 0, tv_nsec: 0 };
+  // SAFETY: `ts` is a valid writable `timespec` for this libc call.
+  let rc = unsafe { clock_gettime(CLOCK_MONOTONIC, &mut ts) };
+  debug_assert_eq!(rc, 0);
+  ts.tv_sec as u64 * 1_000_000_000 + ts.tv_nsec as u64
+}
+
+criterion_group!(
+  benches,
+  bench_selected_index,
+  bench_selected_counter,
+  bench_linux_x86_64_patchpoint_counter
+);
 criterion_main!(benches);

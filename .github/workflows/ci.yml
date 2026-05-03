@@ -39,8 +39,12 @@ jobs:
           rustup toolchain install stable --profile minimal
           rustup default stable
 
-      - name: Test library and binary
-        run: cargo test --lib --bins
+      - name: Test library, binaries, and integration tests
+        run: cargo test --lib --bins --tests
+
+      - name: Test Linux x86_64 release patchpoints
+        if: matrix.name == 'linux-x86_64'
+        run: cargo test --release --lib --test x86_64_linux_patch
 
       - name: Test docs
         run: cargo test --doc
@@ -67,6 +71,24 @@ jobs:
           rustup default stable
 
       - name: Check benchmarks
+        run: cargo check --benches
+
+  msrv:
+    name: msrv / rust 1.88
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust 1.88
+        run: |
+          rustup toolchain install 1.88 --profile minimal
+          rustup default 1.88
+
+      - name: Test Rust 1.88 targets
+        run: cargo test --lib --bins --examples --tests
+
+      - name: Check Rust 1.88 benchmarks
         run: cargo check --benches
 
   cross-check:

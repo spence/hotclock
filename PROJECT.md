@@ -4,6 +4,11 @@ hotclock provides a zero-dependency Rust API for reading fast CPU or platform ti
 
 # Milestones
 
+## Linux x86_64 patchpoint proof and hardening
+
+- [x] Linux x86_64 patchpoint validation proves warmed RDTSC call sites patch completely and benchmark against raw and dispatch baselines
+- [x] CI validates integration tests, release patchpoint tests, and the declared Rust toolchain floor
+
 ## Thread-safe inline Linux clock selection
 
 - [x] Linux x86_64 runtime-selected clocks patch warmed hardware-counter calls to direct inline clock bytes

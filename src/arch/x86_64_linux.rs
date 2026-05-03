@@ -2,7 +2,7 @@ use core::arch::asm;
 use core::ptr::NonNull;
 use std::ffi::{c_int, c_long, c_void};
 use std::sync::OnceLock;
-use std::sync::atomic::{AtomicU8, AtomicU64, Ordering, compiler_fence};
+use std::sync::atomic::{AtomicU8, AtomicU64, AtomicUsize, Ordering, compiler_fence};
 
 const PATCH_LEN: usize = RDTSC_BYTES.len();
 const COMMIT_LEN: usize = 8;
@@ -17,6 +17,10 @@ const RDTSC_BYTES: [u8; 9] = [0x0F, 0x31, 0x48, 0xC1, 0xE2, 0x20, 0x48, 0x09, 0x
 
 static SELECTED: AtomicU8 = AtomicU8::new(UNSELECTED);
 static SELECTED_NAME: OnceLock<&'static str> = OnceLock::new();
+static LAST_PATCH_REGISTERED: AtomicUsize = AtomicUsize::new(0);
+static LAST_PATCH_PATCHED: AtomicUsize = AtomicUsize::new(0);
+static LAST_PATCH_ALREADY_PATCHED: AtomicUsize = AtomicUsize::new(0);
+static LAST_PATCH_FAILED: AtomicUsize = AtomicUsize::new(0);
 
 pub mod indices {
   pub const RDTSC: u8 = 0;
@@ -160,7 +164,7 @@ fn ensure_selected() -> u8 {
           let (idx, name) = crate::selection::select_best();
           let _ = SELECTED_NAME.set(name);
           if idx == indices::RDTSC {
-            patch_rdtsc_callsites();
+            let _ = patch_rdtsc_callsites();
           }
           SELECTED.store(idx, Ordering::Release);
           return idx;
@@ -172,13 +176,35 @@ fn ensure_selected() -> u8 {
   }
 }
 
-fn patch_rdtsc_callsites() {
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+struct PatchStats {
+  registered: usize,
+  patched: usize,
+  already_patched: usize,
+  failed: usize,
+}
+
+fn patch_rdtsc_callsites() -> PatchStats {
+  let mut stats = PatchStats::default();
+
   for record in callsite_records() {
     let Some(patch_address) = NonNull::new(record.patch_address as *mut u8) else {
       continue;
     };
-    let _ = patch_rdtsc_callsite(patch_address);
+    stats.registered += 1;
+    match patch_rdtsc_callsite(patch_address) {
+      PatchOutcome::Patched => stats.patched += 1,
+      PatchOutcome::AlreadyPatched => stats.already_patched += 1,
+      PatchOutcome::Failed => stats.failed += 1,
+    }
   }
+
+  LAST_PATCH_REGISTERED.store(stats.registered, Ordering::Relaxed);
+  LAST_PATCH_PATCHED.store(stats.patched, Ordering::Relaxed);
+  LAST_PATCH_ALREADY_PATCHED.store(stats.already_patched, Ordering::Relaxed);
+  LAST_PATCH_FAILED.store(stats.failed, Ordering::Relaxed);
+
+  stats
 }
 
 fn callsite_records() -> &'static [CallsiteRecord] {
@@ -203,23 +229,30 @@ fn callsite_records() -> &'static [CallsiteRecord] {
   }
 }
 
-fn patch_rdtsc_callsite(patch_address: NonNull<u8>) -> bool {
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum PatchOutcome {
+  Patched,
+  AlreadyPatched,
+  Failed,
+}
+
+fn patch_rdtsc_callsite(patch_address: NonNull<u8>) -> PatchOutcome {
   let ptr = patch_address.as_ptr();
   let address = ptr as usize;
   if address % COMMIT_LEN != 0 {
-    return false;
+    return PatchOutcome::Failed;
   }
 
   let current = read_patch_bytes(ptr);
   if current == RDTSC_BYTES {
-    return true;
+    return PatchOutcome::AlreadyPatched;
   }
   if !is_unselected_gate(&current) {
-    return false;
+    return PatchOutcome::Failed;
   }
 
   let Ok(guard) = PageWriteGuard::enable(ptr, PATCH_LEN) else {
-    return false;
+    return PatchOutcome::Failed;
   };
 
   // SAFETY: The page guard made the crate-owned call-site bytes writable. The old gate is an
@@ -235,7 +268,17 @@ fn patch_rdtsc_callsite(patch_address: NonNull<u8>) -> bool {
 
   flush_instruction_cache();
   let _ = guard.restore();
-  true
+  PatchOutcome::Patched
+}
+
+#[cfg(test)]
+fn last_patch_stats() -> PatchStats {
+  PatchStats {
+    registered: LAST_PATCH_REGISTERED.load(Ordering::Relaxed),
+    patched: LAST_PATCH_PATCHED.load(Ordering::Relaxed),
+    already_patched: LAST_PATCH_ALREADY_PATCHED.load(Ordering::Relaxed),
+    failed: LAST_PATCH_FAILED.load(Ordering::Relaxed),
+  }
 }
 
 fn read_patch_bytes(ptr: *mut u8) -> [u8; PATCH_LEN] {
@@ -329,6 +372,11 @@ mod tests {
       .collect();
     assert!(!callsites.is_empty());
     assert!(callsites.iter().all(|bytes| bytes == &RDTSC_BYTES), "{callsites:02x?}");
+
+    let stats = super::last_patch_stats();
+    assert_eq!(stats.failed, 0, "{stats:?}");
+    assert_eq!(stats.registered, callsites.len(), "{stats:?}");
+    assert_eq!(stats.patched + stats.already_patched, stats.registered, "{stats:?}");
   }
 
   #[test]
