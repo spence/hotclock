@@ -11,9 +11,16 @@ use hotclock::Instant;
 use hotclock::bench_internals::{ClockCandidate, candidate_clocks, evaluate_candidate_clock};
 use serde_json::{Value, json};
 
-const WARMUP_ITERS: usize = 5_000;
-const MEASURE_ITERS: usize = 50_000;
-const SAMPLES: usize = 11;
+const DEFAULT_WARMUP_ITERS: usize = 5_000;
+const DEFAULT_MEASURE_ITERS: usize = 50_000;
+const DEFAULT_SAMPLES: usize = 11;
+
+#[derive(Clone, Copy)]
+struct BenchmarkConfig {
+  warmup_iters: usize,
+  measure_iters: usize,
+  samples: usize,
+}
 
 #[derive(Clone, Copy)]
 struct Stats {
@@ -43,7 +50,9 @@ fn main() -> std::io::Result<()> {
   let mut candidates = measure_candidates();
   mark_fastest_valid_candidate(&mut candidates);
 
-  let comparisons = if skip_comparisons() { Vec::new() } else { measure_comparisons() };
+  let comparison_config = comparison_config();
+  let comparisons =
+    if skip_comparisons() { Vec::new() } else { measure_comparisons(comparison_config) };
   let compile_identity = compile_identity();
   let runtime_identity = runtime_identity();
   let proof_eligible =
@@ -53,10 +62,17 @@ fn main() -> std::io::Result<()> {
     &runtime_identity,
     proof_eligible,
     &candidates,
+    comparison_config,
     &comparisons,
   );
-  let json =
-    render_json(&compile_identity, &runtime_identity, proof_eligible, &candidates, &comparisons);
+  let json = render_json(
+    &compile_identity,
+    &runtime_identity,
+    proof_eligible,
+    &candidates,
+    comparison_config,
+    &comparisons,
+  );
 
   println!("{markdown}");
 
@@ -123,72 +139,84 @@ fn ordered_f64(value: f64) -> u64 {
   (value * 1_000_000.0).round() as u64
 }
 
-fn measure_comparisons() -> Vec<ComparisonResult> {
+fn measure_comparisons(config: BenchmarkConfig) -> Vec<ComparisonResult> {
   let clock = clock::MonotonicClock::default();
   let mut rows = Vec::new();
 
-  push_comparison(&mut rows, "hotclock::Instant::now()", "now", || {
+  push_comparison(&mut rows, config, "hotclock::Instant::now()", "now", || {
     let _ = black_box(Instant::now());
   });
-  push_comparison(&mut rows, "hotclock::Instant (now + elapsed_ticks)", "elapsed", || {
+  push_comparison(&mut rows, config, "hotclock::Instant (now + elapsed_ticks)", "elapsed", || {
     let start = Instant::now();
     let _ = black_box(start.elapsed_ticks());
   });
-  push_comparison(&mut rows, "quanta::Instant::now()", "now", || {
+  push_comparison(&mut rows, config, "quanta::Instant::now()", "now", || {
     black_box(quanta::Instant::now());
   });
-  push_comparison(&mut rows, "quanta::Instant (now + elapsed)", "elapsed", || {
+  push_comparison(&mut rows, config, "quanta::Instant (now + elapsed)", "elapsed", || {
     let start = quanta::Instant::now();
     black_box(start.elapsed());
   });
-  push_comparison(&mut rows, "minstant::Instant::now()", "now", || {
+  push_comparison(&mut rows, config, "minstant::Instant::now()", "now", || {
     black_box(minstant::Instant::now());
   });
-  push_comparison(&mut rows, "minstant::Instant (now + elapsed)", "elapsed", || {
+  push_comparison(&mut rows, config, "minstant::Instant (now + elapsed)", "elapsed", || {
     let start = minstant::Instant::now();
     black_box(start.elapsed());
   });
-  push_comparison(&mut rows, "fastant::Instant::now()", "now", || {
+  push_comparison(&mut rows, config, "fastant::Instant::now()", "now", || {
     black_box(fastant::Instant::now());
   });
-  push_comparison(&mut rows, "fastant::Instant (now + elapsed)", "elapsed", || {
+  push_comparison(&mut rows, config, "fastant::Instant (now + elapsed)", "elapsed", || {
     let start = fastant::Instant::now();
     black_box(start.elapsed());
   });
-  push_comparison(&mut rows, "coarsetime::Instant::now()", "now", || {
+  push_comparison(&mut rows, config, "coarsetime::Instant::now()", "now", || {
     black_box(coarsetime::Instant::now());
   });
-  push_comparison(&mut rows, "coarsetime::Instant (now + elapsed)", "elapsed", || {
+  push_comparison(&mut rows, config, "coarsetime::Instant (now + elapsed)", "elapsed", || {
     let start = coarsetime::Instant::now();
     black_box(start.elapsed());
   });
-  push_comparison(&mut rows, "time::OffsetDateTime::now_utc()", "now", || {
+  push_comparison(&mut rows, config, "time::OffsetDateTime::now_utc()", "now", || {
     black_box(time::OffsetDateTime::now_utc());
   });
-  push_comparison(&mut rows, "clock::MonotonicClock::now()", "now", || {
+  push_comparison(&mut rows, config, "clock::MonotonicClock::now()", "now", || {
     black_box(clock.now());
   });
-  push_comparison(&mut rows, "chrono::Utc::now()", "now", || {
+  push_comparison(&mut rows, config, "chrono::Utc::now()", "now", || {
     black_box(chrono::Utc::now());
   });
-  push_comparison(&mut rows, "clocksource::precise::Instant::now()", "now", || {
+  push_comparison(&mut rows, config, "clocksource::precise::Instant::now()", "now", || {
     black_box(clocksource::precise::Instant::now());
   });
-  push_comparison(&mut rows, "clocksource::precise::Instant (now + elapsed)", "elapsed", || {
-    let start = clocksource::precise::Instant::now();
-    black_box(start.elapsed());
-  });
-  push_comparison(&mut rows, "tick_counter::start()", "now", || {
+  push_comparison(
+    &mut rows,
+    config,
+    "clocksource::precise::Instant (now + elapsed)",
+    "elapsed",
+    || {
+      let start = clocksource::precise::Instant::now();
+      black_box(start.elapsed());
+    },
+  );
+  push_comparison(&mut rows, config, "tick_counter::start()", "now", || {
     black_box(tick_counter::start());
   });
-  push_comparison(&mut rows, "tick_counter::TickCounter (current + elapsed)", "elapsed", || {
-    let start = tick_counter::TickCounter::current();
-    black_box(start.elapsed());
-  });
-  push_comparison(&mut rows, "std::time::Instant::now()", "now", || {
+  push_comparison(
+    &mut rows,
+    config,
+    "tick_counter::TickCounter (current + elapsed)",
+    "elapsed",
+    || {
+      let start = tick_counter::TickCounter::current();
+      black_box(start.elapsed());
+    },
+  );
+  push_comparison(&mut rows, config, "std::time::Instant::now()", "now", || {
     black_box(StdInstant::now());
   });
-  push_comparison(&mut rows, "std::time::Instant (now + elapsed)", "elapsed", || {
+  push_comparison(&mut rows, config, "std::time::Instant (now + elapsed)", "elapsed", || {
     let start = StdInstant::now();
     black_box(start.elapsed());
   });
@@ -198,30 +226,32 @@ fn measure_comparisons() -> Vec<ComparisonResult> {
 
 fn push_comparison<F>(
   rows: &mut Vec<ComparisonResult>,
+  config: BenchmarkConfig,
   name: &'static str,
   operation: &'static str,
   f: F,
 ) where
   F: FnMut(),
 {
-  rows.push(ComparisonResult { name, operation, stats: measure(f) });
+  eprintln!("measuring {name}");
+  rows.push(ComparisonResult { name, operation, stats: measure(config, f) });
 }
 
-fn measure<F>(mut f: F) -> Stats
+fn measure<F>(config: BenchmarkConfig, mut f: F) -> Stats
 where
   F: FnMut(),
 {
-  for _ in 0..WARMUP_ITERS {
+  for _ in 0..config.warmup_iters {
     f();
   }
 
-  let mut samples = Vec::with_capacity(SAMPLES);
-  for _ in 0..SAMPLES {
+  let mut samples = Vec::with_capacity(config.samples);
+  for _ in 0..config.samples {
     let started = StdInstant::now();
-    for _ in 0..MEASURE_ITERS {
+    for _ in 0..config.measure_iters {
       f();
     }
-    samples.push(started.elapsed().as_nanos() as f64 / MEASURE_ITERS as f64);
+    samples.push(started.elapsed().as_nanos() as f64 / config.measure_iters as f64);
   }
 
   samples.sort_by(f64::total_cmp);
@@ -273,6 +303,7 @@ fn render_markdown(
   runtime_identity: &Value,
   proof_eligible: bool,
   candidates: &[CandidateResult],
+  comparison_config: BenchmarkConfig,
   comparisons: &[ComparisonResult],
 ) -> String {
   let mut out = String::new();
@@ -321,6 +352,12 @@ fn render_markdown(
 
   if !comparisons.is_empty() {
     out.push_str("\n## Comparison timers\n\n");
+    writeln!(
+      out,
+      "Warmup: `{}` calls, measure: `{}` calls/sample, samples: `{}`\n",
+      comparison_config.warmup_iters, comparison_config.measure_iters, comparison_config.samples
+    )
+    .unwrap();
     out.push_str("| Timer | Operation | Best ns/call | Median ns/call | Worst ns/call |\n");
     out.push_str("|---|---|---:|---:|---:|\n");
     for row in comparisons {
@@ -350,6 +387,7 @@ fn render_json(
   runtime_identity: &Value,
   proof_eligible: bool,
   candidates: &[CandidateResult],
+  comparison_config: BenchmarkConfig,
   comparisons: &[ComparisonResult],
 ) -> Value {
   json!({
@@ -362,6 +400,11 @@ fn render_json(
     },
     "proof_eligible": proof_eligible,
     "candidates": candidates.iter().map(candidate_json).collect::<Vec<_>>(),
+    "comparison_benchmark": {
+      "warmup_iters": comparison_config.warmup_iters,
+      "measure_iters": comparison_config.measure_iters,
+      "samples": comparison_config.samples,
+    },
     "comparisons": comparisons.iter().map(comparison_json).collect::<Vec<_>>(),
   })
 }
@@ -636,4 +679,20 @@ fn command_output(command: &str, args: &[&str]) -> Option<String> {
 
 fn skip_comparisons() -> bool {
   std::env::var_os("HOTCLOCK_SKIP_COMPARISONS").is_some()
+}
+
+fn comparison_config() -> BenchmarkConfig {
+  BenchmarkConfig {
+    warmup_iters: env_usize("HOTCLOCK_COMPARE_WARMUP_ITERS", DEFAULT_WARMUP_ITERS),
+    measure_iters: env_usize("HOTCLOCK_COMPARE_MEASURE_ITERS", DEFAULT_MEASURE_ITERS),
+    samples: env_usize("HOTCLOCK_COMPARE_SAMPLES", DEFAULT_SAMPLES),
+  }
+}
+
+fn env_usize(name: &str, default: usize) -> usize {
+  std::env::var(name)
+    .ok()
+    .and_then(|value| value.parse().ok())
+    .filter(|value| *value > 0)
+    .unwrap_or(default)
 }

@@ -1,0 +1,139 @@
+name: Comparison Benchmarks
+
+on:
+  push:
+    branches:
+      - runtime-selection-proof
+    paths:
+      - ".github/workflows/comparison-bench.yml"
+      - ".github/scripts/run-comparison-bins.sh"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - "examples/comparison_*.rs"
+      - "examples/comparison_bench_common/**"
+      - "examples/runtime_selection_report.rs"
+      - "src/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  COMPARISON_EXAMPLES: >-
+    comparison_hotclock
+    comparison_quanta
+    comparison_minstant
+    comparison_fastant
+    comparison_coarsetime
+    comparison_time
+    comparison_clock
+    comparison_chrono
+    comparison_clocksource
+    comparison_tick_counter_start
+    comparison_tick_counter_elapsed
+    comparison_std
+
+jobs:
+  build-linux-x86_64-binaries:
+    name: build / linux-x86_64 comparison binaries
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+
+      - name: Build comparison binaries
+        run: |
+          mkdir -p target/comparison-bins
+          for example in $COMPARISON_EXAMPLES; do
+            cargo build --example "$example" --release
+            cp "target/release/examples/$example" target/comparison-bins/
+          done
+
+      - name: Upload comparison binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: comparison-binaries-linux-x86_64
+          path: target/comparison-bins/**
+
+  native-linux-x86_64:
+    name: comparison / native-linux-x86_64
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    needs:
+      - build-linux-x86_64-binaries
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download comparison binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: comparison-binaries-linux-x86_64
+          path: target/prebuilt
+
+      - name: Run comparison benchmark
+        run: |
+          chmod +x target/prebuilt/comparison_* .github/scripts/run-comparison-bins.sh
+          HOTCLOCK_COMPARISON_BIN_DIR=target/prebuilt \
+            HOTCLOCK_COMPARISON_REPORT_DIR=target/hotclock-comparison-native-linux-x86_64 \
+            HOTCLOCK_COMPARISON_TIMEOUT_SECONDS=120 \
+            HOTCLOCK_COMPARE_WARMUP_ITERS=1000 \
+            HOTCLOCK_COMPARE_MEASURE_ITERS=5000 \
+            HOTCLOCK_COMPARE_SAMPLES=5 \
+            .github/scripts/run-comparison-bins.sh
+
+      - name: Upload comparison artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: comparison-native-linux-x86_64
+          path: target/hotclock-comparison-native-linux-x86_64/**
+
+  container-linux-amd64-on-arm64:
+    name: comparison / container-linux-amd64-on-arm64
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 15
+    needs:
+      - build-linux-x86_64-binaries
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Download x86_64 comparison binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: comparison-binaries-linux-x86_64
+          path: target/prebuilt
+
+      - name: Run comparison benchmark in Docker
+        run: |
+          chmod +x target/prebuilt/comparison_* .github/scripts/run-comparison-bins.sh
+          docker run --rm \
+            --platform linux/amd64 \
+            -v "$PWD:/work" \
+            -w /work \
+            -e HOTCLOCK_COMPARISON_BIN_DIR=/work/target/prebuilt \
+            -e HOTCLOCK_COMPARISON_REPORT_DIR=/work/target/hotclock-comparison-container-linux-amd64-on-arm64 \
+            -e HOTCLOCK_COMPARISON_TIMEOUT_SECONDS=120 \
+            -e HOTCLOCK_COMPARE_WARMUP_ITERS=1000 \
+            -e HOTCLOCK_COMPARE_MEASURE_ITERS=5000 \
+            -e HOTCLOCK_COMPARE_SAMPLES=5 \
+            ubuntu:24.04 \
+            /work/.github/scripts/run-comparison-bins.sh
+
+      - name: Upload comparison artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: comparison-container-linux-amd64-on-arm64
+          path: target/hotclock-comparison-container-linux-amd64-on-arm64/**
