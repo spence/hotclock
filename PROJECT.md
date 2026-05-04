@@ -6,15 +6,28 @@ hotclock provides a zero-dependency Rust API for reading fast CPU or platform ti
 
 ## Runtime clock selection proof
 
-- [o] Prove raw clock ordering flips across same-target environments
-- [o] Benchmark x86_64 Linux RDPMC under permissive and restrictive runtime policy
-- [o] Probe full-system QEMU TCG for same-target raw clock inversions
+- [x] Benchmark all raw clocks and comparison crates across proof environments
+- [x] Prove four distinct Rust targets with runtime clock flips
+- [x] Include Lambda in the x86_64 target proof matrix
+- [x] Add benchmark-only i686 RDPMC probe
+- [x] Capture AWS Lambda, KVM, and bare-metal target matrix
+- [x] Prove x86_64 GNU VM versus metal same-target clock flip
+- [x] Probe aarch64 GNU and musl AWS targets as negative controls
+- [x] Capture first-party PMU-exposing x86_64 Linux host artifact
+- [x] Prove AWS VM versus metal same-target clock flip
+- [x] Capture AWS Lambda x86_64 and arm64 proof points
+- [x] Capture common AWS target proof points
+- [x] Capture first-party blocked EC2 x86_64 Linux artifact
+- [x] Prove raw clock ordering flips across same-target environments
+- [x] Record runtime-selection proof notes
+- [x] Benchmark x86_64 Linux RDPMC under permissive and restrictive runtime policy
+- [x] Probe full-system QEMU TCG for same-target raw clock inversions
 - [x] Benchmark raw clocks across paired target environments
 - [x] Add statistically significant clock benchmarks to selection tables
-- [o] Stabilize exploratory non-native sweep coverage
+- [x] Stabilize exploratory non-native sweep coverage
 - [x] Sweep same-target runtime environments for clock-selection divergence
 - [x] Benchmark comparison crates in proof environments
-- [x] Prove same-target runtime clock divergence with CI artifacts
+- [x] Build same-target runtime clock CI artifacts
 - [x] Add same-target runtime selection proof tooling and CI artifacts
 
 ## Runtime-ready timing contract

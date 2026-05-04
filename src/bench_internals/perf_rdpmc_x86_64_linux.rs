@@ -72,20 +72,15 @@ thread_local! {
 }
 
 #[inline(always)]
-pub fn rdpmc_fixed_core_cycles() -> u64 {
+pub fn rdpmc_fixed_core_cycles_checked() -> u64 {
   static DIRECT_RDPMC_WORKS: OnceLock<()> = OnceLock::new();
-  DIRECT_RDPMC_WORKS.get_or_init(validate_direct_fixed_rdpmc);
+  DIRECT_RDPMC_WORKS.get_or_init(prepare_rdpmc_fixed_core_cycles);
   // SAFETY: validation checks that Linux allows direct userspace RDPMC and that
   // the fixed-function core-cycle counter is advancing in this process.
   unsafe { rdpmc(FIXED_CORE_CYCLES) }
 }
 
-#[inline(always)]
-pub fn perf_rdpmc_cpu_cycles() -> u64 {
-  PERF_RDPMC.with(PerfRdpmc::read)
-}
-
-fn validate_direct_fixed_rdpmc() {
+pub fn prepare_rdpmc_fixed_core_cycles() {
   if !direct_rdpmc_enabled_for_all_processes() {
     panic!("direct RDPMC requires /sys/bus/event_source/devices/cpu/rdpmc >= 2");
   }
@@ -100,6 +95,17 @@ fn validate_direct_fixed_rdpmc() {
   if after <= before {
     panic!("direct RDPMC fixed core-cycle counter did not advance");
   }
+}
+
+#[inline(always)]
+pub fn rdpmc_fixed_core_cycles_raw() -> u64 {
+  // SAFETY: benchmark callers run `prepare_rdpmc_fixed_core_cycles` before timing this function.
+  unsafe { rdpmc(FIXED_CORE_CYCLES) }
+}
+
+#[inline(always)]
+pub fn perf_rdpmc_cpu_cycles() -> u64 {
+  PERF_RDPMC.with(PerfRdpmc::read)
 }
 
 fn direct_rdpmc_enabled_for_all_processes() -> bool {

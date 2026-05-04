@@ -16,6 +16,10 @@ fn bench_candidate_clocks(c: &mut Criterion) {
   group.bench_function("hotclock-selected", |b| b.iter(|| black_box(Instant::now().as_raw())));
 
   for candidate in candidate_clocks() {
+    if candidate.requires_child_process {
+      continue;
+    }
+
     let read = candidate.read;
     group.bench_function(candidate.name, |b| b.iter(|| black_box(read())));
   }

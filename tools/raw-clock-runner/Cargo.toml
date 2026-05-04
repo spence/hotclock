@@ -6,8 +6,11 @@ publish = false
 
 [features]
 bench-internals = []
-comparison-crates = []
+comparison-crates = ["dep:fastant", "dep:minstant", "dep:quanta"]
 
 [dependencies]
+fastant = { version = "0.1.11", optional = true }
 hotclock = { path = "../..", features = ["bench-internals"] }
+minstant = { version = "0.1.7", optional = true }
+quanta = { version = "0.12.6", optional = true }
 serde_json = "1.0"

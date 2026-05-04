@@ -159,6 +159,10 @@ fn child_command(current_exe: PathBuf) -> Result<Command, String> {
 }
 
 fn measure_candidate_direct(config: BenchmarkConfig, candidate: ClockCandidate) -> ClockRow {
+  if let Some(prepare) = candidate.prepare {
+    prepare();
+  }
+
   successful_candidate_row(
     candidate,
     measure_stable(config, &mut || {
@@ -191,13 +195,20 @@ fn failed_candidate_row(candidate: ClockCandidate, error: String) -> ClockRow {
   }
 }
 
-#[cfg(all(feature = "comparison-crates", any(target_arch = "x86_64", target_arch = "aarch64")))]
+#[cfg(all(
+  feature = "comparison-crates",
+  any(target_arch = "x86_64", target_arch = "x86", target_arch = "aarch64")
+))]
 fn push_comparison_crates(rows: &mut Vec<ClockRow>, config: BenchmarkConfig) {
+  black_box(StdInstant::now());
   black_box(quanta::Instant::now());
   black_box(minstant::Instant::now());
   black_box(fastant::Instant::now());
   let quanta_clock = quanta::Clock::new();
 
+  push_measurement(rows, config, "std", "std::time::Instant::now()", "now", None, None, || {
+    black_box(StdInstant::now());
+  });
   push_measurement(rows, config, "quanta", "quanta::Instant::now()", "now", None, None, || {
     black_box(quanta::Instant::now());
   });
@@ -217,7 +228,7 @@ fn push_comparison_crates(rows: &mut Vec<ClockRow>, config: BenchmarkConfig) {
 
 #[cfg(not(all(
   feature = "comparison-crates",
-  any(target_arch = "x86_64", target_arch = "aarch64")
+  any(target_arch = "x86_64", target_arch = "x86", target_arch = "aarch64")
 )))]
 fn push_comparison_crates(_rows: &mut Vec<ClockRow>, _config: BenchmarkConfig) {}
 
@@ -446,6 +457,11 @@ fn render_markdown(
     "linux_perf_event_paranoid",
     &runtime_identity["linux_perf_event_paranoid"],
   );
+  render_runtime_row(
+    &mut out,
+    "linux_perf_user_access",
+    &runtime_identity["linux_perf_user_access"],
+  );
   render_runtime_row(&mut out, "linux_rdpmc", &runtime_identity["linux_rdpmc"]);
   render_runtime_row(&mut out, "child_wrapper", &runtime_identity["child_wrapper"]);
   render_runtime_row(&mut out, "macos_rosetta", &runtime_identity["macos_rosetta"]);
@@ -569,6 +585,7 @@ fn runtime_identity() -> Value {
     "virtualization": virtualization_hint(),
     "linux_clocksource": linux_clocksource(),
     "linux_perf_event_paranoid": linux_perf_event_paranoid(),
+    "linux_perf_user_access": linux_perf_user_access(),
     "linux_rdpmc": linux_rdpmc(),
     "child_wrapper": std::env::var(CHILD_WRAPPER_ENV).ok(),
     "macos_rosetta": macos_rosetta(),
@@ -754,6 +771,17 @@ fn linux_perf_event_paranoid() -> Value {
   #[cfg(target_os = "linux")]
   {
     json!(read_trimmed("/proc/sys/kernel/perf_event_paranoid"))
+  }
+  #[cfg(not(target_os = "linux"))]
+  {
+    Value::Null
+  }
+}
+
+fn linux_perf_user_access() -> Value {
+  #[cfg(target_os = "linux")]
+  {
+    json!(read_trimmed("/proc/sys/kernel/perf_user_access"))
   }
   #[cfg(not(target_os = "linux"))]
   {

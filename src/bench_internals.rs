@@ -38,6 +38,10 @@ pub struct ClockCandidate {
   pub kind: ClockCandidateKind,
   /// Whether production hotclock can use this source on the current target.
   pub selected_by_hotclock: bool,
+  /// One-time setup that must complete before the timed read loop.
+  pub prepare: Option<fn()>,
+  /// Candidate may fault when unavailable and must only run in a crash-isolated child.
+  pub requires_child_process: bool,
   /// Reads the raw counter value.
   pub read: fn() -> u64,
 }
@@ -69,11 +73,58 @@ pub struct ClockCandidateLatency {
 impl ClockCandidate {
   #[allow(dead_code)]
   const fn hardware(name: &'static str, selected_by_hotclock: bool, read: fn() -> u64) -> Self {
-    Self { name, kind: ClockCandidateKind::Hardware, selected_by_hotclock, read }
+    Self {
+      name,
+      kind: ClockCandidateKind::Hardware,
+      selected_by_hotclock,
+      prepare: None,
+      requires_child_process: false,
+      read,
+    }
+  }
+
+  #[allow(dead_code)]
+  const fn prepared_hardware(
+    name: &'static str,
+    selected_by_hotclock: bool,
+    prepare: fn(),
+    read: fn() -> u64,
+  ) -> Self {
+    Self {
+      name,
+      kind: ClockCandidateKind::Hardware,
+      selected_by_hotclock,
+      prepare: Some(prepare),
+      requires_child_process: false,
+      read,
+    }
+  }
+
+  #[allow(dead_code)]
+  const fn crash_isolated_hardware(
+    name: &'static str,
+    selected_by_hotclock: bool,
+    read: fn() -> u64,
+  ) -> Self {
+    Self {
+      name,
+      kind: ClockCandidateKind::Hardware,
+      selected_by_hotclock,
+      prepare: None,
+      requires_child_process: true,
+      read,
+    }
   }
 
   const fn os_fallback(name: &'static str, selected_by_hotclock: bool, read: fn() -> u64) -> Self {
-    Self { name, kind: ClockCandidateKind::OsFallback, selected_by_hotclock, read }
+    Self {
+      name,
+      kind: ClockCandidateKind::OsFallback,
+      selected_by_hotclock,
+      prepare: None,
+      requires_child_process: false,
+      read,
+    }
   }
 }
 
@@ -91,6 +142,23 @@ pub fn candidate_clocks() -> &'static [ClockCandidate] {
 
 #[must_use]
 pub fn evaluate_candidate_clock(candidate: ClockCandidate) -> ClockCandidateEvaluation {
+  if candidate.requires_child_process {
+    return ClockCandidateEvaluation {
+      valid: false,
+      precision_ticks: None,
+      latency: ClockCandidateLatency {
+        best_ns: 0.0,
+        mean_ns: 0.0,
+        median_ns: 0.0,
+        worst_ns: 0.0,
+        stddev_ns: 0.0,
+        ci95_low_ns: 0.0,
+        ci95_high_ns: 0.0,
+        samples: 0,
+      },
+    };
+  }
+
   match score_counter(candidate.read) {
     Some(score) => ClockCandidateEvaluation {
       valid: true,
@@ -142,7 +210,18 @@ fn candidates() -> &'static [ClockCandidate] {
       ClockCandidate::hardware(
         "x86_64-rdpmc-fixed-core-cycles",
         true,
-        perf_rdpmc_x86_64_linux::rdpmc_fixed_core_cycles
+        perf_rdpmc_x86_64_linux::rdpmc_fixed_core_cycles_checked
+      ),
+      ClockCandidate::prepared_hardware(
+        "x86_64-rdpmc-fixed-core-cycles-raw",
+        true,
+        perf_rdpmc_x86_64_linux::prepare_rdpmc_fixed_core_cycles,
+        perf_rdpmc_x86_64_linux::rdpmc_fixed_core_cycles_raw
+      ),
+      ClockCandidate::crash_isolated_hardware(
+        "x86_64-rdpmc-fixed-core-cycles-blind",
+        true,
+        perf_rdpmc_x86_64_linux::rdpmc_fixed_core_cycles_raw
       ),
       ClockCandidate::hardware(
         "x86_64-perf-rdpmc-cpu-cycles",
@@ -165,6 +244,11 @@ fn candidates() -> &'static [ClockCandidate] {
 #[cfg(all(target_arch = "aarch64", target_os = "linux"))]
 fn candidates() -> &'static [ClockCandidate] {
   candidates![
+    ClockCandidate::crash_isolated_hardware(
+      "aarch64-pmccntr-el0-blind",
+      true,
+      arch::aarch64::pmccntr_el0
+    ),
     ClockCandidate::hardware("aarch64-cntvct", true, arch::aarch64::cntvct),
     ClockCandidate::os_fallback("unix-monotonic", true, arch::fallback::clock_monotonic),
   ]
@@ -198,6 +282,11 @@ fn candidates() -> &'static [ClockCandidate] {
   #[cfg(all(unix, not(target_os = "macos")))]
   {
     candidates![
+      ClockCandidate::crash_isolated_hardware(
+        "x86-rdpmc-fixed-core-cycles-blind",
+        true,
+        arch::x86::rdpmc_fixed_core_cycles
+      ),
       ClockCandidate::hardware("x86-rdtsc", true, arch::x86::rdtsc),
       ClockCandidate::os_fallback("unix-monotonic", true, arch::fallback::clock_monotonic),
     ]
