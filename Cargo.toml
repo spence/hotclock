@@ -56,3 +56,11 @@ required-features = ["bench-internals"]
 [[example]]
 name = "runtime_selection_analyze"
 required-features = ["bench-internals"]
+
+[[example]]
+name = "raw_clock_matrix"
+required-features = ["bench-internals"]
+
+[[example]]
+name = "raw_clock_matrix_analyze"
+required-features = ["bench-internals"]

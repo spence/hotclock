@@ -1,0 +1,344 @@
+name: Raw Clock Matrix
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - runtime-selection-proof
+    paths:
+      - ".github/workflows/raw-clock-matrix.yml"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - "examples/raw_clock_matrix*.rs"
+      - "src/**"
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  HOTCLOCK_RAW_CLOCK_WARMUP_ITERS: 10000
+  HOTCLOCK_RAW_CLOCK_MEASURE_ITERS: 50000
+  HOTCLOCK_RAW_CLOCK_SAMPLES: 31
+  HOTCLOCK_RAW_CLOCK_ATTEMPTS: 3
+
+jobs:
+  build-linux-x86_64:
+    name: build / x86_64-unknown-linux-gnu
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+
+      - name: Build raw clock benchmark
+        run: cargo build --features bench-internals --example raw_clock_matrix --release
+
+      - name: Upload raw clock binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-clock-binary-linux-x86_64
+          path: target/release/examples/raw_clock_matrix
+
+  build-linux-aarch64:
+    name: build / aarch64-unknown-linux-gnu
+    runs-on: ubuntu-22.04-arm
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+
+      - name: Build raw clock benchmark
+        run: cargo build --features bench-internals --example raw_clock_matrix --release
+
+      - name: Upload raw clock binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-clock-binary-linux-aarch64
+          path: target/release/examples/raw_clock_matrix
+
+  linux-native-x86_64:
+    name: linux native x86_64 / ${{ matrix.name }}
+    needs: build-linux-x86_64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: ubuntu-22.04-x64-vm
+            runner: ubuntu-22.04
+          - name: ubuntu-24.04-x64-vm
+            runner: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download raw clock binary
+        uses: actions/download-artifact@v4
+        with:
+          name: raw-clock-binary-linux-x86_64
+          path: target/prebuilt
+
+      - name: Run raw clock benchmark
+        shell: bash
+        run: |
+          chmod +x target/prebuilt/raw_clock_matrix
+          HOTCLOCK_RAW_CLOCK_ENVIRONMENT="${{ matrix.name }}" \
+            HOTCLOCK_RAW_CLOCK_REPORT_DIR="target/raw-clock-${{ matrix.name }}" \
+            target/prebuilt/raw_clock_matrix
+
+      - name: Upload raw clock report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-clock-${{ matrix.name }}
+          path: target/raw-clock-${{ matrix.name }}/**
+
+  linux-native-aarch64:
+    name: linux native aarch64 / ${{ matrix.name }}
+    needs: build-linux-aarch64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: ubuntu-22.04-arm64-vm
+            runner: ubuntu-22.04-arm
+          - name: ubuntu-24.04-arm64-vm
+            runner: ubuntu-24.04-arm
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download raw clock binary
+        uses: actions/download-artifact@v4
+        with:
+          name: raw-clock-binary-linux-aarch64
+          path: target/prebuilt
+
+      - name: Run raw clock benchmark
+        shell: bash
+        run: |
+          chmod +x target/prebuilt/raw_clock_matrix
+          HOTCLOCK_RAW_CLOCK_ENVIRONMENT="${{ matrix.name }}" \
+            HOTCLOCK_RAW_CLOCK_REPORT_DIR="target/raw-clock-${{ matrix.name }}" \
+            target/prebuilt/raw_clock_matrix
+
+      - name: Upload raw clock report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-clock-${{ matrix.name }}
+          path: target/raw-clock-${{ matrix.name }}/**
+
+  linux-docker:
+    name: linux docker / ${{ matrix.name }}
+    needs:
+      - build-linux-x86_64
+      - build-linux-aarch64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-amd64-docker-on-x64
+            runner: ubuntu-24.04
+            platform: linux/amd64
+            artifact: raw-clock-binary-linux-x86_64
+          - name: linux-amd64-docker-on-arm64
+            runner: ubuntu-24.04-arm
+            platform: linux/amd64
+            artifact: raw-clock-binary-linux-x86_64
+          - name: linux-arm64-docker-on-arm64
+            runner: ubuntu-24.04-arm
+            platform: linux/arm64
+            artifact: raw-clock-binary-linux-aarch64
+          - name: linux-arm64-docker-on-x64
+            runner: ubuntu-24.04
+            platform: linux/arm64
+            artifact: raw-clock-binary-linux-aarch64
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up QEMU
+        if: contains(matrix.name, '-on-arm64') && matrix.platform == 'linux/amd64' || contains(matrix.name, '-on-x64') && matrix.platform == 'linux/arm64'
+        uses: docker/setup-qemu-action@v3
+
+      - name: Download raw clock binary
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: target/prebuilt
+
+      - name: Run raw clock benchmark in Docker
+        shell: bash
+        run: |
+          chmod +x target/prebuilt/raw_clock_matrix
+          docker run --rm \
+            --platform "${{ matrix.platform }}" \
+            -v "$PWD:/work" \
+            -w /work \
+            -e HOTCLOCK_RAW_CLOCK_ENVIRONMENT="${{ matrix.name }}" \
+            -e HOTCLOCK_RAW_CLOCK_REPORT_DIR="/work/target/raw-clock-${{ matrix.name }}" \
+            -e HOTCLOCK_RAW_CLOCK_WARMUP_ITERS \
+            -e HOTCLOCK_RAW_CLOCK_MEASURE_ITERS \
+            -e HOTCLOCK_RAW_CLOCK_SAMPLES \
+            -e HOTCLOCK_RAW_CLOCK_ATTEMPTS \
+            ubuntu:22.04 \
+            /work/target/prebuilt/raw_clock_matrix
+
+      - name: Upload raw clock report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-clock-${{ matrix.name }}
+          path: target/raw-clock-${{ matrix.name }}/**
+
+  macos-x86_64:
+    name: macos x86_64 / ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macos-15-intel-native
+            runner: macos-15-intel
+            translated: false
+          - name: macos-26-intel-native
+            runner: macos-26-intel
+            translated: false
+          - name: macos-15-rosetta-on-arm64
+            runner: macos-15
+            translated: true
+          - name: macos-26-rosetta-on-arm64
+            runner: macos-26
+            translated: true
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustup target add x86_64-apple-darwin
+
+      - name: Install Rosetta
+        if: matrix.translated
+        run: softwareupdate --install-rosetta --agree-to-license
+
+      - name: Build raw clock benchmark
+        run: cargo build --features bench-internals --example raw_clock_matrix --release --target x86_64-apple-darwin
+
+      - name: Run raw clock benchmark
+        run: |
+          if [ "${{ matrix.translated }}" = "true" ]; then
+            arch -x86_64 target/x86_64-apple-darwin/release/examples/raw_clock_matrix
+          else
+            target/x86_64-apple-darwin/release/examples/raw_clock_matrix
+          fi
+        env:
+          HOTCLOCK_RAW_CLOCK_ENVIRONMENT: ${{ matrix.name }}
+          HOTCLOCK_RAW_CLOCK_REPORT_DIR: target/raw-clock-${{ matrix.name }}
+
+      - name: Upload raw clock report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-clock-${{ matrix.name }}
+          path: target/raw-clock-${{ matrix.name }}/**
+
+  windows-x86_64:
+    name: windows x86_64 / ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows-2022-x64-native
+            runner: windows-2022
+          - name: windows-2025-x64-native
+            runner: windows-2025
+          - name: windows-11-arm-x64-emulated
+            runner: windows-11-arm
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust
+        shell: pwsh
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustup target add x86_64-pc-windows-msvc
+
+      - name: Build raw clock benchmark
+        shell: pwsh
+        run: cargo build --features bench-internals --example raw_clock_matrix --release --target x86_64-pc-windows-msvc
+
+      - name: Run raw clock benchmark
+        shell: pwsh
+        run: |
+          $env:HOTCLOCK_RAW_CLOCK_ENVIRONMENT = "${{ matrix.name }}"
+          $env:HOTCLOCK_RAW_CLOCK_REPORT_DIR = "target/raw-clock-${{ matrix.name }}"
+          & target\x86_64-pc-windows-msvc\release\examples\raw_clock_matrix.exe
+
+      - name: Upload raw clock report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-clock-${{ matrix.name }}
+          path: target/raw-clock-${{ matrix.name }}/**
+
+  analyze:
+    name: analyze raw clock matrix
+    runs-on: ubuntu-24.04
+    needs:
+      - linux-native-x86_64
+      - linux-native-aarch64
+      - linux-docker
+      - macos-x86_64
+      - windows-x86_64
+    if: always()
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download raw clock reports
+        uses: actions/download-artifact@v4
+        with:
+          path: target/raw-clock-artifacts
+          pattern: raw-clock-*
+          merge-multiple: false
+
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+
+      - name: Analyze raw clock matrix
+        run: cargo run --features bench-internals --example raw_clock_matrix_analyze -- target/raw-clock-artifacts
+        env:
+          HOTCLOCK_RAW_CLOCK_MATRIX_DIR: target/raw-clock-matrix
+
+      - name: Upload raw clock matrix
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-clock-matrix
+          path: target/raw-clock-matrix/**
