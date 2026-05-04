@@ -594,8 +594,12 @@ jobs:
           qemu_status=$?
           set -e
 
-          awk '/HOTCLOCK_JSON_BEGIN/{emit=1; next} /HOTCLOCK_JSON_END/{emit=0} emit' \
-            "$report_dir/qemu.log" > "$report_dir/raw-clock-report.json"
+          awk '
+            /HOTCLOCK_JSON_BEGIN/ { emit=1; next }
+            /HOTCLOCK_JSON_END/ { emit=0 }
+            emit && /^\{/ { print; found=1; exit }
+            END { if (!found) exit 1 }
+          ' "$report_dir/qemu.log" > "$report_dir/raw-clock-report.json"
           jq -e . "$report_dir/raw-clock-report.json"
 
           {
