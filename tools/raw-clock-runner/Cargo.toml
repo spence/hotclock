@@ -1,0 +1,13 @@
+[package]
+name = "hotclock-raw-clock-runner"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[features]
+bench-internals = []
+comparison-crates = []
+
+[dependencies]
+hotclock = { path = "../..", features = ["bench-internals"] }
+serde_json = "1.0"

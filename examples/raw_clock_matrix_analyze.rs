@@ -20,7 +20,9 @@ struct RawClockRow {
   source: String,
   name: String,
   operation: String,
-  ns_op: f64,
+  kind: Option<String>,
+  selected_by_hotclock: Option<bool>,
+  ns_op: Option<f64>,
   confidence_high: bool,
 }
 
@@ -127,7 +129,9 @@ fn clock_rows(value: &Value) -> Vec<RawClockRow> {
       source: clock["source"].as_str().unwrap_or("unknown").to_string(),
       name: clock["name"].as_str().unwrap_or("unknown").to_string(),
       operation: clock["operation"].as_str().unwrap_or("unknown").to_string(),
-      ns_op: clock["ns_op"].as_f64().unwrap_or(0.0),
+      kind: clock["kind"].as_str().map(ToString::to_string),
+      selected_by_hotclock: clock["selected_by_hotclock"].as_bool(),
+      ns_op: clock["ns_op"].as_f64(),
       confidence_high: clock["confidence_high"].as_bool().unwrap_or(false),
     })
     .collect()
@@ -151,9 +155,34 @@ fn group_reports(reports: Vec<RawClockReport>) -> Vec<RawClockGroup> {
 fn render_markdown(groups: &[RawClockGroup]) -> String {
   let mut out = String::new();
   out.push_str("# hotclock raw clock benchmark matrix\n\n");
+  render_proof_summary(&mut out, groups);
 
   for group in groups {
     writeln!(out, "## `{}`\n", group.compile_key).unwrap();
+    out.push_str("### Hotclock raw winners\n\n");
+    out.push_str("| Environment | Winner | ns/op | Compared clocks |\n");
+    out.push_str("|---|---|---:|---|\n");
+    for report in &group.reports {
+      let hotclock = hotclock_candidate_rows(report);
+      if let Some(winner) = fastest_hotclock_candidate(report) {
+        writeln!(
+          out,
+          "| `{}` | `{}` | {:.3} | {} |",
+          report.environment_name,
+          winner.name,
+          winner.ns_op.unwrap_or(0.0),
+          hotclock
+            .iter()
+            .map(|clock| format!("`{}={}`", clock.name, ns_op_cell(clock)))
+            .collect::<Vec<_>>()
+            .join(", ")
+        )
+        .unwrap();
+      }
+    }
+    out.push('\n');
+
+    out.push_str("### Full matrix\n\n");
     out.push_str("| Environment | Clock | Source | Operation | ns/op |\n");
     out.push_str("|---|---|---|---|---:|\n");
     for report in &group.reports {
@@ -168,8 +197,12 @@ fn render_markdown(groups: &[RawClockGroup]) -> String {
       for clock in clocks {
         writeln!(
           out,
-          "| `{}` | `{}` | {} | {} | {:.3} |",
-          report.environment_name, clock.name, clock.source, clock.operation, clock.ns_op
+          "| `{}` | `{}` | {} | {} | {} |",
+          report.environment_name,
+          clock.name,
+          clock.source,
+          clock.operation,
+          ns_op_cell(&clock)
         )
         .unwrap();
       }
@@ -178,6 +211,66 @@ fn render_markdown(groups: &[RawClockGroup]) -> String {
   }
 
   out
+}
+
+fn render_proof_summary(out: &mut String, groups: &[RawClockGroup]) {
+  out.push_str("## Raw hotclock ordering flips\n\n");
+  out.push_str("| Target | Environments | Faster clocks |\n");
+  out.push_str("|---|---|---|\n");
+
+  let mut found = false;
+  for group in groups {
+    let mut winners: BTreeMap<String, Vec<String>> = BTreeMap::new();
+    for report in &group.reports {
+      if let Some(winner) = fastest_hotclock_candidate(report) {
+        winners.entry(winner.name.clone()).or_default().push(format!(
+          "{} ({:.3} ns/op)",
+          report.environment_name,
+          winner.ns_op.unwrap_or(0.0)
+        ));
+      }
+    }
+
+    if winners.len() > 1 {
+      found = true;
+      let environments = winners.values().flatten().cloned().collect::<Vec<_>>().join("<br>");
+      let clocks = winners
+        .iter()
+        .map(|(clock, envs)| format!("`{clock}`: {}", envs.len()))
+        .collect::<Vec<_>>()
+        .join(", ");
+      writeln!(out, "| `{}` | {} | {} |", group.compile_key, environments, clocks).unwrap();
+    }
+  }
+
+  if !found {
+    out.push_str("| n/a | no same-target raw hotclock ordering flip found | n/a |\n");
+  }
+  out.push('\n');
+}
+
+fn fastest_hotclock_candidate(report: &RawClockReport) -> Option<&RawClockRow> {
+  hotclock_candidate_rows(report)
+    .into_iter()
+    .filter(|clock| clock.confidence_high && clock.ns_op.is_some())
+    .min_by(|left, right| {
+      left
+        .ns_op
+        .unwrap_or(f64::INFINITY)
+        .total_cmp(&right.ns_op.unwrap_or(f64::INFINITY))
+    })
+}
+
+fn ns_op_cell(clock: &RawClockRow) -> String {
+  clock.ns_op.map_or_else(|| "failed".to_string(), |ns_op| format!("{ns_op:.3}"))
+}
+
+fn hotclock_candidate_rows(report: &RawClockReport) -> Vec<&RawClockRow> {
+  report
+    .clocks
+    .iter()
+    .filter(|clock| clock.source == "hotclock" && clock.operation == "read")
+    .collect()
 }
 
 fn render_json(groups: &[RawClockGroup]) -> Value {
@@ -196,6 +289,8 @@ fn render_json(groups: &[RawClockGroup]) -> Value {
                 "source": clock.source,
                 "name": clock.name,
                 "operation": clock.operation,
+                "kind": clock.kind,
+                "selected_by_hotclock": clock.selected_by_hotclock,
                 "ns_op": clock.ns_op,
                 "confidence_high": clock.confidence_high,
               })
@@ -235,7 +330,9 @@ mod tests {
         source: "hotclock".to_string(),
         name: "x86_64-rdtsc".to_string(),
         operation: "read".to_string(),
-        ns_op: 10.0,
+        kind: Some("hardware".to_string()),
+        selected_by_hotclock: Some(true),
+        ns_op: Some(10.0),
         confidence_high: true,
       }],
     }

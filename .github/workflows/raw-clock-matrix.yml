@@ -11,6 +11,7 @@ on:
       - "Cargo.toml"
       - "examples/raw_clock_matrix*.rs"
       - "src/**"
+      - "tools/raw-clock-runner/**"
 
 permissions:
   contents: read
@@ -37,7 +38,7 @@ jobs:
           rustup default stable
 
       - name: Build raw clock benchmark
-        run: cargo build --features bench-internals --example raw_clock_matrix --release
+        run: cargo build --features bench-internals,comparison-crates --example raw_clock_matrix --release
 
       - name: Upload raw clock binary
         uses: actions/upload-artifact@v4
@@ -58,7 +59,7 @@ jobs:
           rustup default stable
 
       - name: Build raw clock benchmark
-        run: cargo build --features bench-internals --example raw_clock_matrix --release
+        run: cargo build --features bench-internals,comparison-crates --example raw_clock_matrix --release
 
       - name: Upload raw clock binary
         uses: actions/upload-artifact@v4
@@ -207,6 +208,69 @@ jobs:
           name: raw-clock-${{ matrix.name }}
           path: target/raw-clock-${{ matrix.name }}/**
 
+  linux-qemu-rust:
+    name: linux qemu rust / ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-386-rust-on-x64
+            runner: ubuntu-24.04
+            platform: linux/386
+          - name: linux-386-rust-on-arm64
+            runner: ubuntu-24.04-arm
+            platform: linux/386
+          - name: linux-riscv64-rust-on-x64
+            runner: ubuntu-24.04
+            platform: linux/riscv64
+          - name: linux-riscv64-rust-on-arm64
+            runner: ubuntu-24.04-arm
+            platform: linux/riscv64
+          - name: linux-ppc64le-rust-on-x64
+            runner: ubuntu-24.04
+            platform: linux/ppc64le
+          - name: linux-ppc64le-rust-on-arm64
+            runner: ubuntu-24.04-arm
+            platform: linux/ppc64le
+          - name: linux-s390x-rust-on-x64
+            runner: ubuntu-24.04
+            platform: linux/s390x
+          - name: linux-s390x-rust-on-arm64
+            runner: ubuntu-24.04-arm
+            platform: linux/s390x
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Run raw clock benchmark in target Rust container
+        shell: bash
+        run: |
+          docker run --rm \
+            --platform "${{ matrix.platform }}" \
+            -v "$PWD:/work" \
+            -w /work \
+            -e CARGO_TARGET_DIR="/work/target/raw-clock-build-${{ matrix.name }}" \
+            -e HOTCLOCK_RAW_CLOCK_ENVIRONMENT="${{ matrix.name }}" \
+            -e HOTCLOCK_RAW_CLOCK_REPORT_DIR="/work/target/raw-clock-${{ matrix.name }}" \
+            -e HOTCLOCK_RAW_CLOCK_WARMUP_ITERS \
+            -e HOTCLOCK_RAW_CLOCK_MEASURE_ITERS=200000 \
+            -e HOTCLOCK_RAW_CLOCK_SAMPLES \
+            -e HOTCLOCK_RAW_CLOCK_ATTEMPTS \
+            rust:1-slim \
+            sh -c 'rustc -vV && cargo run --manifest-path tools/raw-clock-runner/Cargo.toml --locked --features bench-internals --release'
+
+      - name: Upload raw clock report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-clock-${{ matrix.name }}
+          path: target/raw-clock-${{ matrix.name }}/**
+
   macos-x86_64:
     name: macos x86_64 / ${{ matrix.name }}
     runs-on: ${{ matrix.runner }}
@@ -242,7 +306,7 @@ jobs:
         run: softwareupdate --install-rosetta --agree-to-license
 
       - name: Build raw clock benchmark
-        run: cargo build --features bench-internals --example raw_clock_matrix --release --target x86_64-apple-darwin
+        run: cargo build --features bench-internals,comparison-crates --example raw_clock_matrix --release --target x86_64-apple-darwin
 
       - name: Run raw clock benchmark
         run: |
@@ -289,7 +353,7 @@ jobs:
 
       - name: Build raw clock benchmark
         shell: pwsh
-        run: cargo build --features bench-internals --example raw_clock_matrix --release --target x86_64-pc-windows-msvc
+        run: cargo build --features bench-internals,comparison-crates --example raw_clock_matrix --release --target x86_64-pc-windows-msvc
 
       - name: Run raw clock benchmark
         shell: pwsh
@@ -312,6 +376,7 @@ jobs:
       - linux-native-x86_64
       - linux-native-aarch64
       - linux-docker
+      - linux-qemu-rust
       - macos-x86_64
       - windows-x86_64
     if: always()

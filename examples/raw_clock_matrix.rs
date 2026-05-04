@@ -4,10 +4,10 @@
 use std::fmt::Write as _;
 use std::hint::black_box;
 use std::path::PathBuf;
-use std::process::Command;
+use std::process::{Command, Stdio};
 use std::time::Instant as StdInstant;
 
-use hotclock::bench_internals::{ClockCandidate, candidate_clocks};
+use hotclock::bench_internals::{ClockCandidate, ClockCandidateKind, candidate_clocks};
 use serde_json::{Value, json};
 
 const DEFAULT_WARMUP_ITERS: usize = 10_000;
@@ -16,6 +16,7 @@ const DEFAULT_SAMPLES: usize = 31;
 const DEFAULT_ATTEMPTS: usize = 3;
 const DEFAULT_MAX_RELATIVE_MARGIN: f64 = 0.05;
 const DEFAULT_MAX_ABSOLUTE_MARGIN_NS: f64 = 1.0;
+const CHILD_CLOCK_ENV: &str = "HOTCLOCK_RAW_CLOCK_CHILD_CLOCK";
 
 #[derive(Clone, Copy)]
 struct BenchmarkConfig {
@@ -46,11 +47,19 @@ struct ClockRow {
   source: &'static str,
   name: &'static str,
   operation: &'static str,
-  stats: Stats,
+  kind: Option<ClockCandidateKind>,
+  selected_by_hotclock: Option<bool>,
+  stats: Option<Stats>,
+  error: Option<String>,
 }
 
-fn main() -> std::io::Result<()> {
+pub fn main() -> std::io::Result<()> {
   let config = benchmark_config();
+
+  if let Ok(clock_name) = std::env::var(CHILD_CLOCK_ENV) {
+    return run_child_clock(config, &clock_name);
+  }
+
   let compile_identity = compile_identity();
   let runtime_identity = runtime_identity();
   let environment_name = environment_name();
@@ -77,48 +86,184 @@ fn measure_rows(config: BenchmarkConfig) -> Vec<ClockRow> {
     push_candidate(&mut rows, config, *candidate);
   }
 
-  black_box(quanta::Instant::now());
-  black_box(minstant::Instant::now());
-  black_box(fastant::Instant::now());
-  let quanta_clock = quanta::Clock::new();
-
-  push_measurement(&mut rows, config, "quanta", "quanta::Instant::now()", "now", || {
-    black_box(quanta::Instant::now());
-  });
-  push_measurement(&mut rows, config, "quanta", "quanta::Clock::now()", "now", || {
-    black_box(quanta_clock.now());
-  });
-  push_measurement(&mut rows, config, "quanta", "quanta::Clock::raw()", "raw", || {
-    black_box(quanta_clock.raw());
-  });
-  push_measurement(&mut rows, config, "minstant", "minstant::Instant::now()", "now", || {
-    black_box(minstant::Instant::now());
-  });
-  push_measurement(&mut rows, config, "fastant", "fastant::Instant::now()", "now", || {
-    black_box(fastant::Instant::now());
-  });
+  push_comparison_crates(&mut rows, config);
 
   rows
 }
 
 fn push_candidate(rows: &mut Vec<ClockRow>, config: BenchmarkConfig, candidate: ClockCandidate) {
-  push_measurement(rows, config, "hotclock", candidate.name, "read", || {
-    black_box((candidate.read)());
+  rows.push(measure_candidate_in_child(config, candidate));
+}
+
+fn run_child_clock(config: BenchmarkConfig, clock_name: &str) -> std::io::Result<()> {
+  let candidate = candidate_clocks()
+    .iter()
+    .copied()
+    .find(|candidate| candidate.name == clock_name)
+    .ok_or_else(|| std::io::Error::other(format!("unknown hotclock candidate `{clock_name}`")))?;
+  let row = measure_candidate_direct(config, candidate);
+  println!("{}", row_json(&row));
+  Ok(())
+}
+
+fn measure_candidate_in_child(_config: BenchmarkConfig, candidate: ClockCandidate) -> ClockRow {
+  match run_candidate_child(candidate.name) {
+    Ok(stats) => successful_candidate_row(candidate, stats),
+    Err(error) => {
+      eprintln!("failed {}: {error}", candidate.name);
+      failed_candidate_row(candidate, error)
+    }
+  }
+}
+
+fn run_candidate_child(clock_name: &str) -> Result<Stats, String> {
+  let current_exe =
+    std::env::current_exe().map_err(|error| format!("current_exe failed: {error}"))?;
+  let output = Command::new(current_exe)
+    .env(CHILD_CLOCK_ENV, clock_name)
+    .stdout(Stdio::piped())
+    .stderr(Stdio::inherit())
+    .output()
+    .map_err(|error| format!("child spawn failed: {error}"))?;
+
+  if !output.status.success() {
+    return Err(format!("child exited with {}", output.status));
+  }
+
+  let value: Value = serde_json::from_slice(&output.stdout)
+    .map_err(|error| format!("child emitted invalid JSON: {error}"))?;
+  stats_from_json(&value).ok_or_else(|| "child JSON did not contain stats".to_string())
+}
+
+fn measure_candidate_direct(config: BenchmarkConfig, candidate: ClockCandidate) -> ClockRow {
+  successful_candidate_row(
+    candidate,
+    measure_stable(config, &mut || {
+      black_box((candidate.read)());
+    }),
+  )
+}
+
+fn successful_candidate_row(candidate: ClockCandidate, stats: Stats) -> ClockRow {
+  ClockRow {
+    source: "hotclock",
+    name: candidate.name,
+    operation: "read",
+    kind: Some(candidate.kind),
+    selected_by_hotclock: Some(candidate.selected_by_hotclock),
+    stats: Some(stats),
+    error: None,
+  }
+}
+
+fn failed_candidate_row(candidate: ClockCandidate, error: String) -> ClockRow {
+  ClockRow {
+    source: "hotclock",
+    name: candidate.name,
+    operation: "read",
+    kind: Some(candidate.kind),
+    selected_by_hotclock: Some(candidate.selected_by_hotclock),
+    stats: None,
+    error: Some(error),
+  }
+}
+
+#[cfg(all(feature = "comparison-crates", any(target_arch = "x86_64", target_arch = "aarch64")))]
+fn push_comparison_crates(rows: &mut Vec<ClockRow>, config: BenchmarkConfig) {
+  black_box(quanta::Instant::now());
+  black_box(minstant::Instant::now());
+  black_box(fastant::Instant::now());
+  let quanta_clock = quanta::Clock::new();
+
+  push_measurement(rows, config, "quanta", "quanta::Instant::now()", "now", None, None, || {
+    black_box(quanta::Instant::now());
+  });
+  push_measurement(rows, config, "quanta", "quanta::Clock::now()", "now", None, None, || {
+    black_box(quanta_clock.now());
+  });
+  push_measurement(rows, config, "quanta", "quanta::Clock::raw()", "raw", None, None, || {
+    black_box(quanta_clock.raw());
+  });
+  push_measurement(rows, config, "minstant", "minstant::Instant::now()", "now", None, None, || {
+    black_box(minstant::Instant::now());
+  });
+  push_measurement(rows, config, "fastant", "fastant::Instant::now()", "now", None, None, || {
+    black_box(fastant::Instant::now());
   });
 }
 
+#[cfg(not(all(
+  feature = "comparison-crates",
+  any(target_arch = "x86_64", target_arch = "aarch64")
+)))]
+fn push_comparison_crates(_rows: &mut Vec<ClockRow>, _config: BenchmarkConfig) {}
+
+#[allow(dead_code, clippy::too_many_arguments)]
 fn push_measurement<F>(
   rows: &mut Vec<ClockRow>,
   config: BenchmarkConfig,
   source: &'static str,
   name: &'static str,
   operation: &'static str,
+  kind: Option<ClockCandidateKind>,
+  selected_by_hotclock: Option<bool>,
   mut f: F,
 ) where
   F: FnMut(),
 {
   eprintln!("measuring {name}");
-  rows.push(ClockRow { source, name, operation, stats: measure_stable(config, &mut f) });
+  rows.push(ClockRow {
+    source,
+    name,
+    operation,
+    kind,
+    selected_by_hotclock,
+    stats: Some(measure_stable(config, &mut f)),
+    error: None,
+  });
+}
+
+fn row_kind(row: &ClockRow) -> &'static str {
+  row.kind.map(ClockCandidateKind::as_str).unwrap_or("n/a")
+}
+
+fn row_selected_by_hotclock(row: &ClockRow) -> &'static str {
+  match row.selected_by_hotclock {
+    Some(true) => "yes",
+    Some(false) => "no",
+    None => "n/a",
+  }
+}
+
+fn row_kind_json(row: &ClockRow) -> Value {
+  row.kind.map_or(Value::Null, |kind| json!(kind.as_str()))
+}
+
+fn row_selected_by_hotclock_json(row: &ClockRow) -> Value {
+  row.selected_by_hotclock.map_or(Value::Null, |selected| json!(selected))
+}
+
+fn stats_from_json(value: &Value) -> Option<Stats> {
+  Some(Stats {
+    ns_op: value["ns_op"].as_f64()?,
+    best_ns: value["best_ns"].as_f64()?,
+    mean_ns: value["mean_ns"].as_f64()?,
+    worst_ns: value["worst_ns"].as_f64()?,
+    stddev_ns: value["stddev_ns"].as_f64()?,
+    ci95_low_ns: value["ci95_low_ns"].as_f64()?,
+    ci95_high_ns: value["ci95_high_ns"].as_f64()?,
+    confidence_margin_ns: value["confidence_margin_ns"].as_f64()?,
+    confidence_score: value["confidence_score"].as_f64()?,
+    confidence_high: value["confidence_high"].as_bool()?,
+    samples: value["samples"].as_u64()?,
+  })
+}
+
+fn ns_op_cell(row: &ClockRow) -> String {
+  match row.stats {
+    Some(stats) => format!("{:.3}", stats.ns_op),
+    None => "failed".to_string(),
+  }
 }
 
 fn measure_stable<F>(config: BenchmarkConfig, f: &mut F) -> Stats
@@ -277,13 +422,18 @@ fn render_markdown(
   render_runtime_row(&mut out, "windows_emulation", &runtime_identity["windows_emulation"]);
 
   out.push_str("\n## Clocks\n\n");
-  out.push_str("| Clock | Source | Operation | ns/op |\n");
-  out.push_str("|---|---|---|---:|\n");
+  out.push_str("| Clock | Source | Kind | Hotclock selectable | Operation | ns/op |\n");
+  out.push_str("|---|---|---|---|---|---:|\n");
   for row in rows {
     writeln!(
       out,
-      "| `{}` | {} | {} | {:.3} |",
-      row.name, row.source, row.operation, row.stats.ns_op
+      "| `{}` | {} | {} | {} | {} | {} |",
+      row.name,
+      row.source,
+      row_kind(row),
+      row_selected_by_hotclock(row),
+      row.operation,
+      ns_op_cell(row)
     )
     .unwrap();
   }
@@ -325,22 +475,33 @@ fn render_json(
 }
 
 fn row_json(row: &ClockRow) -> Value {
-  json!({
+  let mut value = json!({
     "source": row.source,
     "name": row.name,
     "operation": row.operation,
-    "ns_op": row.stats.ns_op,
-    "best_ns": row.stats.best_ns,
-    "mean_ns": row.stats.mean_ns,
-    "worst_ns": row.stats.worst_ns,
-    "stddev_ns": row.stats.stddev_ns,
-    "ci95_low_ns": row.stats.ci95_low_ns,
-    "ci95_high_ns": row.stats.ci95_high_ns,
-    "confidence_margin_ns": row.stats.confidence_margin_ns,
-    "confidence_score": row.stats.confidence_score,
-    "confidence_high": row.stats.confidence_high,
-    "samples": row.stats.samples,
-  })
+    "kind": row_kind_json(row),
+    "selected_by_hotclock": row_selected_by_hotclock_json(row),
+    "error": row.error,
+  });
+
+  if let Some(stats) = row.stats {
+    value["ns_op"] = json!(stats.ns_op);
+    value["best_ns"] = json!(stats.best_ns);
+    value["mean_ns"] = json!(stats.mean_ns);
+    value["worst_ns"] = json!(stats.worst_ns);
+    value["stddev_ns"] = json!(stats.stddev_ns);
+    value["ci95_low_ns"] = json!(stats.ci95_low_ns);
+    value["ci95_high_ns"] = json!(stats.ci95_high_ns);
+    value["confidence_margin_ns"] = json!(stats.confidence_margin_ns);
+    value["confidence_score"] = json!(stats.confidence_score);
+    value["confidence_high"] = json!(stats.confidence_high);
+    value["samples"] = json!(stats.samples);
+  } else {
+    value["ns_op"] = Value::Null;
+    value["confidence_high"] = json!(false);
+  }
+
+  value
 }
 
 fn environment_name() -> String {
