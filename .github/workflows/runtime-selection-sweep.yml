@@ -1,0 +1,437 @@
+name: Runtime Selection Sweep
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - runtime-selection-proof
+    paths:
+      - ".github/workflows/runtime-selection-sweep.yml"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - "examples/runtime_selection_*.rs"
+      - "src/**"
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  HOTCLOCK_SKIP_COMPARISONS: 1
+
+jobs:
+  build-linux-x86_64:
+    name: build / x86_64-unknown-linux-gnu
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+
+      - name: Build report binary
+        run: cargo build --features bench-internals --example runtime_selection_report --release
+
+      - name: Upload report binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: sweep-binary-linux-x86_64
+          path: target/release/examples/runtime_selection_report
+
+  build-linux-aarch64:
+    name: build / aarch64-unknown-linux-gnu
+    runs-on: ubuntu-22.04-arm
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+
+      - name: Build report binary
+        run: cargo build --features bench-internals --example runtime_selection_report --release
+
+      - name: Upload report binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: sweep-binary-linux-aarch64
+          path: target/release/examples/runtime_selection_report
+
+  linux-native-x86_64:
+    name: linux native x86_64 / ${{ matrix.name }}
+    needs: build-linux-x86_64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: ubuntu-22.04-x64-vm
+            runner: ubuntu-22.04
+          - name: ubuntu-24.04-x64-vm
+            runner: ubuntu-24.04
+          - name: ubuntu-slim-x64-container
+            runner: ubuntu-slim
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download report binary
+        uses: actions/download-artifact@v4
+        with:
+          name: sweep-binary-linux-x86_64
+          path: target/prebuilt
+
+      - name: Run report
+        shell: bash
+        run: |
+          chmod +x target/prebuilt/runtime_selection_report
+          HOTCLOCK_REPORT_DIR="target/sweep-${{ matrix.name }}" \
+            target/prebuilt/runtime_selection_report
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sweep-${{ matrix.name }}
+          path: target/sweep-${{ matrix.name }}/**
+
+  linux-native-aarch64:
+    name: linux native aarch64 / ${{ matrix.name }}
+    needs: build-linux-aarch64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: ubuntu-22.04-arm64-vm
+            runner: ubuntu-22.04-arm
+          - name: ubuntu-24.04-arm64-vm
+            runner: ubuntu-24.04-arm
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download report binary
+        uses: actions/download-artifact@v4
+        with:
+          name: sweep-binary-linux-aarch64
+          path: target/prebuilt
+
+      - name: Run report
+        shell: bash
+        run: |
+          chmod +x target/prebuilt/runtime_selection_report
+          HOTCLOCK_REPORT_DIR="target/sweep-${{ matrix.name }}" \
+            target/prebuilt/runtime_selection_report
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sweep-${{ matrix.name }}
+          path: target/sweep-${{ matrix.name }}/**
+
+  linux-docker:
+    name: linux docker / ${{ matrix.name }}
+    needs:
+      - build-linux-x86_64
+      - build-linux-aarch64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-amd64-docker-on-x64
+            runner: ubuntu-24.04
+            platform: linux/amd64
+            artifact: sweep-binary-linux-x86_64
+          - name: linux-amd64-docker-on-arm64
+            runner: ubuntu-24.04-arm
+            platform: linux/amd64
+            artifact: sweep-binary-linux-x86_64
+          - name: linux-arm64-docker-on-arm64
+            runner: ubuntu-24.04-arm
+            platform: linux/arm64
+            artifact: sweep-binary-linux-aarch64
+          - name: linux-arm64-docker-on-x64
+            runner: ubuntu-24.04
+            platform: linux/arm64
+            artifact: sweep-binary-linux-aarch64
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up QEMU
+        if: contains(matrix.name, '-on-arm64') && matrix.platform == 'linux/amd64' || contains(matrix.name, '-on-x64') && matrix.platform == 'linux/arm64'
+        uses: docker/setup-qemu-action@v3
+
+      - name: Download report binary
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: target/prebuilt
+
+      - name: Run report in Docker
+        shell: bash
+        run: |
+          chmod +x target/prebuilt/runtime_selection_report
+          docker run --rm \
+            --platform "${{ matrix.platform }}" \
+            -v "$PWD:/work" \
+            -w /work \
+            -e HOTCLOCK_REPORT_DIR="/work/target/sweep-${{ matrix.name }}" \
+            -e HOTCLOCK_SKIP_COMPARISONS=1 \
+            ubuntu:22.04 \
+            /work/target/prebuilt/runtime_selection_report
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sweep-${{ matrix.name }}
+          path: target/sweep-${{ matrix.name }}/**
+
+  macos-x86_64:
+    name: macos x86_64 / ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macos-15-intel-native
+            runner: macos-15-intel
+            translated: false
+          - name: macos-26-intel-native
+            runner: macos-26-intel
+            translated: false
+          - name: macos-15-rosetta-on-arm64
+            runner: macos-15
+            translated: true
+          - name: macos-26-rosetta-on-arm64
+            runner: macos-26
+            translated: true
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustup target add x86_64-apple-darwin
+
+      - name: Install Rosetta
+        if: matrix.translated
+        run: softwareupdate --install-rosetta --agree-to-license
+
+      - name: Build report binary
+        run: cargo build --features bench-internals --example runtime_selection_report --release --target x86_64-apple-darwin
+
+      - name: Run report
+        run: |
+          if [ "${{ matrix.translated }}" = "true" ]; then
+            arch -x86_64 target/x86_64-apple-darwin/release/examples/runtime_selection_report
+          else
+            target/x86_64-apple-darwin/release/examples/runtime_selection_report
+          fi
+        env:
+          HOTCLOCK_REPORT_DIR: target/sweep-${{ matrix.name }}
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sweep-${{ matrix.name }}
+          path: target/sweep-${{ matrix.name }}/**
+
+  windows-x86_64:
+    name: windows x86_64 / ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows-2022-x64-native
+            runner: windows-2022
+          - name: windows-2025-x64-native
+            runner: windows-2025
+          - name: windows-11-arm-x64-emulated
+            runner: windows-11-arm
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust
+        shell: pwsh
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustup target add x86_64-pc-windows-msvc
+
+      - name: Build report binary
+        shell: pwsh
+        run: cargo build --features bench-internals --example runtime_selection_report --release --target x86_64-pc-windows-msvc
+
+      - name: Run report
+        shell: pwsh
+        run: |
+          $env:HOTCLOCK_REPORT_DIR = "target/sweep-${{ matrix.name }}"
+          & target\x86_64-pc-windows-msvc\release\examples\runtime_selection_report.exe
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sweep-${{ matrix.name }}
+          path: target/sweep-${{ matrix.name }}/**
+
+  windows-i686:
+    name: windows i686 / ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 25
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows-2025-x64-i686-wow64
+            runner: windows-2025
+          - name: windows-11-arm-i686-emulated
+            runner: windows-11-arm
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust
+        shell: pwsh
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustup target add i686-pc-windows-msvc
+
+      - name: Build report binary
+        shell: pwsh
+        run: cargo build --features bench-internals --example runtime_selection_report --release --target i686-pc-windows-msvc
+
+      - name: Run report
+        shell: pwsh
+        run: |
+          $env:HOTCLOCK_REPORT_DIR = "target/sweep-${{ matrix.name }}"
+          & target\i686-pc-windows-msvc\release\examples\runtime_selection_report.exe
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sweep-${{ matrix.name }}
+          path: target/sweep-${{ matrix.name }}/**
+
+  docker-qemu:
+    name: docker qemu / ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-386-docker-on-x64
+            runner: ubuntu-24.04
+            platform: linux/386
+          - name: linux-386-docker-on-arm64
+            runner: ubuntu-24.04-arm
+            platform: linux/386
+          - name: linux-ppc64le-docker-on-x64
+            runner: ubuntu-24.04
+            platform: linux/ppc64le
+          - name: linux-ppc64le-docker-on-arm64
+            runner: ubuntu-24.04-arm
+            platform: linux/ppc64le
+          - name: linux-s390x-docker-on-x64
+            runner: ubuntu-24.04
+            platform: linux/s390x
+          - name: linux-s390x-docker-on-arm64
+            runner: ubuntu-24.04-arm
+            platform: linux/s390x
+          - name: linux-riscv64-docker-on-x64
+            runner: ubuntu-24.04
+            platform: linux/riscv64
+          - name: linux-riscv64-docker-on-arm64
+            runner: ubuntu-24.04-arm
+            platform: linux/riscv64
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Build and run report in Docker
+        shell: bash
+        run: |
+          docker run --rm \
+            --platform "${{ matrix.platform }}" \
+            -v "$PWD:/work" \
+            -w /work \
+            -e HOTCLOCK_REPORT_DIR="/work/target/sweep-${{ matrix.name }}" \
+            -e HOTCLOCK_SKIP_COMPARISONS=1 \
+            rust:latest \
+            bash -lc 'rustup default stable && cargo run --features bench-internals --example runtime_selection_report --release'
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sweep-${{ matrix.name }}
+          path: target/sweep-${{ matrix.name }}/**
+
+  analyze:
+    name: analyze sweep
+    runs-on: ubuntu-24.04
+    needs:
+      - linux-native-x86_64
+      - linux-native-aarch64
+      - linux-docker
+      - macos-x86_64
+      - windows-x86_64
+      - windows-i686
+      - docker-qemu
+    if: always()
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download reports
+        uses: actions/download-artifact@v4
+        with:
+          path: target/runtime-selection-sweep-artifacts
+          pattern: sweep-*
+          merge-multiple: false
+
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+
+      - name: Analyze same-target divergence
+        run: cargo run --features bench-internals --example runtime_selection_analyze -- target/runtime-selection-sweep-artifacts
+        env:
+          HOTCLOCK_PROOF_DIR: target/runtime-selection-sweep
+
+      - name: Upload sweep summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-selection-sweep
+          path: target/runtime-selection-sweep/**
