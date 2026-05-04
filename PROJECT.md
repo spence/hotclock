@@ -7,6 +7,7 @@ hotclock provides a zero-dependency Rust API for reading fast CPU or platform ti
 ## Runtime clock selection proof
 
 - [o] Prove raw clock ordering flips across same-target environments
+- [o] Benchmark x86_64 Linux RDPMC under permissive and restrictive runtime policy
 - [o] Probe full-system QEMU TCG for same-target raw clock inversions
 - [x] Benchmark raw clocks across paired target environments
 - [x] Add statistically significant clock benchmarks to selection tables

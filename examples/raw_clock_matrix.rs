@@ -441,6 +441,12 @@ fn render_markdown(
   render_runtime_row(&mut out, "container", &runtime_identity["container"]);
   render_runtime_row(&mut out, "virtualization", &runtime_identity["virtualization"]);
   render_runtime_row(&mut out, "linux_clocksource", &runtime_identity["linux_clocksource"]);
+  render_runtime_row(
+    &mut out,
+    "linux_perf_event_paranoid",
+    &runtime_identity["linux_perf_event_paranoid"],
+  );
+  render_runtime_row(&mut out, "linux_rdpmc", &runtime_identity["linux_rdpmc"]);
   render_runtime_row(&mut out, "child_wrapper", &runtime_identity["child_wrapper"]);
   render_runtime_row(&mut out, "macos_rosetta", &runtime_identity["macos_rosetta"]);
   render_runtime_row(&mut out, "windows_emulation", &runtime_identity["windows_emulation"]);
@@ -562,6 +568,8 @@ fn runtime_identity() -> Value {
     "container": container_hint(),
     "virtualization": virtualization_hint(),
     "linux_clocksource": linux_clocksource(),
+    "linux_perf_event_paranoid": linux_perf_event_paranoid(),
+    "linux_rdpmc": linux_rdpmc(),
     "child_wrapper": std::env::var(CHILD_WRAPPER_ENV).ok(),
     "macos_rosetta": macos_rosetta(),
     "windows_emulation": windows_emulation(),
@@ -697,10 +705,10 @@ fn virtualization_hint() -> Option<String> {
   #[cfg(target_os = "linux")]
   {
     let mut hints = Vec::new();
-    if let Ok(cpuinfo) = std::fs::read_to_string("/proc/cpuinfo") {
-      if cpuinfo.contains(" hypervisor") {
-        hints.push("cpuinfo:hypervisor".to_string());
-      }
+    if let Ok(cpuinfo) = std::fs::read_to_string("/proc/cpuinfo")
+      && cpuinfo.contains(" hypervisor")
+    {
+      hints.push("cpuinfo:hypervisor".to_string());
     }
     for path in ["/sys/class/dmi/id/sys_vendor", "/sys/class/dmi/id/product_name"] {
       if let Ok(value) = std::fs::read_to_string(path) {
@@ -734,6 +742,31 @@ fn linux_clocksource() -> Value {
     json!({
       "current": read_trimmed("/sys/devices/system/clocksource/clocksource0/current_clocksource"),
       "available": read_trimmed("/sys/devices/system/clocksource/clocksource0/available_clocksource"),
+    })
+  }
+  #[cfg(not(target_os = "linux"))]
+  {
+    Value::Null
+  }
+}
+
+fn linux_perf_event_paranoid() -> Value {
+  #[cfg(target_os = "linux")]
+  {
+    json!(read_trimmed("/proc/sys/kernel/perf_event_paranoid"))
+  }
+  #[cfg(not(target_os = "linux"))]
+  {
+    Value::Null
+  }
+}
+
+fn linux_rdpmc() -> Value {
+  #[cfg(target_os = "linux")]
+  {
+    json!({
+      "event_source": read_trimmed("/sys/bus/event_source/devices/cpu/rdpmc"),
+      "devices": read_trimmed("/sys/devices/cpu/rdpmc"),
     })
   }
   #[cfg(not(target_os = "linux"))]

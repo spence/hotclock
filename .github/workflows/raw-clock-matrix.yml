@@ -208,6 +208,103 @@ jobs:
           name: raw-clock-linux-x86_64-musl-native-vm
           path: target/raw-clock-linux-x86_64-musl-native-vm/**
 
+  linux-rdpmc-policy-x86_64:
+    name: linux rdpmc policy x86_64
+    needs: build-linux-x86_64
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download raw clock binary
+        uses: actions/download-artifact@v4
+        with:
+          name: raw-clock-binary-linux-x86_64
+          path: target/prebuilt
+
+      - name: Run host default policy benchmark
+        shell: bash
+        run: |
+          chmod +x target/prebuilt/raw_clock_matrix
+          HOTCLOCK_RAW_CLOCK_ENVIRONMENT="linux-amd64-host-default-perf-policy" \
+            HOTCLOCK_RAW_CLOCK_REPORT_DIR="target/raw-clock-linux-amd64-host-default-perf-policy" \
+            target/prebuilt/raw_clock_matrix
+
+      - name: Run default Docker policy benchmark
+        shell: bash
+        run: |
+          docker run --rm \
+            --platform linux/amd64 \
+            -v "$PWD:/work" \
+            -w /work \
+            -e HOTCLOCK_RAW_CLOCK_ENVIRONMENT="linux-amd64-docker-default-seccomp-perf-policy" \
+            -e HOTCLOCK_RAW_CLOCK_REPORT_DIR="/work/target/raw-clock-linux-amd64-docker-default-seccomp-perf-policy" \
+            -e HOTCLOCK_RAW_CLOCK_WARMUP_ITERS \
+            -e HOTCLOCK_RAW_CLOCK_MEASURE_ITERS \
+            -e HOTCLOCK_RAW_CLOCK_SAMPLES \
+            -e HOTCLOCK_RAW_CLOCK_ATTEMPTS \
+            ubuntu:22.04 \
+            /work/target/prebuilt/raw_clock_matrix
+
+      - name: Open host PMU policy when allowed
+        shell: bash
+        run: |
+          set -x
+          cat /proc/sys/kernel/perf_event_paranoid || true
+          cat /sys/bus/event_source/devices/cpu/rdpmc || true
+          cat /sys/devices/cpu/rdpmc || true
+          sudo sysctl -w kernel.perf_event_paranoid=2 || true
+          for path in /sys/bus/event_source/devices/cpu/rdpmc /sys/devices/cpu/rdpmc; do
+            if [ -e "$path" ]; then
+              echo 2 | sudo tee "$path" || true
+            fi
+          done
+          cp target/prebuilt/raw_clock_matrix target/prebuilt/raw_clock_matrix_cap
+          sudo setcap cap_perfmon,cap_sys_admin,cap_sys_ptrace+ep target/prebuilt/raw_clock_matrix_cap || \
+            sudo setcap cap_sys_admin,cap_sys_ptrace+ep target/prebuilt/raw_clock_matrix_cap || true
+          getcap target/prebuilt/raw_clock_matrix_cap || true
+          cat /proc/sys/kernel/perf_event_paranoid || true
+          cat /sys/bus/event_source/devices/cpu/rdpmc || true
+          cat /sys/devices/cpu/rdpmc || true
+
+      - name: Run host opened policy benchmark
+        shell: bash
+        run: |
+          HOTCLOCK_RAW_CLOCK_ENVIRONMENT="linux-amd64-host-opened-perf-policy" \
+            HOTCLOCK_RAW_CLOCK_REPORT_DIR="target/raw-clock-linux-amd64-host-opened-perf-policy" \
+            target/prebuilt/raw_clock_matrix_cap
+
+      - name: Run privileged Docker policy benchmark
+        shell: bash
+        run: |
+          docker run --rm \
+            --privileged \
+            --security-opt seccomp=unconfined \
+            --platform linux/amd64 \
+            -v "$PWD:/work" \
+            -w /work \
+            -e HOTCLOCK_RAW_CLOCK_ENVIRONMENT="linux-amd64-docker-privileged-perf-policy" \
+            -e HOTCLOCK_RAW_CLOCK_REPORT_DIR="/work/target/raw-clock-linux-amd64-docker-privileged-perf-policy" \
+            -e HOTCLOCK_RAW_CLOCK_WARMUP_ITERS \
+            -e HOTCLOCK_RAW_CLOCK_MEASURE_ITERS \
+            -e HOTCLOCK_RAW_CLOCK_SAMPLES \
+            -e HOTCLOCK_RAW_CLOCK_ATTEMPTS \
+            ubuntu:22.04 \
+            sh -c '
+              cat /proc/sys/kernel/perf_event_paranoid || true
+              cat /sys/bus/event_source/devices/cpu/rdpmc || true
+              cat /sys/devices/cpu/rdpmc || true
+              /work/target/prebuilt/raw_clock_matrix
+            '
+
+      - name: Upload raw clock reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-clock-linux-rdpmc-policy-x86_64
+          path: target/raw-clock-linux-amd64-*perf-policy/**
+
   linux-docker:
     name: linux docker / ${{ matrix.name }}
     needs:
@@ -438,7 +535,10 @@ jobs:
         run: |
           set -euo pipefail
 
-          kernel="$(ls /boot/vmlinuz-* | sort -V | tail -n1)"
+          host_kernel="$(ls /boot/vmlinuz-* | sort -V | tail -n1)"
+          kernel="target/qemu-kernel-${{ matrix.name }}"
+          sudo cp "$host_kernel" "$kernel"
+          sudo chmod 0644 "$kernel"
           report_dir="target/raw-clock-${{ matrix.name }}"
           root="target/qemu-initramfs-${{ matrix.name }}"
           mkdir -p "$report_dir" "$root/bin" "$root/dev" "$root/proc" "$root/sys" "$root/tmp"
@@ -627,6 +727,7 @@ jobs:
       - linux-native-x86_64
       - linux-native-aarch64
       - linux-native-x86_64-musl
+      - linux-rdpmc-policy-x86_64
       - linux-docker
       - linux-qemu-rust
       - linux-wrapped-x86_64

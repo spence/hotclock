@@ -6,6 +6,10 @@
 use crate::arch;
 use crate::counter_eval::{CounterLatency, score_counter};
 
+#[cfg(all(target_arch = "x86_64", target_os = "linux"))]
+#[path = "bench_internals/perf_rdpmc_x86_64_linux.rs"]
+mod perf_rdpmc_x86_64_linux;
+
 /// Clock source family used by benchmark-only candidate reports.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ClockCandidateKind {
@@ -135,6 +139,16 @@ fn candidates() -> &'static [ClockCandidate] {
   #[cfg(all(unix, not(target_os = "macos")))]
   {
     candidates![
+      ClockCandidate::hardware(
+        "x86_64-rdpmc-fixed-core-cycles",
+        true,
+        perf_rdpmc_x86_64_linux::rdpmc_fixed_core_cycles
+      ),
+      ClockCandidate::hardware(
+        "x86_64-perf-rdpmc-cpu-cycles",
+        true,
+        perf_rdpmc_x86_64_linux::perf_rdpmc_cpu_cycles
+      ),
       ClockCandidate::hardware("x86_64-rdtsc", true, arch::x86_64::rdtsc),
       ClockCandidate::os_fallback("unix-monotonic", true, arch::fallback::clock_monotonic),
     ]

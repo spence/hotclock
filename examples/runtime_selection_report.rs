@@ -680,10 +680,10 @@ fn virtualization_hint() -> Option<String> {
   #[cfg(target_os = "linux")]
   {
     let mut hints = Vec::new();
-    if let Ok(cpuinfo) = std::fs::read_to_string("/proc/cpuinfo") {
-      if cpuinfo.contains(" hypervisor") {
-        hints.push("cpuinfo:hypervisor".to_string());
-      }
+    if let Ok(cpuinfo) = std::fs::read_to_string("/proc/cpuinfo")
+      && cpuinfo.contains(" hypervisor")
+    {
+      hints.push("cpuinfo:hypervisor".to_string());
     }
     for path in ["/sys/class/dmi/id/sys_vendor", "/sys/class/dmi/id/product_name"] {
       if let Ok(value) = std::fs::read_to_string(path) {
