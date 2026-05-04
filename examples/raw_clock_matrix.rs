@@ -18,6 +18,7 @@ const DEFAULT_MAX_RELATIVE_MARGIN: f64 = 0.05;
 const DEFAULT_MAX_ABSOLUTE_MARGIN_NS: f64 = 1.0;
 const CHILD_CLOCK_ENV: &str = "HOTCLOCK_RAW_CLOCK_CHILD_CLOCK";
 const CHILD_WRAPPER_ENV: &str = "HOTCLOCK_RAW_CLOCK_CHILD_WRAPPER";
+const STDOUT_FORMAT_ENV: &str = "HOTCLOCK_RAW_CLOCK_STDOUT";
 
 #[derive(Clone, Copy)]
 struct BenchmarkConfig {
@@ -68,7 +69,7 @@ pub fn main() -> std::io::Result<()> {
   let markdown = render_markdown(&environment_name, &compile_identity, &runtime_identity, &rows);
   let json = render_json(&environment_name, &compile_identity, &runtime_identity, config, &rows);
 
-  println!("{markdown}");
+  print_report(&markdown, &json);
 
   if let Some(report_dir) = std::env::var_os("HOTCLOCK_RAW_CLOCK_REPORT_DIR") {
     let report_dir = PathBuf::from(report_dir);
@@ -78,6 +79,13 @@ pub fn main() -> std::io::Result<()> {
   }
 
   Ok(())
+}
+
+fn print_report(markdown: &str, json: &Value) {
+  match std::env::var(STDOUT_FORMAT_ENV).as_deref() {
+    Ok("json") => println!("{json}"),
+    _ => println!("{markdown}"),
+  }
 }
 
 fn measure_rows(config: BenchmarkConfig) -> Vec<ClockRow> {
