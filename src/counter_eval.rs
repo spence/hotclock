@@ -10,7 +10,8 @@ const CROSS_THREAD_CALLS: usize = 10_000;
 const VALIDATION_PASSES: usize = 5;
 const LATENCY_WARMUP_ITERS: usize = 5_000;
 const LATENCY_MEASURE_ITERS: usize = 50_000;
-const LATENCY_SAMPLES: usize = 7;
+const LATENCY_SAMPLES: usize = 31;
+const T_CRITICAL_95_DF30: f64 = 2.042;
 
 #[derive(Clone, Copy, Debug)]
 pub(crate) struct CounterValidation {
@@ -20,15 +21,25 @@ pub(crate) struct CounterValidation {
 #[derive(Clone, Copy, Debug)]
 pub(crate) struct CounterLatency {
   pub best_total_nanos: u128,
+  pub mean_total_nanos: f64,
   pub median_total_nanos: u128,
   pub worst_total_nanos: u128,
+  pub stddev_total_nanos: f64,
+  pub ci95_low_total_nanos: f64,
+  pub ci95_high_total_nanos: f64,
   pub iterations: u64,
+  pub samples: u64,
 }
 
 impl CounterLatency {
   #[cfg(feature = "bench-internals")]
   pub(crate) fn best_ns_per_call(self) -> f64 {
     self.best_total_nanos as f64 / self.iterations as f64
+  }
+
+  #[cfg(feature = "bench-internals")]
+  pub(crate) fn mean_ns_per_call(self) -> f64 {
+    self.mean_total_nanos / self.iterations as f64
   }
 
   #[cfg(feature = "bench-internals")]
@@ -39,6 +50,21 @@ impl CounterLatency {
   #[cfg(feature = "bench-internals")]
   pub(crate) fn worst_ns_per_call(self) -> f64 {
     self.worst_total_nanos as f64 / self.iterations as f64
+  }
+
+  #[cfg(feature = "bench-internals")]
+  pub(crate) fn stddev_ns_per_call(self) -> f64 {
+    self.stddev_total_nanos / self.iterations as f64
+  }
+
+  #[cfg(feature = "bench-internals")]
+  pub(crate) fn ci95_low_ns_per_call(self) -> f64 {
+    self.ci95_low_total_nanos / self.iterations as f64
+  }
+
+  #[cfg(feature = "bench-internals")]
+  pub(crate) fn ci95_high_ns_per_call(self) -> f64 {
+    self.ci95_high_total_nanos / self.iterations as f64
   }
 }
 
@@ -126,12 +152,45 @@ pub(crate) fn measure_counter_latency(counter: fn() -> u64) -> CounterLatency {
   }
 
   samples.sort_unstable();
+  let stats = sample_stats(&samples);
   CounterLatency {
     best_total_nanos: samples[0],
+    mean_total_nanos: stats.mean,
     median_total_nanos: samples[samples.len() / 2],
     worst_total_nanos: samples[samples.len() - 1],
+    stddev_total_nanos: stats.stddev,
+    ci95_low_total_nanos: stats.ci95_low,
+    ci95_high_total_nanos: stats.ci95_high,
     iterations: LATENCY_MEASURE_ITERS as u64,
+    samples: LATENCY_SAMPLES as u64,
   }
+}
+
+#[derive(Clone, Copy)]
+struct SampleStats {
+  mean: f64,
+  stddev: f64,
+  ci95_low: f64,
+  ci95_high: f64,
+}
+
+fn sample_stats(samples: &[u128]) -> SampleStats {
+  debug_assert_eq!(samples.len(), LATENCY_SAMPLES);
+
+  let n = samples.len() as f64;
+  let mean = samples.iter().map(|sample| *sample as f64).sum::<f64>() / n;
+  let variance = samples
+    .iter()
+    .map(|sample| {
+      let delta = *sample as f64 - mean;
+      delta * delta
+    })
+    .sum::<f64>()
+    / (n - 1.0);
+  let stddev = variance.sqrt();
+  let margin = T_CRITICAL_95_DF30 * stddev / n.sqrt();
+
+  SampleStats { mean, stddev, ci95_low: (mean - margin).max(0.0), ci95_high: mean + margin }
 }
 
 fn test_works(counter: fn() -> u64) -> bool {

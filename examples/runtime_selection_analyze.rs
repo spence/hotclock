@@ -15,7 +15,24 @@ struct ReportSummary {
   fastest_candidate: Option<String>,
   selected_candidate: Option<String>,
   selected_candidate_valid: bool,
+  candidate_benchmarks: Vec<CandidateBenchmark>,
   environment: String,
+}
+
+#[derive(Clone, Debug)]
+struct CandidateBenchmark {
+  name: String,
+  production_candidate: bool,
+  valid: bool,
+  selected: bool,
+  fastest_valid: bool,
+  mean_ns: Option<f64>,
+  median_ns: Option<f64>,
+  ci95_low_ns: Option<f64>,
+  ci95_high_ns: Option<f64>,
+  best_ns: Option<f64>,
+  worst_ns: Option<f64>,
+  samples: Option<u64>,
 }
 
 #[derive(Clone, Debug)]
@@ -100,6 +117,7 @@ fn load_report(path: &Path) -> std::io::Result<ReportSummary> {
     fastest_candidate,
     selected_candidate,
     selected_candidate_valid,
+    candidate_benchmarks: candidate_benchmarks(&value),
     environment: environment_summary(&value),
   })
 }
@@ -158,6 +176,28 @@ fn push_json_string(parts: &mut Vec<String>, label: &str, value: &Value) {
   }
 }
 
+fn candidate_benchmarks(value: &Value) -> Vec<CandidateBenchmark> {
+  value["candidates"]
+    .as_array()
+    .into_iter()
+    .flatten()
+    .map(|candidate| CandidateBenchmark {
+      name: candidate["name"].as_str().unwrap_or("unknown").to_string(),
+      production_candidate: candidate["production_candidate"].as_bool().unwrap_or(false),
+      valid: candidate["valid"].as_bool().unwrap_or(false),
+      selected: candidate["selected"].as_bool().unwrap_or(false),
+      fastest_valid: candidate["fastest_valid"].as_bool().unwrap_or(false),
+      mean_ns: candidate["mean_ns"].as_f64(),
+      median_ns: candidate["median_ns"].as_f64(),
+      ci95_low_ns: candidate["ci95_low_ns"].as_f64(),
+      ci95_high_ns: candidate["ci95_high_ns"].as_f64(),
+      best_ns: candidate["best_ns"].as_f64(),
+      worst_ns: candidate["worst_ns"].as_f64(),
+      samples: candidate["samples"].as_u64(),
+    })
+    .collect()
+}
+
 fn analyze_reports(reports: Vec<ReportSummary>) -> ProofResult {
   let mut grouped: BTreeMap<String, Vec<ReportSummary>> = BTreeMap::new();
   for report in reports {
@@ -197,17 +237,19 @@ fn render_markdown(result: &ProofResult) -> String {
       group.winners.iter().cloned().collect::<Vec<_>>().join("`, `")
     )
     .unwrap();
-    out.push_str("| Report | Eligible | Fastest | Selected | Selection match | Environment |\n");
-    out.push_str("|---|---:|---|---|---:|---|\n");
+    out.push_str("| Report | Eligible | Fastest | Selected | Selection match | Significant | Clock benchmarks | Environment |\n");
+    out.push_str("|---|---:|---|---|---:|---|---|---|\n");
     for report in &group.reports {
       writeln!(
         out,
-        "| `{}` | {} | `{}` | `{}` | {} | `{}` |",
+        "| `{}` | {} | `{}` | `{}` | {} | {} | {} | `{}` |",
         report.path.display(),
         report.proof_eligible,
         report.fastest_candidate.as_deref().unwrap_or("n/a"),
         selected_label(report),
         report.selection_matches_winner,
+        significance_label(report),
+        benchmark_label(report),
         report.environment.replace('|', "/")
       )
       .unwrap();
@@ -216,6 +258,80 @@ fn render_markdown(result: &ProofResult) -> String {
   }
 
   out
+}
+
+fn significance_label(report: &ReportSummary) -> &'static str {
+  let mut valid = report
+    .candidate_benchmarks
+    .iter()
+    .filter(|candidate| candidate.production_candidate && candidate.valid)
+    .filter(|candidate| candidate.ci95_low_ns.is_some() && candidate.ci95_high_ns.is_some())
+    .collect::<Vec<_>>();
+
+  valid.sort_by(|left, right| {
+    left
+      .median_ns
+      .unwrap_or(f64::INFINITY)
+      .total_cmp(&right.median_ns.unwrap_or(f64::INFINITY))
+  });
+
+  match valid.as_slice() {
+    [] => "`n/a`",
+    [_] => "`validation`",
+    [fastest, next, ..] => {
+      if fastest.ci95_high_ns.unwrap_or(f64::INFINITY)
+        < next.ci95_low_ns.unwrap_or(f64::NEG_INFINITY)
+      {
+        "`✅`"
+      } else {
+        "`overlap`"
+      }
+    }
+  }
+}
+
+fn benchmark_label(report: &ReportSummary) -> String {
+  let labels = report
+    .candidate_benchmarks
+    .iter()
+    .filter(|candidate| candidate.production_candidate)
+    .map(candidate_benchmark_label)
+    .collect::<Vec<_>>();
+
+  if labels.is_empty() { "`n/a`".to_string() } else { labels.join("<br>") }
+}
+
+fn candidate_benchmark_label(candidate: &CandidateBenchmark) -> String {
+  let role = candidate_role(candidate);
+  if !candidate.valid {
+    return format!("`{}`{}: invalid", candidate.name, role);
+  }
+
+  let median = candidate.median_ns.or(candidate.mean_ns);
+  let Some(median) = median else {
+    return format!("`{}`{}: valid, no benchmark", candidate.name, role);
+  };
+
+  let interval = match (candidate.ci95_low_ns, candidate.ci95_high_ns) {
+    (Some(low), Some(high)) => format!("95% CI {:.3}..{:.3}", low, high),
+    _ => match (candidate.best_ns, candidate.worst_ns) {
+      (Some(best), Some(worst)) => format!("range {:.3}..{:.3}", best, worst),
+      _ => "no interval".to_string(),
+    },
+  };
+  let mean = candidate.mean_ns.map_or(String::new(), |mean| format!(", mean {:.3}", mean));
+  let samples = candidate.samples.map_or(String::new(), |samples| format!(", n={samples}"));
+
+  format!("`{}`{}: median {:.3} ns{} ({}{})", candidate.name, role, median, mean, interval, samples)
+}
+
+fn candidate_role(candidate: &CandidateBenchmark) -> &'static str {
+  match (candidate.selected, candidate.fastest_valid) {
+    (true, true) => " selected fastest",
+    (true, false) => " selected",
+    (false, true) => " fastest",
+    (false, false) => "",
+  }
 }
 
 fn selected_label(report: &ReportSummary) -> String {
@@ -242,6 +358,23 @@ fn render_json(result: &ProofResult) -> Value {
             "fastest_candidate": report.fastest_candidate,
             "selected_candidate": report.selected_candidate,
             "selected_candidate_valid": report.selected_candidate_valid,
+            "benchmark_significance": significance_label(report).trim_matches('`'),
+            "candidate_benchmarks": report.candidate_benchmarks.iter().map(|candidate| {
+              json!({
+                "name": candidate.name,
+                "production_candidate": candidate.production_candidate,
+                "valid": candidate.valid,
+                "selected": candidate.selected,
+                "fastest_valid": candidate.fastest_valid,
+                "mean_ns": candidate.mean_ns,
+                "median_ns": candidate.median_ns,
+                "ci95_low_ns": candidate.ci95_low_ns,
+                "ci95_high_ns": candidate.ci95_high_ns,
+                "best_ns": candidate.best_ns,
+                "worst_ns": candidate.worst_ns,
+                "samples": candidate.samples,
+              })
+            }).collect::<Vec<_>>(),
             "environment": report.environment,
           })
         }).collect::<Vec<_>>(),
@@ -310,6 +443,36 @@ mod tests {
       fastest_candidate: Some(fastest_candidate.to_string()),
       selected_candidate: Some(selected_candidate.to_string()),
       selected_candidate_valid,
+      candidate_benchmarks: vec![
+        CandidateBenchmark {
+          name: fastest_candidate.to_string(),
+          production_candidate: true,
+          valid: true,
+          selected: fastest_candidate == selected_candidate,
+          fastest_valid: true,
+          mean_ns: Some(10.0),
+          median_ns: Some(10.0),
+          ci95_low_ns: Some(9.0),
+          ci95_high_ns: Some(11.0),
+          best_ns: Some(9.0),
+          worst_ns: Some(11.0),
+          samples: Some(31),
+        },
+        CandidateBenchmark {
+          name: "fallback".to_string(),
+          production_candidate: true,
+          valid: true,
+          selected: selected_candidate == "fallback",
+          fastest_valid: false,
+          mean_ns: Some(20.0),
+          median_ns: Some(20.0),
+          ci95_low_ns: Some(19.0),
+          ci95_high_ns: Some(21.0),
+          best_ns: Some(19.0),
+          worst_ns: Some(21.0),
+          samples: Some(31),
+        },
+      ],
       environment: "fixture".to_string(),
     }
   }

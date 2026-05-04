@@ -53,8 +53,13 @@ pub struct ClockCandidateEvaluation {
 #[derive(Clone, Copy, Debug)]
 pub struct ClockCandidateLatency {
   pub best_ns: f64,
+  pub mean_ns: f64,
   pub median_ns: f64,
   pub worst_ns: f64,
+  pub stddev_ns: f64,
+  pub ci95_low_ns: f64,
+  pub ci95_high_ns: f64,
+  pub samples: u64,
 }
 
 impl ClockCandidate {
@@ -91,7 +96,16 @@ pub fn evaluate_candidate_clock(candidate: ClockCandidate) -> ClockCandidateEval
     None => ClockCandidateEvaluation {
       valid: false,
       precision_ticks: None,
-      latency: ClockCandidateLatency { best_ns: 0.0, median_ns: 0.0, worst_ns: 0.0 },
+      latency: ClockCandidateLatency {
+        best_ns: 0.0,
+        mean_ns: 0.0,
+        median_ns: 0.0,
+        worst_ns: 0.0,
+        stddev_ns: 0.0,
+        ci95_low_ns: 0.0,
+        ci95_high_ns: 0.0,
+        samples: 0,
+      },
     },
   }
 }
@@ -99,8 +113,13 @@ pub fn evaluate_candidate_clock(candidate: ClockCandidate) -> ClockCandidateEval
 fn latency(latency: CounterLatency) -> ClockCandidateLatency {
   ClockCandidateLatency {
     best_ns: latency.best_ns_per_call(),
+    mean_ns: latency.mean_ns_per_call(),
     median_ns: latency.median_ns_per_call(),
     worst_ns: latency.worst_ns_per_call(),
+    stddev_ns: latency.stddev_ns_per_call(),
+    ci95_low_ns: latency.ci95_low_ns_per_call(),
+    ci95_high_ns: latency.ci95_high_ns_per_call(),
+    samples: latency.samples,
   }
 }
 

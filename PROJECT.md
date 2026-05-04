@@ -6,6 +6,7 @@ hotclock provides a zero-dependency Rust API for reading fast CPU or platform ti
 
 ## Runtime clock selection proof
 
+- [x] Add statistically significant clock benchmarks to selection tables
 - [ ] Stabilize exploratory non-native sweep coverage
 - [x] Sweep same-target runtime environments for clock-selection divergence
 - [x] Benchmark comparison crates in proof environments

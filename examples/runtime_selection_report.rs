@@ -25,8 +25,13 @@ struct BenchmarkConfig {
 #[derive(Clone, Copy)]
 struct Stats {
   best_ns: f64,
+  mean_ns: f64,
   median_ns: f64,
   worst_ns: f64,
+  stddev_ns: f64,
+  ci95_low_ns: f64,
+  ci95_high_ns: f64,
+  samples: u64,
 }
 
 struct CandidateResult {
@@ -100,15 +105,35 @@ fn measure_candidates() -> Vec<CandidateResult> {
         stats: if evaluation.valid {
           Stats {
             best_ns: evaluation.latency.best_ns,
+            mean_ns: evaluation.latency.mean_ns,
             median_ns: evaluation.latency.median_ns,
             worst_ns: evaluation.latency.worst_ns,
+            stddev_ns: evaluation.latency.stddev_ns,
+            ci95_low_ns: evaluation.latency.ci95_low_ns,
+            ci95_high_ns: evaluation.latency.ci95_high_ns,
+            samples: evaluation.latency.samples,
           }
         } else {
-          Stats { best_ns: 0.0, median_ns: 0.0, worst_ns: 0.0 }
+          Stats::zero()
         },
       }
     })
     .collect()
+}
+
+impl Stats {
+  const fn zero() -> Self {
+    Self {
+      best_ns: 0.0,
+      mean_ns: 0.0,
+      median_ns: 0.0,
+      worst_ns: 0.0,
+      stddev_ns: 0.0,
+      ci95_low_ns: 0.0,
+      ci95_high_ns: 0.0,
+      samples: 0,
+    }
+  }
 }
 
 fn mark_fastest_valid_candidate(candidates: &mut [CandidateResult]) {
@@ -255,10 +280,81 @@ where
   }
 
   samples.sort_by(f64::total_cmp);
+  let stats = sample_stats(&samples);
   Stats {
     best_ns: samples[0],
+    mean_ns: stats.mean,
     median_ns: samples[samples.len() / 2],
     worst_ns: samples[samples.len() - 1],
+    stddev_ns: stats.stddev,
+    ci95_low_ns: stats.ci95_low,
+    ci95_high_ns: stats.ci95_high,
+    samples: samples.len() as u64,
+  }
+}
+
+struct SampleStats {
+  mean: f64,
+  stddev: f64,
+  ci95_low: f64,
+  ci95_high: f64,
+}
+
+fn sample_stats(samples: &[f64]) -> SampleStats {
+  let n = samples.len() as f64;
+  let mean = samples.iter().sum::<f64>() / n;
+  if samples.len() < 2 {
+    return SampleStats { mean, stddev: 0.0, ci95_low: mean, ci95_high: mean };
+  }
+
+  let variance = samples
+    .iter()
+    .map(|sample| {
+      let delta = *sample - mean;
+      delta * delta
+    })
+    .sum::<f64>()
+    / (n - 1.0);
+  let stddev = variance.sqrt();
+  let margin = t_critical_95(samples.len()) * stddev / n.sqrt();
+
+  SampleStats { mean, stddev, ci95_low: (mean - margin).max(0.0), ci95_high: mean + margin }
+}
+
+fn t_critical_95(samples: usize) -> f64 {
+  match samples {
+    0 | 1 => 0.0,
+    2 => 12.706,
+    3 => 4.303,
+    4 => 3.182,
+    5 => 2.776,
+    6 => 2.571,
+    7 => 2.447,
+    8 => 2.365,
+    9 => 2.306,
+    10 => 2.262,
+    11 => 2.228,
+    12 => 2.201,
+    13 => 2.179,
+    14 => 2.160,
+    15 => 2.145,
+    16 => 2.131,
+    17 => 2.120,
+    18 => 2.110,
+    19 => 2.101,
+    20 => 2.093,
+    21 => 2.086,
+    22 => 2.080,
+    23 => 2.074,
+    24 => 2.069,
+    25 => 2.064,
+    26 => 2.060,
+    27 => 2.056,
+    28 => 2.052,
+    29 => 2.048,
+    30 => 2.045,
+    31 => 2.042,
+    _ => 1.960,
   }
 }
 
@@ -330,12 +426,12 @@ fn render_markdown(
   render_runtime_row(&mut out, "windows_emulation", &runtime_identity["windows_emulation"]);
 
   out.push_str("\n## Candidate clocks\n\n");
-  out.push_str("| Clock | Kind | Candidate | Valid | Precision | Selected | Fastest | Best ns | Median ns | Worst ns |\n");
-  out.push_str("|---|---|---:|---:|---:|---:|---:|---:|---:|---:|\n");
+  out.push_str("| Clock | Kind | Candidate | Valid | Precision | Selected | Fastest | Samples | Mean ns | Median ns | 95% CI ns | Best ns | Worst ns |\n");
+  out.push_str("|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|\n");
   for row in candidates {
     writeln!(
       out,
-      "| `{}` | {} | {} | {} | {} | {} | {} | {:.3} | {:.3} | {:.3} |",
+      "| `{}` | {} | {} | {} | {} | {} | {} | {} | {:.3} | {:.3} | {:.3}..{:.3} | {:.3} | {:.3} |",
       row.candidate.name,
       row.candidate.kind.as_str(),
       if row.candidate.selected_by_hotclock { "✅" } else { "❌" },
@@ -343,8 +439,12 @@ fn render_markdown(
       row.precision_ticks.map_or("n/a".to_string(), |value| value.to_string()),
       if row.selected { "✅" } else { "❌" },
       if row.fastest_valid { "✅" } else { "❌" },
-      row.stats.best_ns,
+      row.stats.samples,
+      row.stats.mean_ns,
       row.stats.median_ns,
+      row.stats.ci95_low_ns,
+      row.stats.ci95_high_ns,
+      row.stats.best_ns,
       row.stats.worst_ns
     )
     .unwrap();
@@ -358,13 +458,21 @@ fn render_markdown(
       comparison_config.warmup_iters, comparison_config.measure_iters, comparison_config.samples
     )
     .unwrap();
-    out.push_str("| Timer | Operation | Best ns/call | Median ns/call | Worst ns/call |\n");
-    out.push_str("|---|---|---:|---:|---:|\n");
+    out.push_str("| Timer | Operation | Samples | Mean ns/call | Median ns/call | 95% CI ns/call | Best ns/call | Worst ns/call |\n");
+    out.push_str("|---|---|---:|---:|---:|---:|---:|---:|\n");
     for row in comparisons {
       writeln!(
         out,
-        "| `{}` | {} | {:.3} | {:.3} | {:.3} |",
-        row.name, row.operation, row.stats.best_ns, row.stats.median_ns, row.stats.worst_ns
+        "| `{}` | {} | {} | {:.3} | {:.3} | {:.3}..{:.3} | {:.3} | {:.3} |",
+        row.name,
+        row.operation,
+        row.stats.samples,
+        row.stats.mean_ns,
+        row.stats.median_ns,
+        row.stats.ci95_low_ns,
+        row.stats.ci95_high_ns,
+        row.stats.best_ns,
+        row.stats.worst_ns
       )
       .unwrap();
     }
@@ -419,8 +527,13 @@ fn candidate_json(row: &CandidateResult) -> Value {
     "selected": row.selected,
     "fastest_valid": row.fastest_valid,
     "best_ns": row.stats.best_ns,
+    "mean_ns": row.stats.mean_ns,
     "median_ns": row.stats.median_ns,
     "worst_ns": row.stats.worst_ns,
+    "stddev_ns": row.stats.stddev_ns,
+    "ci95_low_ns": row.stats.ci95_low_ns,
+    "ci95_high_ns": row.stats.ci95_high_ns,
+    "samples": row.stats.samples,
   })
 }
 
@@ -429,8 +542,13 @@ fn comparison_json(row: &ComparisonResult) -> Value {
     "name": row.name,
     "operation": row.operation,
     "best_ns": row.stats.best_ns,
+    "mean_ns": row.stats.mean_ns,
     "median_ns": row.stats.median_ns,
     "worst_ns": row.stats.worst_ns,
+    "stddev_ns": row.stats.stddev_ns,
+    "ci95_low_ns": row.stats.ci95_low_ns,
+    "ci95_high_ns": row.stats.ci95_high_ns,
+    "samples": row.stats.samples,
   })
 }
 
