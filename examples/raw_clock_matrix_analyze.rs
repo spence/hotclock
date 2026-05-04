@@ -102,6 +102,7 @@ fn environment_summary(value: &Value) -> String {
   push_json_string(&mut parts, "kernel", &runtime["kernel"]);
   push_json_string(&mut parts, "container", &runtime["container"]);
   push_json_string(&mut parts, "virtualization", &runtime["virtualization"]);
+  push_json_string(&mut parts, "child_wrapper", &runtime["child_wrapper"]);
   push_json_string(&mut parts, "rosetta", &runtime["macos_rosetta"]);
   push_json_string(&mut parts, "windows", &runtime["windows_emulation"]);
   parts.join(" | ")

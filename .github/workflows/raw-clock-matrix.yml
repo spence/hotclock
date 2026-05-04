@@ -271,6 +271,62 @@ jobs:
           name: raw-clock-${{ matrix.name }}
           path: target/raw-clock-${{ matrix.name }}/**
 
+  linux-wrapped-x86_64:
+    name: linux wrapped x86_64 / ${{ matrix.name }}
+    needs: build-linux-x86_64
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-amd64-qemu-user-default-on-x64
+            wrapper: qemu-x86_64
+            measure_iters: 200000
+          - name: linux-amd64-qemu-user-qemu64-on-x64
+            wrapper: qemu-x86_64 -cpu qemu64
+            measure_iters: 200000
+          - name: linux-amd64-qemu-user-max-on-x64
+            wrapper: qemu-x86_64 -cpu max
+            measure_iters: 200000
+          - name: linux-amd64-valgrind-none-on-x64
+            wrapper: valgrind --tool=none --quiet
+            measure_iters: 50000
+          - name: linux-amd64-valgrind-memcheck-on-x64
+            wrapper: valgrind --tool=memcheck --quiet
+            measure_iters: 20000
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install wrapped runners
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-user valgrind
+
+      - name: Download raw clock binary
+        uses: actions/download-artifact@v4
+        with:
+          name: raw-clock-binary-linux-x86_64
+          path: target/prebuilt
+
+      - name: Run raw clock benchmark with wrapped child reads
+        shell: bash
+        run: |
+          chmod +x target/prebuilt/raw_clock_matrix
+          HOTCLOCK_RAW_CLOCK_ENVIRONMENT="${{ matrix.name }}" \
+            HOTCLOCK_RAW_CLOCK_REPORT_DIR="target/raw-clock-${{ matrix.name }}" \
+            HOTCLOCK_RAW_CLOCK_CHILD_WRAPPER="${{ matrix.wrapper }}" \
+            HOTCLOCK_RAW_CLOCK_MEASURE_ITERS="${{ matrix.measure_iters }}" \
+            target/prebuilt/raw_clock_matrix
+
+      - name: Upload raw clock report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-clock-${{ matrix.name }}
+          path: target/raw-clock-${{ matrix.name }}/**
+
   macos-x86_64:
     name: macos x86_64 / ${{ matrix.name }}
     runs-on: ${{ matrix.runner }}
@@ -377,6 +433,7 @@ jobs:
       - linux-native-aarch64
       - linux-docker
       - linux-qemu-rust
+      - linux-wrapped-x86_64
       - macos-x86_64
       - windows-x86_64
     if: always()

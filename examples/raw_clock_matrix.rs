@@ -17,6 +17,7 @@ const DEFAULT_ATTEMPTS: usize = 3;
 const DEFAULT_MAX_RELATIVE_MARGIN: f64 = 0.05;
 const DEFAULT_MAX_ABSOLUTE_MARGIN_NS: f64 = 1.0;
 const CHILD_CLOCK_ENV: &str = "HOTCLOCK_RAW_CLOCK_CHILD_CLOCK";
+const CHILD_WRAPPER_ENV: &str = "HOTCLOCK_RAW_CLOCK_CHILD_WRAPPER";
 
 #[derive(Clone, Copy)]
 struct BenchmarkConfig {
@@ -119,7 +120,8 @@ fn measure_candidate_in_child(_config: BenchmarkConfig, candidate: ClockCandidat
 fn run_candidate_child(clock_name: &str) -> Result<Stats, String> {
   let current_exe =
     std::env::current_exe().map_err(|error| format!("current_exe failed: {error}"))?;
-  let output = Command::new(current_exe)
+  let mut command = child_command(current_exe)?;
+  let output = command
     .env(CHILD_CLOCK_ENV, clock_name)
     .stdout(Stdio::piped())
     .stderr(Stdio::inherit())
@@ -133,6 +135,19 @@ fn run_candidate_child(clock_name: &str) -> Result<Stats, String> {
   let value: Value = serde_json::from_slice(&output.stdout)
     .map_err(|error| format!("child emitted invalid JSON: {error}"))?;
   stats_from_json(&value).ok_or_else(|| "child JSON did not contain stats".to_string())
+}
+
+fn child_command(current_exe: PathBuf) -> Result<Command, String> {
+  let Some(wrapper) = std::env::var_os(CHILD_WRAPPER_ENV) else {
+    return Ok(Command::new(current_exe));
+  };
+  let wrapper = wrapper.to_string_lossy();
+  let mut parts = wrapper.split_whitespace();
+  let program = parts.next().ok_or_else(|| format!("{CHILD_WRAPPER_ENV} was empty"))?;
+  let mut command = Command::new(program);
+  command.args(parts);
+  command.arg(current_exe);
+  Ok(command)
 }
 
 fn measure_candidate_direct(config: BenchmarkConfig, candidate: ClockCandidate) -> ClockRow {
@@ -418,6 +433,7 @@ fn render_markdown(
   render_runtime_row(&mut out, "container", &runtime_identity["container"]);
   render_runtime_row(&mut out, "virtualization", &runtime_identity["virtualization"]);
   render_runtime_row(&mut out, "linux_clocksource", &runtime_identity["linux_clocksource"]);
+  render_runtime_row(&mut out, "child_wrapper", &runtime_identity["child_wrapper"]);
   render_runtime_row(&mut out, "macos_rosetta", &runtime_identity["macos_rosetta"]);
   render_runtime_row(&mut out, "windows_emulation", &runtime_identity["windows_emulation"]);
 
@@ -538,6 +554,7 @@ fn runtime_identity() -> Value {
     "container": container_hint(),
     "virtualization": virtualization_hint(),
     "linux_clocksource": linux_clocksource(),
+    "child_wrapper": std::env::var(CHILD_WRAPPER_ENV).ok(),
     "macos_rosetta": macos_rosetta(),
     "windows_emulation": windows_emulation(),
     "os_release": os_release(),
