@@ -209,27 +209,53 @@ fn candidates() -> &'static [ClockCandidate] {
     candidates![
       ClockCandidate::hardware(
         "x86_64-rdpmc-fixed-core-cycles",
-        true,
+        false,
         perf_rdpmc_x86_64_linux::rdpmc_fixed_core_cycles_checked
       ),
       ClockCandidate::prepared_hardware(
         "x86_64-rdpmc-fixed-core-cycles-raw",
-        true,
+        false,
         perf_rdpmc_x86_64_linux::prepare_rdpmc_fixed_core_cycles,
         perf_rdpmc_x86_64_linux::rdpmc_fixed_core_cycles_raw
       ),
       ClockCandidate::crash_isolated_hardware(
         "x86_64-rdpmc-fixed-core-cycles-blind",
-        true,
+        false,
         perf_rdpmc_x86_64_linux::rdpmc_fixed_core_cycles_raw
       ),
       ClockCandidate::hardware(
         "x86_64-perf-rdpmc-cpu-cycles",
-        true,
+        false,
         perf_rdpmc_x86_64_linux::perf_rdpmc_cpu_cycles
       ),
       ClockCandidate::hardware("x86_64-rdtsc", true, arch::x86_64::rdtsc),
+      ClockCandidate::hardware("x86_64-rdtscp", false, arch::x86_64::rdtscp),
+      ClockCandidate::hardware("x86_64-lfence-rdtsc", false, arch::x86_64::lfence_rdtsc),
       ClockCandidate::os_fallback("unix-monotonic", true, arch::fallback::clock_monotonic),
+      ClockCandidate::os_fallback("unix-monotonic-raw", false, arch::fallback::clock_monotonic_raw),
+      ClockCandidate::os_fallback("linux-boottime", false, arch::fallback::clock_boottime),
+      ClockCandidate::os_fallback(
+        "linux-syscall-monotonic",
+        false,
+        arch::fallback::syscall_clock_monotonic
+      ),
+      ClockCandidate::os_fallback(
+        "linux-syscall-monotonic-raw",
+        false,
+        arch::fallback::syscall_clock_monotonic_raw
+      ),
+      #[cfg(target_env = "gnu")]
+      ClockCandidate::os_fallback(
+        "linux-vdso-monotonic",
+        false,
+        arch::fallback::vdso_clock_monotonic
+      ),
+      #[cfg(target_env = "gnu")]
+      ClockCandidate::os_fallback(
+        "linux-vdso-monotonic-raw",
+        false,
+        arch::fallback::vdso_clock_monotonic_raw
+      ),
     ]
   }
   #[cfg(not(unix))]
@@ -246,11 +272,35 @@ fn candidates() -> &'static [ClockCandidate] {
   candidates![
     ClockCandidate::crash_isolated_hardware(
       "aarch64-pmccntr-el0-blind",
-      true,
+      false,
       arch::aarch64::pmccntr_el0
     ),
     ClockCandidate::hardware("aarch64-cntvct", true, arch::aarch64::cntvct),
     ClockCandidate::os_fallback("unix-monotonic", true, arch::fallback::clock_monotonic),
+    ClockCandidate::os_fallback("unix-monotonic-raw", false, arch::fallback::clock_monotonic_raw),
+    ClockCandidate::os_fallback("linux-boottime", false, arch::fallback::clock_boottime),
+    ClockCandidate::os_fallback(
+      "linux-syscall-monotonic",
+      false,
+      arch::fallback::syscall_clock_monotonic
+    ),
+    ClockCandidate::os_fallback(
+      "linux-syscall-monotonic-raw",
+      false,
+      arch::fallback::syscall_clock_monotonic_raw
+    ),
+    #[cfg(target_env = "gnu")]
+    ClockCandidate::os_fallback(
+      "linux-vdso-monotonic",
+      false,
+      arch::fallback::vdso_clock_monotonic
+    ),
+    #[cfg(target_env = "gnu")]
+    ClockCandidate::os_fallback(
+      "linux-vdso-monotonic-raw",
+      false,
+      arch::fallback::vdso_clock_monotonic_raw
+    ),
   ]
 }
 
@@ -284,11 +334,37 @@ fn candidates() -> &'static [ClockCandidate] {
     candidates![
       ClockCandidate::crash_isolated_hardware(
         "x86-rdpmc-fixed-core-cycles-blind",
-        true,
+        false,
         arch::x86::rdpmc_fixed_core_cycles
       ),
       ClockCandidate::hardware("x86-rdtsc", true, arch::x86::rdtsc),
+      ClockCandidate::hardware("x86-rdtscp", false, arch::x86::rdtscp),
+      ClockCandidate::hardware("x86-lfence-rdtsc", false, arch::x86::lfence_rdtsc),
       ClockCandidate::os_fallback("unix-monotonic", true, arch::fallback::clock_monotonic),
+      ClockCandidate::os_fallback("unix-monotonic-raw", false, arch::fallback::clock_monotonic_raw),
+      ClockCandidate::os_fallback("linux-boottime", false, arch::fallback::clock_boottime),
+      ClockCandidate::os_fallback(
+        "linux-syscall-monotonic",
+        false,
+        arch::fallback::syscall_clock_monotonic
+      ),
+      ClockCandidate::os_fallback(
+        "linux-syscall-monotonic-raw",
+        false,
+        arch::fallback::syscall_clock_monotonic_raw
+      ),
+      #[cfg(target_env = "gnu")]
+      ClockCandidate::os_fallback(
+        "linux-vdso-monotonic",
+        false,
+        arch::fallback::vdso_clock_monotonic
+      ),
+      #[cfg(target_env = "gnu")]
+      ClockCandidate::os_fallback(
+        "linux-vdso-monotonic-raw",
+        false,
+        arch::fallback::vdso_clock_monotonic_raw
+      ),
     ]
   }
   #[cfg(not(unix))]

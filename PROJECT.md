@@ -6,6 +6,7 @@ hotclock provides a zero-dependency Rust API for reading fast CPU or platform ti
 
 ## Runtime clock selection proof
 
+- [x] Benchmark expanded Linux clock candidates across AWS Lambda, KVM, and metal
 - [x] Benchmark all raw clocks and comparison crates across proof environments
 - [x] Prove four distinct Rust targets with runtime clock flips
 - [x] Include Lambda in the x86_64 target proof matrix
