@@ -11,7 +11,7 @@ pub fn rdtsc() -> u64 {
 }
 
 #[inline(always)]
-#[cfg(all(feature = "bench-internals", target_os = "linux"))]
+#[cfg(all(feature = "bench-internals", not(target_os = "macos")))]
 pub fn rdtscp() -> u64 {
   let mut aux = 0;
   // SAFETY: `__rdtscp` reads the TSC plus the CPU auxiliary value and has no Rust memory safety
@@ -20,7 +20,7 @@ pub fn rdtscp() -> u64 {
 }
 
 #[inline(always)]
-#[cfg(all(feature = "bench-internals", target_os = "linux"))]
+#[cfg(all(feature = "bench-internals", not(target_os = "macos")))]
 #[allow(clippy::inline_always)]
 pub fn lfence_rdtsc() -> u64 {
   let low: u32;

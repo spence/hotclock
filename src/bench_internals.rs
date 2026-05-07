@@ -13,8 +13,10 @@ mod perf_rdpmc_x86_64_linux;
 /// Clock source family used by benchmark-only candidate reports.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ClockCandidateKind {
-  /// CPU or platform counter read directly by hotclock.
-  Hardware,
+  /// Elapsed-time counter suitable for `Instant` semantics.
+  Instant,
+  /// CPU-work/core-cycle counter suitable for a separate `Cycles` API.
+  Cycles,
   /// Operating-system timer used when direct counters are unavailable or fail validation.
   OsFallback,
 }
@@ -23,7 +25,8 @@ impl ClockCandidateKind {
   #[must_use]
   pub const fn as_str(self) -> &'static str {
     match self {
-      Self::Hardware => "hardware",
+      Self::Instant => "instant",
+      Self::Cycles => "cycles",
       Self::OsFallback => "os-fallback",
     }
   }
@@ -72,10 +75,10 @@ pub struct ClockCandidateLatency {
 
 impl ClockCandidate {
   #[allow(dead_code)]
-  const fn hardware(name: &'static str, selected_by_hotclock: bool, read: fn() -> u64) -> Self {
+  const fn instant(name: &'static str, selected_by_hotclock: bool, read: fn() -> u64) -> Self {
     Self {
       name,
-      kind: ClockCandidateKind::Hardware,
+      kind: ClockCandidateKind::Instant,
       selected_by_hotclock,
       prepare: None,
       requires_child_process: false,
@@ -84,7 +87,19 @@ impl ClockCandidate {
   }
 
   #[allow(dead_code)]
-  const fn prepared_hardware(
+  const fn cycles(name: &'static str, selected_by_hotclock: bool, read: fn() -> u64) -> Self {
+    Self {
+      name,
+      kind: ClockCandidateKind::Cycles,
+      selected_by_hotclock,
+      prepare: None,
+      requires_child_process: false,
+      read,
+    }
+  }
+
+  #[allow(dead_code)]
+  const fn prepared_cycles(
     name: &'static str,
     selected_by_hotclock: bool,
     prepare: fn(),
@@ -92,7 +107,7 @@ impl ClockCandidate {
   ) -> Self {
     Self {
       name,
-      kind: ClockCandidateKind::Hardware,
+      kind: ClockCandidateKind::Cycles,
       selected_by_hotclock,
       prepare: Some(prepare),
       requires_child_process: false,
@@ -101,14 +116,14 @@ impl ClockCandidate {
   }
 
   #[allow(dead_code)]
-  const fn crash_isolated_hardware(
+  const fn crash_isolated_cycles(
     name: &'static str,
     selected_by_hotclock: bool,
     read: fn() -> u64,
   ) -> Self {
     Self {
       name,
-      kind: ClockCandidateKind::Hardware,
+      kind: ClockCandidateKind::Cycles,
       selected_by_hotclock,
       prepare: None,
       requires_child_process: true,
@@ -200,37 +215,38 @@ fn candidates() -> &'static [ClockCandidate] {
   #[cfg(target_os = "macos")]
   {
     candidates![
-      ClockCandidate::hardware("x86_64-rdtsc", true, arch::x86_64::rdtsc),
+      ClockCandidate::instant("x86_64-rdtsc", true, arch::x86_64::rdtsc),
       ClockCandidate::os_fallback("macos-mach", true, macos::mach_time),
+      ClockCandidate::os_fallback("macos-mach-continuous", false, macos::mach_continuous_time),
     ]
   }
   #[cfg(all(unix, not(target_os = "macos")))]
   {
     candidates![
-      ClockCandidate::hardware(
+      ClockCandidate::cycles(
         "x86_64-rdpmc-fixed-core-cycles",
         false,
         perf_rdpmc_x86_64_linux::rdpmc_fixed_core_cycles_checked
       ),
-      ClockCandidate::prepared_hardware(
+      ClockCandidate::prepared_cycles(
         "x86_64-rdpmc-fixed-core-cycles-raw",
         false,
         perf_rdpmc_x86_64_linux::prepare_rdpmc_fixed_core_cycles,
         perf_rdpmc_x86_64_linux::rdpmc_fixed_core_cycles_raw
       ),
-      ClockCandidate::crash_isolated_hardware(
+      ClockCandidate::crash_isolated_cycles(
         "x86_64-rdpmc-fixed-core-cycles-blind",
         false,
         perf_rdpmc_x86_64_linux::rdpmc_fixed_core_cycles_raw
       ),
-      ClockCandidate::hardware(
+      ClockCandidate::cycles(
         "x86_64-perf-rdpmc-cpu-cycles",
         false,
         perf_rdpmc_x86_64_linux::perf_rdpmc_cpu_cycles
       ),
-      ClockCandidate::hardware("x86_64-rdtsc", true, arch::x86_64::rdtsc),
-      ClockCandidate::hardware("x86_64-rdtscp", false, arch::x86_64::rdtscp),
-      ClockCandidate::hardware("x86_64-lfence-rdtsc", false, arch::x86_64::lfence_rdtsc),
+      ClockCandidate::instant("x86_64-rdtsc", true, arch::x86_64::rdtsc),
+      ClockCandidate::instant("x86_64-rdtscp", false, arch::x86_64::rdtscp),
+      ClockCandidate::instant("x86_64-lfence-rdtsc", false, arch::x86_64::lfence_rdtsc),
       ClockCandidate::os_fallback("unix-monotonic", true, arch::fallback::clock_monotonic),
       ClockCandidate::os_fallback("unix-monotonic-raw", false, arch::fallback::clock_monotonic_raw),
       ClockCandidate::os_fallback("linux-boottime", false, arch::fallback::clock_boottime),
@@ -261,7 +277,11 @@ fn candidates() -> &'static [ClockCandidate] {
   #[cfg(not(unix))]
   {
     candidates![
-      ClockCandidate::hardware("x86_64-rdtsc", true, arch::x86_64::rdtsc),
+      ClockCandidate::instant("x86_64-rdtsc", true, arch::x86_64::rdtsc),
+      ClockCandidate::instant("x86_64-rdtscp", false, arch::x86_64::rdtscp),
+      ClockCandidate::instant("x86_64-lfence-rdtsc", false, arch::x86_64::lfence_rdtsc),
+      #[cfg(target_os = "windows")]
+      ClockCandidate::os_fallback("windows-qpc", false, arch::fallback::query_performance_counter),
       ClockCandidate::os_fallback("std-instant", true, arch::fallback::instant_elapsed),
     ]
   }
@@ -270,12 +290,12 @@ fn candidates() -> &'static [ClockCandidate] {
 #[cfg(all(target_arch = "aarch64", target_os = "linux"))]
 fn candidates() -> &'static [ClockCandidate] {
   candidates![
-    ClockCandidate::crash_isolated_hardware(
+    ClockCandidate::crash_isolated_cycles(
       "aarch64-pmccntr-el0-blind",
       false,
       arch::aarch64::pmccntr_el0
     ),
-    ClockCandidate::hardware("aarch64-cntvct", true, arch::aarch64::cntvct),
+    ClockCandidate::instant("aarch64-cntvct", true, arch::aarch64::cntvct),
     ClockCandidate::os_fallback("unix-monotonic", true, arch::fallback::clock_monotonic),
     ClockCandidate::os_fallback("unix-monotonic-raw", false, arch::fallback::clock_monotonic_raw),
     ClockCandidate::os_fallback("linux-boottime", false, arch::fallback::clock_boottime),
@@ -307,15 +327,18 @@ fn candidates() -> &'static [ClockCandidate] {
 #[cfg(all(target_arch = "aarch64", target_os = "macos"))]
 fn candidates() -> &'static [ClockCandidate] {
   candidates![
-    ClockCandidate::hardware("aarch64-cntvct", true, arch::aarch64::cntvct),
+    ClockCandidate::instant("aarch64-cntvct", true, arch::aarch64::cntvct),
     ClockCandidate::os_fallback("macos-mach", false, macos::mach_time),
+    ClockCandidate::os_fallback("macos-mach-continuous", false, macos::mach_continuous_time),
   ]
 }
 
 #[cfg(all(target_arch = "aarch64", not(any(target_os = "linux", target_os = "macos"))))]
 fn candidates() -> &'static [ClockCandidate] {
   candidates![
-    ClockCandidate::hardware("aarch64-cntvct", true, arch::aarch64::cntvct),
+    ClockCandidate::instant("aarch64-cntvct", true, arch::aarch64::cntvct),
+    #[cfg(target_os = "windows")]
+    ClockCandidate::os_fallback("windows-qpc", false, arch::fallback::query_performance_counter),
     ClockCandidate::os_fallback("std-instant", true, arch::fallback::instant_elapsed),
   ]
 }
@@ -325,21 +348,22 @@ fn candidates() -> &'static [ClockCandidate] {
   #[cfg(target_os = "macos")]
   {
     candidates![
-      ClockCandidate::hardware("x86-rdtsc", true, arch::x86::rdtsc),
+      ClockCandidate::instant("x86-rdtsc", true, arch::x86::rdtsc),
       ClockCandidate::os_fallback("macos-mach", true, macos::mach_time),
+      ClockCandidate::os_fallback("macos-mach-continuous", false, macos::mach_continuous_time),
     ]
   }
   #[cfg(all(unix, not(target_os = "macos")))]
   {
     candidates![
-      ClockCandidate::crash_isolated_hardware(
+      ClockCandidate::crash_isolated_cycles(
         "x86-rdpmc-fixed-core-cycles-blind",
         false,
         arch::x86::rdpmc_fixed_core_cycles
       ),
-      ClockCandidate::hardware("x86-rdtsc", true, arch::x86::rdtsc),
-      ClockCandidate::hardware("x86-rdtscp", false, arch::x86::rdtscp),
-      ClockCandidate::hardware("x86-lfence-rdtsc", false, arch::x86::lfence_rdtsc),
+      ClockCandidate::instant("x86-rdtsc", true, arch::x86::rdtsc),
+      ClockCandidate::instant("x86-rdtscp", false, arch::x86::rdtscp),
+      ClockCandidate::instant("x86-lfence-rdtsc", false, arch::x86::lfence_rdtsc),
       ClockCandidate::os_fallback("unix-monotonic", true, arch::fallback::clock_monotonic),
       ClockCandidate::os_fallback("unix-monotonic-raw", false, arch::fallback::clock_monotonic_raw),
       ClockCandidate::os_fallback("linux-boottime", false, arch::fallback::clock_boottime),
@@ -370,7 +394,11 @@ fn candidates() -> &'static [ClockCandidate] {
   #[cfg(not(unix))]
   {
     candidates![
-      ClockCandidate::hardware("x86-rdtsc", true, arch::x86::rdtsc),
+      ClockCandidate::instant("x86-rdtsc", true, arch::x86::rdtsc),
+      ClockCandidate::instant("x86-rdtscp", false, arch::x86::rdtscp),
+      ClockCandidate::instant("x86-lfence-rdtsc", false, arch::x86::lfence_rdtsc),
+      #[cfg(target_os = "windows")]
+      ClockCandidate::os_fallback("windows-qpc", false, arch::fallback::query_performance_counter),
       ClockCandidate::os_fallback("std-instant", true, arch::fallback::instant_elapsed),
     ]
   }
@@ -381,14 +409,40 @@ fn candidates() -> &'static [ClockCandidate] {
   #[cfg(unix)]
   {
     candidates![
-      ClockCandidate::hardware("riscv64-rdcycle", true, arch::riscv64::rdcycle),
+      ClockCandidate::instant("riscv64-rdtime", false, arch::riscv64::rdtime),
+      ClockCandidate::cycles("riscv64-rdcycle", true, arch::riscv64::rdcycle),
       ClockCandidate::os_fallback("unix-monotonic", true, arch::fallback::clock_monotonic),
+      ClockCandidate::os_fallback("unix-monotonic-raw", false, arch::fallback::clock_monotonic_raw),
+      ClockCandidate::os_fallback("linux-boottime", false, arch::fallback::clock_boottime),
+      ClockCandidate::os_fallback(
+        "linux-syscall-monotonic",
+        false,
+        arch::fallback::syscall_clock_monotonic
+      ),
+      ClockCandidate::os_fallback(
+        "linux-syscall-monotonic-raw",
+        false,
+        arch::fallback::syscall_clock_monotonic_raw
+      ),
+      #[cfg(target_env = "gnu")]
+      ClockCandidate::os_fallback(
+        "linux-vdso-monotonic",
+        false,
+        arch::fallback::vdso_clock_monotonic
+      ),
+      #[cfg(target_env = "gnu")]
+      ClockCandidate::os_fallback(
+        "linux-vdso-monotonic-raw",
+        false,
+        arch::fallback::vdso_clock_monotonic_raw
+      ),
     ]
   }
   #[cfg(not(unix))]
   {
     candidates![
-      ClockCandidate::hardware("riscv64-rdcycle", true, arch::riscv64::rdcycle),
+      ClockCandidate::instant("riscv64-rdtime", false, arch::riscv64::rdtime),
+      ClockCandidate::cycles("riscv64-rdcycle", true, arch::riscv64::rdcycle),
       ClockCandidate::os_fallback("std-instant", true, arch::fallback::instant_elapsed),
     ]
   }
@@ -399,14 +453,38 @@ fn candidates() -> &'static [ClockCandidate] {
   #[cfg(unix)]
   {
     candidates![
-      ClockCandidate::hardware("powerpc64-mftb", true, arch::powerpc64::mftb),
+      ClockCandidate::instant("powerpc64-mftb", true, arch::powerpc64::mftb),
       ClockCandidate::os_fallback("unix-monotonic", true, arch::fallback::clock_monotonic),
+      ClockCandidate::os_fallback("unix-monotonic-raw", false, arch::fallback::clock_monotonic_raw),
+      ClockCandidate::os_fallback("linux-boottime", false, arch::fallback::clock_boottime),
+      ClockCandidate::os_fallback(
+        "linux-syscall-monotonic",
+        false,
+        arch::fallback::syscall_clock_monotonic
+      ),
+      ClockCandidate::os_fallback(
+        "linux-syscall-monotonic-raw",
+        false,
+        arch::fallback::syscall_clock_monotonic_raw
+      ),
+      #[cfg(target_env = "gnu")]
+      ClockCandidate::os_fallback(
+        "linux-vdso-monotonic",
+        false,
+        arch::fallback::vdso_clock_monotonic
+      ),
+      #[cfg(target_env = "gnu")]
+      ClockCandidate::os_fallback(
+        "linux-vdso-monotonic-raw",
+        false,
+        arch::fallback::vdso_clock_monotonic_raw
+      ),
     ]
   }
   #[cfg(not(unix))]
   {
     candidates![
-      ClockCandidate::hardware("powerpc64-mftb", true, arch::powerpc64::mftb),
+      ClockCandidate::instant("powerpc64-mftb", true, arch::powerpc64::mftb),
       ClockCandidate::os_fallback("std-instant", true, arch::fallback::instant_elapsed),
     ]
   }
@@ -417,14 +495,38 @@ fn candidates() -> &'static [ClockCandidate] {
   #[cfg(unix)]
   {
     candidates![
-      ClockCandidate::hardware("s390x-stckf", true, arch::s390x::stckf),
+      ClockCandidate::instant("s390x-stckf", true, arch::s390x::stckf),
       ClockCandidate::os_fallback("unix-monotonic", true, arch::fallback::clock_monotonic),
+      ClockCandidate::os_fallback("unix-monotonic-raw", false, arch::fallback::clock_monotonic_raw),
+      ClockCandidate::os_fallback("linux-boottime", false, arch::fallback::clock_boottime),
+      ClockCandidate::os_fallback(
+        "linux-syscall-monotonic",
+        false,
+        arch::fallback::syscall_clock_monotonic
+      ),
+      ClockCandidate::os_fallback(
+        "linux-syscall-monotonic-raw",
+        false,
+        arch::fallback::syscall_clock_monotonic_raw
+      ),
+      #[cfg(target_env = "gnu")]
+      ClockCandidate::os_fallback(
+        "linux-vdso-monotonic",
+        false,
+        arch::fallback::vdso_clock_monotonic
+      ),
+      #[cfg(target_env = "gnu")]
+      ClockCandidate::os_fallback(
+        "linux-vdso-monotonic-raw",
+        false,
+        arch::fallback::vdso_clock_monotonic_raw
+      ),
     ]
   }
   #[cfg(not(unix))]
   {
     candidates![
-      ClockCandidate::hardware("s390x-stckf", true, arch::s390x::stckf),
+      ClockCandidate::instant("s390x-stckf", true, arch::s390x::stckf),
       ClockCandidate::os_fallback("std-instant", true, arch::fallback::instant_elapsed),
     ]
   }
@@ -435,14 +537,38 @@ fn candidates() -> &'static [ClockCandidate] {
   #[cfg(unix)]
   {
     candidates![
-      ClockCandidate::hardware("loongarch64-rdtime", true, arch::loongarch64::rdtime),
+      ClockCandidate::instant("loongarch64-rdtime", true, arch::loongarch64::rdtime),
       ClockCandidate::os_fallback("unix-monotonic", true, arch::fallback::clock_monotonic),
+      ClockCandidate::os_fallback("unix-monotonic-raw", false, arch::fallback::clock_monotonic_raw),
+      ClockCandidate::os_fallback("linux-boottime", false, arch::fallback::clock_boottime),
+      ClockCandidate::os_fallback(
+        "linux-syscall-monotonic",
+        false,
+        arch::fallback::syscall_clock_monotonic
+      ),
+      ClockCandidate::os_fallback(
+        "linux-syscall-monotonic-raw",
+        false,
+        arch::fallback::syscall_clock_monotonic_raw
+      ),
+      #[cfg(target_env = "gnu")]
+      ClockCandidate::os_fallback(
+        "linux-vdso-monotonic",
+        false,
+        arch::fallback::vdso_clock_monotonic
+      ),
+      #[cfg(target_env = "gnu")]
+      ClockCandidate::os_fallback(
+        "linux-vdso-monotonic-raw",
+        false,
+        arch::fallback::vdso_clock_monotonic_raw
+      ),
     ]
   }
   #[cfg(not(unix))]
   {
     candidates![
-      ClockCandidate::hardware("loongarch64-rdtime", true, arch::loongarch64::rdtime),
+      ClockCandidate::instant("loongarch64-rdtime", true, arch::loongarch64::rdtime),
       ClockCandidate::os_fallback("std-instant", true, arch::fallback::instant_elapsed),
     ]
   }
@@ -480,11 +606,19 @@ fn candidates() -> &'static [ClockCandidate] {
 mod macos {
   unsafe extern "C" {
     fn mach_absolute_time() -> u64;
+    #[link_name = "mach_continuous_time"]
+    fn mach_continuous_time_sys() -> u64;
   }
 
   #[inline(always)]
   pub fn mach_time() -> u64 {
     // SAFETY: `mach_absolute_time` is a zero-argument monotonic host counter read.
     unsafe { mach_absolute_time() }
+  }
+
+  #[inline(always)]
+  pub fn mach_continuous_time() -> u64 {
+    // SAFETY: `mach_continuous_time` is a zero-argument monotonic host counter read.
+    unsafe { mach_continuous_time_sys() }
   }
 }

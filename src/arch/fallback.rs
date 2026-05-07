@@ -20,7 +20,15 @@ mod monotonic {
   #[cfg(all(
     feature = "bench-internals",
     target_os = "linux",
-    any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64")
+    any(
+      target_arch = "x86",
+      target_arch = "x86_64",
+      target_arch = "aarch64",
+      target_arch = "riscv64",
+      target_arch = "powerpc64",
+      target_arch = "s390x",
+      target_arch = "loongarch64",
+    )
   ))]
   use std::ffi::c_long;
   #[cfg(all(feature = "bench-internals", target_os = "linux", target_env = "gnu"))]
@@ -51,6 +59,14 @@ mod monotonic {
   const SYS_CLOCK_GETTIME: c_long = 228;
   #[cfg(all(feature = "bench-internals", target_os = "linux", target_arch = "aarch64"))]
   const SYS_CLOCK_GETTIME: c_long = 113;
+  #[cfg(all(feature = "bench-internals", target_os = "linux", target_arch = "riscv64"))]
+  const SYS_CLOCK_GETTIME: c_long = 113;
+  #[cfg(all(feature = "bench-internals", target_os = "linux", target_arch = "loongarch64"))]
+  const SYS_CLOCK_GETTIME: c_long = 113;
+  #[cfg(all(feature = "bench-internals", target_os = "linux", target_arch = "powerpc64"))]
+  const SYS_CLOCK_GETTIME: c_long = 246;
+  #[cfg(all(feature = "bench-internals", target_os = "linux", target_arch = "s390x"))]
+  const SYS_CLOCK_GETTIME: c_long = 260;
 
   unsafe extern "C" {
     fn clock_gettime(clk_id: i32, tp: *mut Timespec) -> i32;
@@ -90,7 +106,15 @@ mod monotonic {
   #[cfg(all(
     feature = "bench-internals",
     target_os = "linux",
-    any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64")
+    any(
+      target_arch = "x86",
+      target_arch = "x86_64",
+      target_arch = "aarch64",
+      target_arch = "riscv64",
+      target_arch = "powerpc64",
+      target_arch = "s390x",
+      target_arch = "loongarch64",
+    )
   ))]
   unsafe extern "C" {
     fn syscall(number: c_long, ...) -> c_long;
@@ -100,7 +124,15 @@ mod monotonic {
   #[cfg(all(
     feature = "bench-internals",
     target_os = "linux",
-    any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64")
+    any(
+      target_arch = "x86",
+      target_arch = "x86_64",
+      target_arch = "aarch64",
+      target_arch = "riscv64",
+      target_arch = "powerpc64",
+      target_arch = "s390x",
+      target_arch = "loongarch64",
+    )
   ))]
   pub fn syscall_clock_monotonic() -> u64 {
     read_clock_syscall(CLOCK_MONOTONIC)
@@ -110,7 +142,15 @@ mod monotonic {
   #[cfg(all(
     feature = "bench-internals",
     target_os = "linux",
-    any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64")
+    any(
+      target_arch = "x86",
+      target_arch = "x86_64",
+      target_arch = "aarch64",
+      target_arch = "riscv64",
+      target_arch = "powerpc64",
+      target_arch = "s390x",
+      target_arch = "loongarch64",
+    )
   ))]
   pub fn syscall_clock_monotonic_raw() -> u64 {
     read_clock_syscall(CLOCK_MONOTONIC_RAW)
@@ -120,7 +160,15 @@ mod monotonic {
   #[cfg(all(
     feature = "bench-internals",
     target_os = "linux",
-    any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64")
+    any(
+      target_arch = "x86",
+      target_arch = "x86_64",
+      target_arch = "aarch64",
+      target_arch = "riscv64",
+      target_arch = "powerpc64",
+      target_arch = "s390x",
+      target_arch = "loongarch64",
+    )
   ))]
   fn read_clock_syscall(clock_id: i32) -> u64 {
     let mut ts = Timespec { tv_sec: 0, tv_nsec: 0 };
@@ -203,6 +251,23 @@ mod instant {
   #[inline(always)]
   pub fn instant_elapsed() -> u64 {
     START.get_or_init(Instant::now).elapsed().as_nanos() as u64
+  }
+
+  #[cfg(all(feature = "bench-internals", target_os = "windows"))]
+  unsafe extern "system" {
+    fn QueryPerformanceCounter(counter: *mut i64) -> i32;
+  }
+
+  #[inline(always)]
+  #[cfg(all(feature = "bench-internals", target_os = "windows"))]
+  pub fn query_performance_counter() -> u64 {
+    let mut counter = 0i64;
+    // SAFETY: `counter` is a valid writable pointer for the duration of the call.
+    let ok = unsafe { QueryPerformanceCounter(&mut counter) };
+    if ok == 0 {
+      panic!("QueryPerformanceCounter failed");
+    }
+    counter as u64
   }
 }
 

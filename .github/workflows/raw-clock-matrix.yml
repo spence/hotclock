@@ -681,6 +681,43 @@ jobs:
           name: raw-clock-${{ matrix.name }}
           path: target/raw-clock-${{ matrix.name }}/**
 
+  macos-aarch64:
+    name: macos aarch64 / ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macos-15-arm64-native
+            runner: macos-15
+          - name: macos-26-arm64-native
+            runner: macos-26
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+
+      - name: Build raw clock benchmark
+        run: cargo build --features bench-internals,comparison-crates --example raw_clock_matrix --release
+
+      - name: Run raw clock benchmark
+        run: target/release/examples/raw_clock_matrix
+        env:
+          HOTCLOCK_RAW_CLOCK_ENVIRONMENT: ${{ matrix.name }}
+          HOTCLOCK_RAW_CLOCK_REPORT_DIR: target/raw-clock-${{ matrix.name }}
+
+      - name: Upload raw clock report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-clock-${{ matrix.name }}
+          path: target/raw-clock-${{ matrix.name }}/**
+
   windows-x86_64:
     name: windows x86_64 / ${{ matrix.name }}
     runs-on: ${{ matrix.runner }}
@@ -724,6 +761,39 @@ jobs:
           name: raw-clock-${{ matrix.name }}
           path: target/raw-clock-${{ matrix.name }}/**
 
+  windows-aarch64:
+    name: windows aarch64 / ${{ matrix.name }}
+    runs-on: windows-11-arm
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust
+        shell: pwsh
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustup target add aarch64-pc-windows-msvc
+
+      - name: Build raw clock benchmark
+        shell: pwsh
+        run: cargo build --features bench-internals,comparison-crates --example raw_clock_matrix --release --target aarch64-pc-windows-msvc
+
+      - name: Run raw clock benchmark
+        shell: pwsh
+        run: |
+          $env:HOTCLOCK_RAW_CLOCK_ENVIRONMENT = "windows-11-arm-arm64-native"
+          $env:HOTCLOCK_RAW_CLOCK_REPORT_DIR = "target/raw-clock-windows-11-arm-arm64-native"
+          & target\aarch64-pc-windows-msvc\release\examples\raw_clock_matrix.exe
+
+      - name: Upload raw clock report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-clock-windows-11-arm-arm64-native
+          path: target/raw-clock-windows-11-arm-arm64-native/**
+
   analyze:
     name: analyze raw clock matrix
     runs-on: ubuntu-24.04
@@ -737,7 +807,9 @@ jobs:
       - linux-wrapped-x86_64
       - linux-qemu-system-x86_64
       - macos-x86_64
+      - macos-aarch64
       - windows-x86_64
+      - windows-aarch64
     if: always()
 
     steps:
