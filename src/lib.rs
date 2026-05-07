@@ -32,7 +32,7 @@
 //! | x86\_64             | RDTSC          | OS timer       |
 //! | x86                 | RDTSC          | OS timer       |
 //! | aarch64 non-macOS   | CNTVCT\_EL0    | OS timer       |
-//! | riscv64             | rdcycle        | OS timer       |
+//! | riscv64             | rdtime         | OS timer       |
 //! | powerpc64           | mftb           | OS timer       |
 //! | s390x               | stckf          | OS timer       |
 //! | loongarch64         | rdtime.d       | OS timer       |
@@ -55,6 +55,12 @@
 //! API. `hotclock::Ticks` is the explicit raw counter-delta type for hot paths that want hardware
 //! tick units directly. Use [`Instant::elapsed_ticks()`] or [`Instant::ticks_since()`] when raw
 //! counter deltas are required.
+//!
+//! `Cycles` is the separate hot-loop clock contract: an Instant-shaped counter that can use
+//! faster PMU or core-cycle sources such as RDPMC, PMCCNTR\_EL0, or rdcycle. It is for
+//! same-thread microbenchmarks, profilers, and polling loops, not for cross-thread ordering or
+//! measurements that must survive OS thread migration, descheduling, suspend/resume, or
+//! hypervisor migration.
 //!
 //! # Frequency calibration
 //!

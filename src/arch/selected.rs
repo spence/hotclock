@@ -55,7 +55,7 @@ pub mod indices {
   pub use riscv64::*;
   #[cfg(target_arch = "riscv64")]
   mod riscv64 {
-    pub const RDCYCLE: u8 = 0;
+    pub const RDTIME: u8 = 0;
     #[cfg(unix)]
     pub const CLOCK_MONOTONIC: u8 = 1;
     #[cfg(not(unix))]
@@ -150,7 +150,7 @@ fn read_selected(sel: u8) -> u64 {
 
   #[cfg(target_arch = "riscv64")]
   return match sel {
-    indices::RDCYCLE => super::riscv64::rdcycle(),
+    indices::RDTIME => super::riscv64::rdtime(),
     #[cfg(unix)]
     indices::CLOCK_MONOTONIC => super::fallback::clock_monotonic(),
     #[cfg(not(unix))]

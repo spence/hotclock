@@ -144,11 +144,7 @@ fn candidates() -> &'static [Candidate] {
   #[cfg(unix)]
   {
     &[
-      Candidate {
-        name: "riscv64-rdcycle",
-        index: arch::indices::RDCYCLE,
-        counter: riscv64::rdcycle,
-      },
+      Candidate { name: "riscv64-rdtime", index: arch::indices::RDTIME, counter: riscv64::rdtime },
       Candidate {
         name: "unix-monotonic",
         index: arch::indices::CLOCK_MONOTONIC,
@@ -159,11 +155,7 @@ fn candidates() -> &'static [Candidate] {
   #[cfg(not(unix))]
   {
     &[
-      Candidate {
-        name: "riscv64-rdcycle",
-        index: arch::indices::RDCYCLE,
-        counter: riscv64::rdcycle,
-      },
+      Candidate { name: "riscv64-rdtime", index: arch::indices::RDTIME, counter: riscv64::rdtime },
       Candidate {
         name: "std-instant",
         index: arch::indices::STD_INSTANT,
