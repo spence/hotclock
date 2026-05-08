@@ -12,8 +12,8 @@ in a container, a VM or on bare metal, it automatically selects the fastest mach
 Full target/environment results: [runtime selection validation](benches/runtime-selection-validation-2026-05-08.md).
 
 The primary benchmark is `Instant::now()` read cost across target/environment
-pairs. Comparator cells show their measured read cost and their multiple versus
-`hotclock` on the same row.
+pairs. Bars are scaled within each target row so same-environment crate costs
+are directly comparable.
 
 Fresh validation runs below were produced with
 `tools/selection-validation-runner` on May 8, 2026. Each row was enforced
