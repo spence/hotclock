@@ -51,7 +51,10 @@ NOTE_Y = 30
 GROUP_TOP = 42
 GROUP_HEIGHT = 382
 BAR_BOTTOM = 384
-MAX_BAR_HEIGHT = 304
+BREAK_VALUE = 80.0
+LOWER_BAR_HEIGHT = 160
+UPPER_BAR_HEIGHT = 110
+MAX_BAR_HEIGHT = LOWER_BAR_HEIGHT + UPPER_BAR_HEIGHT
 VALUE_FONT_SIZE = 7
 LABEL_FONT_SIZE = 12
 LEGEND_FONT_SIZE = LABEL_FONT_SIZE
@@ -79,6 +82,28 @@ def text(x: float, y: float, value: str, size: int, anchor: str = "middle") -> s
 
 def text_width(value: str, size: int) -> float:
   return len(value) * size * 0.56
+
+
+def bar_height(value: float) -> int:
+  if value <= BREAK_VALUE:
+    return max(2, round(value / BREAK_VALUE * LOWER_BAR_HEIGHT))
+  upper = (value - BREAK_VALUE) / (GLOBAL_MAX - BREAK_VALUE) * UPPER_BAR_HEIGHT
+  return round(LOWER_BAR_HEIGHT + upper)
+
+
+def bar_break(x: float) -> list[str]:
+  y = BAR_BOTTOM - LOWER_BAR_HEIGHT
+  path = (
+    f"M{x - 1:g} {y - 3:g} "
+    f"C{x + 1:g} {y - 8:g} {x + 3:g} {y + 2:g} {x + 5:g} {y - 3:g} "
+    f"S{x + 9:g} {y + 2:g} {x + BAR_WIDTH + 1:g} {y - 3:g}"
+  )
+  return [
+    f'<path d="{path}" stroke="{GROUP_BACKGROUND}" stroke-width="4" fill="none" stroke-linecap="round"/>',
+    '<path '
+    f'd="{path}" stroke="#2E231B" stroke-width="0.8" fill="none" '
+    'stroke-linecap="round" opacity="0.65"/>',
+  ]
 
 
 def render_svg() -> str:
@@ -112,7 +137,7 @@ def render_svg() -> str:
       f'<text x="{x + LEGEND_SQUARE + 4:g}" y="{LEGEND_Y:g}" text-anchor="start" '
       f'font-family="{FONT}" font-size="{LEGEND_FONT_SIZE}" fill="#2E231B">{esc(name)}</text>'
     )
-  parts.append(text(width / 2, NOTE_Y, "All measurements are nanoseconds; bars share one vertical scale.", 9))
+  parts.append(text(width / 2, NOTE_Y, "All measurements are nanoseconds; squiggle marks compressed upper range.", 9))
 
   for group_x, (labels, values) in zip(group_xs, GROUPS):
     parts.append(
@@ -125,7 +150,7 @@ def render_svg() -> str:
     for i, value in enumerate(values):
       if value is None:
         continue
-      height = max(2, round(value / GLOBAL_MAX * MAX_BAR_HEIGHT))
+      height = bar_height(value)
       x = bar_x + i * (BAR_WIDTH + BAR_GAP)
       y = BAR_BOTTOM - height
       color = CRATES[i][1]
@@ -141,6 +166,8 @@ def render_svg() -> str:
         label_y -= VALUE_FONT_SIZE + 3
       placed_labels.append((label_x, label_y, width_estimate))
       parts.append(f'<rect x="{x:g}" y="{y:g}" width="{BAR_WIDTH}" height="{height}" fill="{color}"/>')
+      if value > BREAK_VALUE:
+        parts.extend(bar_break(x))
       parts.append(text(label_x, label_y, label, VALUE_FONT_SIZE))
 
     center = group_x + GROUP_WIDTH / 2

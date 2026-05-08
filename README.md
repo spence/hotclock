@@ -15,8 +15,8 @@ Full target/environment results: [runtime selection validation](benches/runtime-
 Pinned m7i GNU rerun: [high-confidence benchmark](benches/m7i-gnu-high-confidence-2026-05-08.md).
 
 The primary benchmark is `Instant::now()` read cost across target/environment
-pairs. Bars use one shared vertical scale so target environments are directly
-comparable.
+pairs. Bars use one shared broken scale; squiggles mark the compressed upper
+range for Docker outliers.
 
 Fresh validation runs below were produced with
 `tools/selection-validation-runner` on May 8, 2026. Each row was enforced
