@@ -16,22 +16,7 @@ digraph benchmark {
     label=<
       <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
         <TR>
-          <TD WIDTH="760"></TD>
-          <TD ALIGN="RIGHT">
-            <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="1" CELLPADDING="1" BGCOLOR="#FFF8E8">
-              <TR>
-                <TD><TABLE BORDER="0" CELLBORDER="0" CELLSPACING="1" CELLPADDING="0"><TR><TD BGCOLOR="#075A4A" WIDTH="6" HEIGHT="6" FIXEDSIZE="TRUE"></TD><TD ALIGN="LEFT"><FONT POINT-SIZE="7">tach</FONT></TD></TR></TABLE></TD>
-                <TD><TABLE BORDER="0" CELLBORDER="0" CELLSPACING="1" CELLPADDING="0"><TR><TD BGCOLOR="#D48A22" WIDTH="6" HEIGHT="6" FIXEDSIZE="TRUE"></TD><TD ALIGN="LEFT"><FONT POINT-SIZE="7">quanta</FONT></TD></TR></TABLE></TD>
-                <TD><TABLE BORDER="0" CELLBORDER="0" CELLSPACING="1" CELLPADDING="0"><TR><TD BGCOLOR="#8F2E2E" WIDTH="6" HEIGHT="6" FIXEDSIZE="TRUE"></TD><TD ALIGN="LEFT"><FONT POINT-SIZE="7">minstant</FONT></TD></TR></TABLE></TD>
-                <TD><TABLE BORDER="0" CELLBORDER="0" CELLSPACING="1" CELLPADDING="0"><TR><TD BGCOLOR="#4B6F78" WIDTH="6" HEIGHT="6" FIXEDSIZE="TRUE"></TD><TD ALIGN="LEFT"><FONT POINT-SIZE="7">fastant</FONT></TD></TR></TABLE></TD>
-                <TD><TABLE BORDER="0" CELLBORDER="0" CELLSPACING="1" CELLPADDING="0"><TR><TD BGCOLOR="#B95032" WIDTH="6" HEIGHT="6" FIXEDSIZE="TRUE"></TD><TD ALIGN="LEFT"><FONT POINT-SIZE="7">std</FONT></TD></TR></TABLE></TD>
-              </TR>
-            </TABLE>
-          </TD>
-        </TR>
-        <TR><TD HEIGHT="10"></TD><TD></TD></TR>
-        <TR>
-          <TD COLSPAN="2">
+          <TD>
             <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
               <TR>
                 <TD VALIGN="BOTTOM">
@@ -152,6 +137,18 @@ digraph benchmark {
                 </TD>
               </TR>
             </TABLE>
+          </TD>
+        </TR>
+        <TR><TD HEIGHT="6"></TD></TR>
+        <TR>
+          <TD ALIGN="CENTER">
+            <FONT POINT-SIZE="7">
+              <FONT COLOR="#075A4A">&#9632;</FONT> tach&#160;&#160;
+              <FONT COLOR="#D48A22">&#9632;</FONT> quanta&#160;&#160;
+              <FONT COLOR="#8F2E2E">&#9632;</FONT> minstant&#160;&#160;
+              <FONT COLOR="#4B6F78">&#9632;</FONT> fastant&#160;&#160;
+              <FONT COLOR="#B95032">&#9632;</FONT> std
+            </FONT>
           </TD>
         </TR>
       </TABLE>
