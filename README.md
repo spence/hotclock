@@ -7,7 +7,9 @@ in a container, a VM or on bare metal, it automatically selects the fastest mach
 
 ## performance
 
-![Cross-target Instant benchmark comparison](benches/assets/benchmark.png)
+![Cross-target Instant benchmark bar chart](benches/assets/benchmark.png)
+
+![Cross-target Instant benchmark heatmap](benches/assets/benchmark-heatmap.png)
 
 Full target/environment results: [runtime selection validation](benches/runtime-selection-validation-2026-05-08.md).
 
