@@ -21,7 +21,7 @@ digraph benchmark {
           <TD BGCOLOR="#1B1A17"><FONT COLOR="#FBF6EC"><B>quanta</B><BR/><FONT POINT-SIZE="9">0.12.6</FONT></FONT></TD>
           <TD BGCOLOR="#1B1A17"><FONT COLOR="#FBF6EC"><B>minstant</B><BR/><FONT POINT-SIZE="9">0.1.7</FONT></FONT></TD>
           <TD BGCOLOR="#1B1A17"><FONT COLOR="#FBF6EC"><B>fastant</B><BR/><FONT POINT-SIZE="9">0.1.11</FONT></FONT></TD>
-          <TD BGCOLOR="#1B1A17"><FONT COLOR="#FBF6EC"><B>std</B><BR/><FONT POINT-SIZE="9">1.91</FONT></FONT></TD>
+          <TD BGCOLOR="#1B1A17"><FONT COLOR="#FBF6EC"><B>std</B><BR/><FONT POINT-SIZE="9">1.91-1.95</FONT></FONT></TD>
         </TR>
         <TR>
           <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">macOS / aarch64</TD>
@@ -97,11 +97,11 @@ digraph benchmark {
         </TR>
         <TR>
           <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">AWS Windows c5.large / x86_64</TD>
-          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC">8.24ns</FONT></TD>
-          <TD BGCOLOR="#EAC17D">12.4ns</TD>
-          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">36.8ns</FONT></TD>
-          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">35.5ns</FONT></TD>
-          <TD BGCOLOR="#FFF8E8">—</TD>
+          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC">8.42ns</FONT></TD>
+          <TD BGCOLOR="#EAC17D">14.4ns</TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">34.2ns</FONT></TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">34.3ns</FONT></TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">41.4ns</FONT></TD>
         </TR>
       </TABLE>
     >
