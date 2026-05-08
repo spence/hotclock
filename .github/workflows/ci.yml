@@ -57,7 +57,7 @@ jobs:
         run: cargo check --examples
 
       - name: Run diagnostics binary
-        run: cargo run --bin hotclock --release
+        run: cargo run --bin tach --release
 
       - name: Run basic example
         run: cargo run --example basic --release

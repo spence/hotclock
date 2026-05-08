@@ -4,7 +4,7 @@ use std::hint::black_box;
 use std::time::Instant as StdInstant;
 
 use criterion::{Criterion, criterion_group, criterion_main};
-use hotclock::Instant;
+use tach::Instant;
 
 fn bench_instant(c: &mut Criterion) {
   println!("Using: {}", Instant::implementation());

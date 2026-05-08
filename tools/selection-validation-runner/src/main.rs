@@ -5,7 +5,7 @@ use std::io::{Read, Write};
 use std::net::TcpStream;
 use std::time::Instant as StdInstant;
 
-use hotclock::{Cycles, Instant};
+use tach::{Cycles, Instant};
 
 const DEFAULT_WARMUP_ITERS: usize = 10_000;
 const DEFAULT_MEASURE_ITERS: usize = 100_000;
@@ -35,8 +35,8 @@ struct Row {
   expected_cycles: String,
   selected_instant: &'static str,
   selected_cycles: &'static str,
-  hotclock_instant: Stats,
-  hotclock_cycles: Stats,
+  tach_instant: Stats,
+  tach_cycles: Stats,
   raw_counter: Option<Stats>,
   quanta: Stats,
   minstant: Stats,
@@ -65,26 +65,25 @@ fn main() {
 }
 
 fn run_report() -> (String, bool) {
-  let expected_instant =
-    std::env::var("HOTCLOCK_EXPECT_INSTANT").unwrap_or_else(|_| "unset".into());
-  let expected_cycles = std::env::var("HOTCLOCK_EXPECT_CYCLES").unwrap_or_else(|_| "unset".into());
+  let expected_instant = std::env::var("TACH_EXPECT_INSTANT").unwrap_or_else(|_| "unset".into());
+  let expected_cycles = std::env::var("TACH_EXPECT_CYCLES").unwrap_or_else(|_| "unset".into());
   let expected_set = expected_instant != "unset" && expected_cycles != "unset";
 
   let selected_instant = Instant::implementation();
   let selected_cycles = Cycles::implementation();
 
   let measurements = measure_interleaved();
-  let hotclock_instant = measurements.hotclock_instant;
-  let hotclock_cycles = measurements.hotclock_cycles;
+  let tach_instant = measurements.tach_instant;
+  let tach_cycles = measurements.tach_cycles;
   let raw_counter = measurements.raw_counter;
   let quanta = measurements.quanta;
   let minstant = measurements.minstant;
   let fastant = measurements.fastant;
   let std_instant = measurements.std_instant;
-  let fastest_instant_api = hotclock_instant.ns_op() <= quanta.ns_op() + FASTEST_EPSILON_NS
-    && hotclock_instant.ns_op() <= minstant.ns_op() + FASTEST_EPSILON_NS
-    && hotclock_instant.ns_op() <= fastant.ns_op() + FASTEST_EPSILON_NS
-    && hotclock_instant.ns_op() <= std_instant.ns_op() + FASTEST_EPSILON_NS;
+  let fastest_instant_api = tach_instant.ns_op() <= quanta.ns_op() + FASTEST_EPSILON_NS
+    && tach_instant.ns_op() <= minstant.ns_op() + FASTEST_EPSILON_NS
+    && tach_instant.ns_op() <= fastant.ns_op() + FASTEST_EPSILON_NS
+    && tach_instant.ns_op() <= std_instant.ns_op() + FASTEST_EPSILON_NS;
 
   let row = Row {
     target: target_label(),
@@ -97,8 +96,8 @@ fn run_report() -> (String, bool) {
     expected_cycles,
     selected_instant,
     selected_cycles,
-    hotclock_instant,
-    hotclock_cycles,
+    tach_instant,
+    tach_cycles,
     raw_counter,
     quanta,
     minstant,
@@ -107,14 +106,14 @@ fn run_report() -> (String, bool) {
     fastest_instant_api,
   };
 
-  let ok = std::env::var("HOTCLOCK_ENFORCE_EXPECTED").as_deref() != Ok("1")
+  let ok = std::env::var("TACH_ENFORCE_EXPECTED").as_deref() != Ok("1")
     || (row.expected_set && row.matches_expected);
   (render_row(&row), ok)
 }
 
 struct Measurements {
-  hotclock_instant: Stats,
-  hotclock_cycles: Stats,
+  tach_instant: Stats,
+  tach_cycles: Stats,
   raw_counter: Option<Stats>,
   quanta: Stats,
   minstant: Stats,
@@ -128,9 +127,9 @@ struct BenchCase {
 }
 
 fn measure_interleaved() -> Measurements {
-  let warmup_iters = env_usize("HOTCLOCK_VALIDATION_WARMUP_ITERS", DEFAULT_WARMUP_ITERS);
-  let measure_iters = env_usize("HOTCLOCK_VALIDATION_MEASURE_ITERS", DEFAULT_MEASURE_ITERS);
-  let samples = env_usize("HOTCLOCK_VALIDATION_SAMPLES", DEFAULT_SAMPLES);
+  let warmup_iters = env_usize("TACH_VALIDATION_WARMUP_ITERS", DEFAULT_WARMUP_ITERS);
+  let measure_iters = env_usize("TACH_VALIDATION_MEASURE_ITERS", DEFAULT_MEASURE_ITERS);
+  let samples = env_usize("TACH_VALIDATION_SAMPLES", DEFAULT_SAMPLES);
 
   let cases = bench_cases();
   for case in &cases {
@@ -153,8 +152,8 @@ fn measure_interleaved() -> Measurements {
   }
 
   Measurements {
-    hotclock_instant: stats(timings[HOTCLOCK_INSTANT].clone()),
-    hotclock_cycles: stats(timings[HOTCLOCK_CYCLES].clone()),
+    tach_instant: stats(timings[TACH_INSTANT].clone()),
+    tach_cycles: stats(timings[TACH_CYCLES].clone()),
     raw_counter: if timings[RAW_COUNTER].is_empty() {
       None
     } else {
@@ -180,8 +179,8 @@ fn stats(mut timings: Vec<f64>) -> Stats {
   }
 }
 
-const HOTCLOCK_INSTANT: usize = 0;
-const HOTCLOCK_CYCLES: usize = 1;
+const TACH_INSTANT: usize = 0;
+const TACH_CYCLES: usize = 1;
 const RAW_COUNTER: usize = 2;
 const QUANTA: usize = 3;
 const MINSTANT: usize = 4;
@@ -191,8 +190,8 @@ const BENCH_COUNT: usize = 7;
 
 fn bench_cases() -> Vec<BenchCase> {
   let mut cases = vec![
-    BenchCase { index: HOTCLOCK_INSTANT, run: bench_hotclock_instant },
-    BenchCase { index: HOTCLOCK_CYCLES, run: bench_hotclock_cycles },
+    BenchCase { index: TACH_INSTANT, run: bench_tach_instant },
+    BenchCase { index: TACH_CYCLES, run: bench_tach_cycles },
     BenchCase { index: QUANTA, run: bench_quanta },
     BenchCase { index: MINSTANT, run: bench_minstant },
     BenchCase { index: FASTANT, run: bench_fastant },
@@ -206,11 +205,11 @@ fn bench_cases() -> Vec<BenchCase> {
   cases
 }
 
-fn bench_hotclock_instant() {
+fn bench_tach_instant() {
   let _ = black_box(Instant::now());
 }
 
-fn bench_hotclock_cycles() {
+fn bench_tach_cycles() {
   let _ = black_box(Cycles::now());
 }
 
@@ -266,8 +265,8 @@ fn render_row(row: &Row) -> String {
   push_field(&mut out, "fastest-known-cycles-clock", &row.expected_cycles);
   push_field(&mut out, "selected-instant-clock", row.selected_instant);
   push_field(&mut out, "selected-cycles-clock", row.selected_cycles);
-  push_field(&mut out, "hotclock-instant-bench", &format_ns(row.hotclock_instant));
-  push_field(&mut out, "hotclock-cycles-bench", &format_ns(row.hotclock_cycles));
+  push_field(&mut out, "tach-instant-bench", &format_ns(row.tach_instant));
+  push_field(&mut out, "tach-cycles-bench", &format_ns(row.tach_cycles));
   if let Some(raw_counter) = row.raw_counter {
     push_field(&mut out, "raw-counter-bench", &format_ns(raw_counter));
   }
@@ -279,7 +278,7 @@ fn render_row(row: &Row) -> String {
   push_field(&mut out, "matches-expected", expected_status(row));
   out.push_str("└────────────────────────────────┴────────────────────────────────────────┘\n");
 
-  if std::env::var("HOTCLOCK_VALIDATION_DISTRIBUTION").as_deref() == Ok("1") {
+  if std::env::var("TACH_VALIDATION_DISTRIBUTION").as_deref() == Ok("1") {
     render_distribution(&mut out, row);
   }
 
@@ -297,8 +296,8 @@ fn render_distribution(out: &mut String, row: &Row) {
   out.push_str(
     "├───────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼──────────┤\n",
   );
-  push_stats(out, "hotclock-instant", row.hotclock_instant);
-  push_stats(out, "hotclock-cycles", row.hotclock_cycles);
+  push_stats(out, "tach-instant", row.tach_instant);
+  push_stats(out, "tach-cycles", row.tach_cycles);
   if let Some(raw_counter) = row.raw_counter {
     push_stats(out, "raw-counter", raw_counter);
   }
@@ -361,7 +360,7 @@ fn target_env() -> &'static str {
 }
 
 fn environment_label() -> String {
-  if let Ok(name) = std::env::var("HOTCLOCK_ENV_NAME") {
+  if let Ok(name) = std::env::var("TACH_ENV_NAME") {
     return name;
   }
 
@@ -392,7 +391,7 @@ fn lambda_loop(runtime_api: &str) -> std::io::Result<()> {
       report
     } else {
       format!(
-        "{{\"errorMessage\":\"{}\",\"errorType\":\"HotclockSelectionMismatch\"}}",
+        "{{\"errorMessage\":\"{}\",\"errorType\":\"TachSelectionMismatch\"}}",
         json_escape(&report)
       )
     };

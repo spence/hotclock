@@ -14,7 +14,7 @@ use crate::{CycleTicks, arch, convert};
 /// migration, descheduling, suspend/resume, or hypervisor migration with `Instant` semantics.
 ///
 /// ```
-/// use hotclock::Cycles;
+/// use tach::Cycles;
 ///
 /// let start = Cycles::now();
 /// // ... hot-loop work ...

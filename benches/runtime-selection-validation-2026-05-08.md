@@ -1,7 +1,7 @@
 # Runtime selection validation, 2026-05-08
 
 Rows were produced by `tools/selection-validation-runner` with
-`HOTCLOCK_ENFORCE_EXPECTED=1`, so each run exited successfully only when
+`TACH_ENFORCE_EXPECTED=1`, so each run exited successfully only when
 `Instant::implementation()` and `Cycles::implementation()` matched the expected
 fastest valid clocks for that target/environment. Scores are median `ns/op` for
 `now()` reads.

@@ -16,7 +16,7 @@
 //! # Quick start
 //!
 //! ```
-//! use hotclock::Instant;
+//! use tach::Instant;
 //!
 //! let start = Instant::now();
 //! // ... do some work ...
@@ -42,7 +42,7 @@
 //!
 //! # Timing contract
 //!
-//! `hotclock::Instant` is a `Copy + Send + Sync` opaque `u64` wrapper around a counter
+//! `tach::Instant` is a `Copy + Send + Sync` opaque `u64` wrapper around a counter
 //! sample. Its raw value is not a civil-time or OS timestamp. Use it as a point in the
 //! process-wide counter timeline.
 //!
@@ -52,7 +52,7 @@
 //! preferred hardware counter does not satisfy that contract during validation.
 //!
 //! Standard `Instant` methods return [`std::time::Duration`] to match the familiar Rust timing
-//! API. `hotclock::Ticks` is the explicit raw counter-delta type for hot paths that want hardware
+//! API. `tach::Ticks` is the explicit raw counter-delta type for hot paths that want hardware
 //! tick units directly. Use [`Instant::elapsed_ticks()`] or [`Instant::ticks_since()`] when raw
 //! counter deltas are required.
 //!

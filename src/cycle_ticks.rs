@@ -10,7 +10,7 @@ use crate::{arch, convert};
 /// different frequency.
 ///
 /// ```
-/// use hotclock::Cycles;
+/// use tach::Cycles;
 ///
 /// let ticks = Cycles::now().elapsed_ticks();
 /// println!("{} ns", ticks.as_nanos());

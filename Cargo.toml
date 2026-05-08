@@ -1,11 +1,11 @@
 [package]
-name = "hotclock"
+name = "tach"
 version = "0.2.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 authors = ["Spencer Creasey"]
-repository = "https://github.com/spence/hotclock"
+repository = "https://github.com/spence/tach"
 description = "ultra-fast timer for benchmarks, profilers, and hot loops"
 keywords = ["timer", "clock", "benchmark", "profiling", "rdtsc"]
 categories = ["hardware-support", "development-tools::profiling"]
@@ -28,8 +28,8 @@ tick_counter = "0.4.5"
 time = "0.3.47"
 
 [[bin]]
-name = "hotclock"
-path = "src/bin/hotclock.rs"
+name = "tach"
+path = "src/bin/tach.rs"
 
 [[bench]]
 name = "instant"

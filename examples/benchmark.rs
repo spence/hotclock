@@ -1,9 +1,9 @@
-use hotclock::Instant;
+use tach::Instant;
 
 const ITERATIONS: usize = 10_000_000;
 
 fn main() {
-  println!("Tick Counter Overhead Benchmark");
+  println!("tach Overhead Benchmark");
   println!("=================================\n");
 
   println!("Implementation: {}", Instant::implementation());

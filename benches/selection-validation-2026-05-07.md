@@ -4,7 +4,7 @@ All rows were produced by `tools/selection-validation-runner` in-process. No can
 benchmarked in a crash-isolated child process.
 
 ┌───────────────────────────┬──────────────────────────────┬────────────────────┬────────────────────┬──────────────┬──────────────┬────────────┬──────────────┬─────────────┬───────┐
-│ Env                       │ Target                       │ Instant clock      │ Cycles clock       │ hotclock now │ hotclock cyc │ quanta now │ minstant now │ fastant now │ match │
+│ Env                       │ Target                       │ Instant clock      │ Cycles clock       │ tach now │ tach cyc │ quanta now │ minstant now │ fastant now │ match │
 ├───────────────────────────┼──────────────────────────────┼────────────────────┼────────────────────┼──────────────┼──────────────┼────────────┼──────────────┼─────────────┼───────┤
 │ local-macos               │ aarch64-macos-unknown-64bit  │ aarch64-cntvct     │ aarch64-cntvct     │ 0.330 ns     │ 0.330 ns     │ 4.498 ns   │ 25.056 ns    │ 25.083 ns   │ yes   │
 │ local-macos-rosetta       │ x86_64-macos-unknown-64bit   │ x86_64-rdtsc       │ x86_64-rdtsc       │ 8.745 ns     │ 8.755 ns     │ 13.545 ns  │ 42.016 ns    │ 41.749 ns   │ yes   │

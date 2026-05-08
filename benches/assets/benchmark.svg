@@ -15,7 +15,7 @@
 <polygon fill="#fff8e8" stroke="none" points="0,-838 0,-936.75 186,-936.75 186,-838 0,-838"/>
 <text xml:space="preserve" text-anchor="start" x="0" y="-884" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">AWS t3 KVM / x86_64&#45;musl</text>
 <polygon fill="#fff8e8" stroke="none" points="186,-838 186,-936.75 512,-936.75 512,-838 186,-838"/>
-<text xml:space="preserve" text-anchor="start" x="199.92" y="-923.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00" fill="#075a4a">hotclock</text>
+<text xml:space="preserve" text-anchor="start" x="220.92" y="-923.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00" fill="#075a4a">tach</text>
 <polygon fill="#075a4a" stroke="none" points="247.58,-922.88 247.58,-930.88 306.58,-930.88 306.58,-922.88 247.58,-922.88"/>
 <text xml:space="preserve" text-anchor="start" x="419.33" y="-923.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">8.711ns</text>
 <text xml:space="preserve" text-anchor="start" x="206.67" y="-903.75" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">quanta</text>
@@ -33,7 +33,7 @@
 <polygon fill="#fff8e8" stroke="none" points="0,-733.25 0,-832 186,-832 186,-733.25 0,-733.25"/>
 <text xml:space="preserve" text-anchor="start" x="0" y="-779.25" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">AWS m7i metal / x86_64&#45;musl</text>
 <polygon fill="#fff8e8" stroke="none" points="186,-733.25 186,-832 512,-832 512,-733.25 186,-733.25"/>
-<text xml:space="preserve" text-anchor="start" x="199.92" y="-818.75" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00" fill="#075a4a">hotclock</text>
+<text xml:space="preserve" text-anchor="start" x="220.92" y="-818.75" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00" fill="#075a4a">tach</text>
 <polygon fill="#075a4a" stroke="none" points="247.58,-818.12 247.58,-826.12 324.58,-826.12 324.58,-818.12 247.58,-818.12"/>
 <text xml:space="preserve" text-anchor="start" x="419.33" y="-818.75" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">6.841ns</text>
 <text xml:space="preserve" text-anchor="start" x="206.67" y="-799" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">quanta</text>
@@ -51,7 +51,7 @@
 <polygon fill="#fff8e8" stroke="none" points="0,-628.5 0,-727.25 186,-727.25 186,-628.5 0,-628.5"/>
 <text xml:space="preserve" text-anchor="start" x="0" y="-674.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">AWS t3 KVM / x86&#45;musl</text>
 <polygon fill="#fff8e8" stroke="none" points="186,-628.5 186,-727.25 512,-727.25 512,-628.5 186,-628.5"/>
-<text xml:space="preserve" text-anchor="start" x="199.92" y="-714" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00" fill="#075a4a">hotclock</text>
+<text xml:space="preserve" text-anchor="start" x="220.92" y="-714" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00" fill="#075a4a">tach</text>
 <polygon fill="#075a4a" stroke="none" points="247.58,-713.38 247.58,-721.38 279.58,-721.38 279.58,-713.38 247.58,-713.38"/>
 <text xml:space="preserve" text-anchor="start" x="419.33" y="-714" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">13.552ns</text>
 <text xml:space="preserve" text-anchor="start" x="206.67" y="-694.25" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">quanta</text>
@@ -69,7 +69,7 @@
 <polygon fill="#fff8e8" stroke="none" points="0,-523.75 0,-622.5 186,-622.5 186,-523.75 0,-523.75"/>
 <text xml:space="preserve" text-anchor="start" x="0" y="-569.75" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">AWS m7i metal / x86&#45;musl</text>
 <polygon fill="#fff8e8" stroke="none" points="186,-523.75 186,-622.5 512,-622.5 512,-523.75 186,-523.75"/>
-<text xml:space="preserve" text-anchor="start" x="199.92" y="-609.25" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00" fill="#075a4a">hotclock</text>
+<text xml:space="preserve" text-anchor="start" x="220.92" y="-609.25" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00" fill="#075a4a">tach</text>
 <polygon fill="#075a4a" stroke="none" points="247.58,-608.62 247.58,-616.62 296.58,-616.62 296.58,-608.62 247.58,-608.62"/>
 <text xml:space="preserve" text-anchor="start" x="419.33" y="-609.25" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">6.841ns</text>
 <text xml:space="preserve" text-anchor="start" x="206.67" y="-589.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">quanta</text>
@@ -87,7 +87,7 @@
 <polygon fill="#fff8e8" stroke="none" points="0,-419 0,-517.75 186,-517.75 186,-419 0,-419"/>
 <text xml:space="preserve" text-anchor="start" x="0" y="-465" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">Docker / x86_64&#45;gnu</text>
 <polygon fill="#fff8e8" stroke="none" points="186,-419 186,-517.75 512,-517.75 512,-419 186,-419"/>
-<text xml:space="preserve" text-anchor="start" x="199.92" y="-504.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00" fill="#075a4a">hotclock</text>
+<text xml:space="preserve" text-anchor="start" x="220.92" y="-504.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00" fill="#075a4a">tach</text>
 <polygon fill="#075a4a" stroke="none" points="247.58,-503.88 247.58,-511.88 312.58,-511.88 312.58,-503.88 247.58,-503.88"/>
 <text xml:space="preserve" text-anchor="start" x="419.33" y="-504.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">15.394ns</text>
 <text xml:space="preserve" text-anchor="start" x="206.67" y="-484.75" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">quanta</text>
@@ -105,7 +105,7 @@
 <polygon fill="#fff8e8" stroke="none" points="0,-314.25 0,-413 186,-413 186,-314.25 0,-314.25"/>
 <text xml:space="preserve" text-anchor="start" x="0" y="-360.25" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">Docker / x86&#45;gnu</text>
 <polygon fill="#fff8e8" stroke="none" points="186,-314.25 186,-413 512,-413 512,-314.25 186,-314.25"/>
-<text xml:space="preserve" text-anchor="start" x="199.92" y="-399.75" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00" fill="#075a4a">hotclock</text>
+<text xml:space="preserve" text-anchor="start" x="220.92" y="-399.75" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00" fill="#075a4a">tach</text>
 <polygon fill="#075a4a" stroke="none" points="247.58,-399.12 247.58,-407.12 260.58,-407.12 260.58,-399.12 247.58,-399.12"/>
 <text xml:space="preserve" text-anchor="start" x="419.33" y="-399.75" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">25.789ns</text>
 <text xml:space="preserve" text-anchor="start" x="206.67" y="-380" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">quanta</text>
@@ -123,7 +123,7 @@
 <polygon fill="#fff8e8" stroke="none" points="0,-209.5 0,-308.25 186,-308.25 186,-209.5 0,-209.5"/>
 <text xml:space="preserve" text-anchor="start" x="0" y="-255.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">Docker / aarch64&#45;gnu</text>
 <polygon fill="#fff8e8" stroke="none" points="186,-209.5 186,-308.25 512,-308.25 512,-209.5 186,-209.5"/>
-<text xml:space="preserve" text-anchor="start" x="199.92" y="-295" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00" fill="#075a4a">hotclock</text>
+<text xml:space="preserve" text-anchor="start" x="220.92" y="-295" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00" fill="#075a4a">tach</text>
 <polygon fill="#075a4a" stroke="none" points="247.58,-294.38 247.58,-302.38 249.58,-302.38 249.58,-294.38 247.58,-294.38"/>
 <text xml:space="preserve" text-anchor="start" x="419.33" y="-295" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">0.330ns</text>
 <text xml:space="preserve" text-anchor="start" x="206.67" y="-275.25" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">quanta</text>
@@ -141,7 +141,7 @@
 <polygon fill="#fff8e8" stroke="none" points="0,-104.75 0,-203.5 186,-203.5 186,-104.75 0,-104.75"/>
 <text xml:space="preserve" text-anchor="start" x="0" y="-150.75" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">Docker / riscv64&#45;gnu</text>
 <polygon fill="#fff8e8" stroke="none" points="186,-104.75 186,-203.5 512,-203.5 512,-104.75 186,-104.75"/>
-<text xml:space="preserve" text-anchor="start" x="199.92" y="-190.25" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00" fill="#075a4a">hotclock</text>
+<text xml:space="preserve" text-anchor="start" x="220.92" y="-190.25" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00" fill="#075a4a">tach</text>
 <polygon fill="#075a4a" stroke="none" points="247.58,-189.62 247.58,-197.62 283.58,-197.62 283.58,-189.62 247.58,-189.62"/>
 <text xml:space="preserve" text-anchor="start" x="419.33" y="-190.25" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">59.584ns</text>
 <text xml:space="preserve" text-anchor="start" x="206.67" y="-170.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">quanta</text>
@@ -159,7 +159,7 @@
 <polygon fill="#fff8e8" stroke="none" points="0,0 0,-98.75 186,-98.75 186,0 0,0"/>
 <text xml:space="preserve" text-anchor="start" x="0" y="-46" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">local macOS / aarch64</text>
 <polygon fill="#fff8e8" stroke="none" points="186,0 186,-98.75 512,-98.75 512,0 186,0"/>
-<text xml:space="preserve" text-anchor="start" x="199.92" y="-85.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00" fill="#075a4a">hotclock</text>
+<text xml:space="preserve" text-anchor="start" x="220.92" y="-85.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00" fill="#075a4a">tach</text>
 <polygon fill="#075a4a" stroke="none" points="247.58,-84.88 247.58,-92.88 249.58,-92.88 249.58,-84.88 247.58,-84.88"/>
 <text xml:space="preserve" text-anchor="start" x="419.33" y="-85.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">0.330ns</text>
 <text xml:space="preserve" text-anchor="start" x="206.67" y="-65.75" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11.00">quanta</text>

@@ -49,7 +49,7 @@ struct CallsiteRecord {
 }
 
 #[used]
-#[unsafe(link_section = "hotclock_x86_64_instant_callsite")]
+#[unsafe(link_section = "tach_x86_64_instant_callsite")]
 static INSTANT_CALLSITE_SENTINEL: CallsiteRecord = CallsiteRecord {
   patch_address: 0,
   cold_address: 0,
@@ -59,7 +59,7 @@ static INSTANT_CALLSITE_SENTINEL: CallsiteRecord = CallsiteRecord {
 };
 
 #[used]
-#[unsafe(link_section = "hotclock_x86_64_cycle_callsite")]
+#[unsafe(link_section = "tach_x86_64_cycle_callsite")]
 static CYCLE_CALLSITE_SENTINEL: CallsiteRecord = CallsiteRecord {
   patch_address: 0,
   cold_address: 0,
@@ -69,16 +69,16 @@ static CYCLE_CALLSITE_SENTINEL: CallsiteRecord = CallsiteRecord {
 };
 
 unsafe extern "C" {
-  #[link_name = "__start_hotclock_x86_64_instant_callsite"]
+  #[link_name = "__start_tach_x86_64_instant_callsite"]
   static INSTANT_CALLSITE_START: CallsiteRecord;
 
-  #[link_name = "__stop_hotclock_x86_64_instant_callsite"]
+  #[link_name = "__stop_tach_x86_64_instant_callsite"]
   static INSTANT_CALLSITE_STOP: CallsiteRecord;
 
-  #[link_name = "__start_hotclock_x86_64_cycle_callsite"]
+  #[link_name = "__start_tach_x86_64_cycle_callsite"]
   static CYCLE_CALLSITE_START: CallsiteRecord;
 
-  #[link_name = "__stop_hotclock_x86_64_cycle_callsite"]
+  #[link_name = "__stop_tach_x86_64_cycle_callsite"]
   static CYCLE_CALLSITE_STOP: CallsiteRecord;
 }
 
@@ -98,10 +98,10 @@ pub fn ticks() -> u64 {
   // fallback gates become direct jumps to the monotonic trampoline.
   unsafe {
     asm!(
-      ".pushsection hotclock_x86_64_instant_callsite,\"awR\",@progbits",
+      ".pushsection tach_x86_64_instant_callsite,\"awR\",@progbits",
       callsite_record!(),
       ".popsection",
-      ".pushsection .text.hotclock_x86_64_cold,\"ax\",@progbits",
+      ".pushsection .text.tach_x86_64_cold,\"ax\",@progbits",
       ".p2align 4",
       "4:",
       "mov r11, rsp",
@@ -167,10 +167,10 @@ pub fn cycle_ticks() -> u64 {
   // trampolines for RDPMC-backed sources.
   unsafe {
     asm!(
-      ".pushsection hotclock_x86_64_cycle_callsite,\"awR\",@progbits",
+      ".pushsection tach_x86_64_cycle_callsite,\"awR\",@progbits",
       callsite_record!(),
       ".popsection",
-      ".pushsection .text.hotclock_x86_64_cold,\"ax\",@progbits",
+      ".pushsection .text.tach_x86_64_cold,\"ax\",@progbits",
       ".p2align 4",
       "4:",
       "mov r11, rsp",

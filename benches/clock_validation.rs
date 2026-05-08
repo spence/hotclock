@@ -8,10 +8,10 @@ use std::process::Command;
 use std::sync::OnceLock;
 use std::time::Instant as StdInstant;
 
-use hotclock::{Cycles, Instant};
+use tach::{Cycles, Instant};
 
-const CHILD_ENV: &str = "HOTCLOCK_CLOCK_VALIDATION_CHILD";
-const CLASS_ENV: &str = "HOTCLOCK_CLOCK_VALIDATION_CLASS";
+const CHILD_ENV: &str = "TACH_CLOCK_VALIDATION_CHILD";
+const CLASS_ENV: &str = "TACH_CLOCK_VALIDATION_CLASS";
 const DEFAULT_COLD_SAMPLES: usize = 9;
 const DEFAULT_STEADY_SAMPLES: usize = 7;
 const DEFAULT_ITERS: u64 = 1_000_000;
@@ -82,36 +82,35 @@ fn main() {
 }
 
 fn validate_class(class: ClockClass) -> bool {
-  let cold_samples = env_usize("HOTCLOCK_CLOCK_VALIDATION_COLD_SAMPLES", DEFAULT_COLD_SAMPLES);
-  let steady_samples =
-    env_usize("HOTCLOCK_CLOCK_VALIDATION_STEADY_SAMPLES", DEFAULT_STEADY_SAMPLES);
-  let iters = env_u64("HOTCLOCK_CLOCK_VALIDATION_ITERS", DEFAULT_ITERS);
-  let max_ratio = env_f64("HOTCLOCK_CLOCK_VALIDATION_MAX_RATIO", DEFAULT_MAX_RATIO);
-  let max_delta_ns = env_f64("HOTCLOCK_CLOCK_VALIDATION_MAX_DELTA_NS", DEFAULT_MAX_DELTA_NS);
+  let cold_samples = env_usize("TACH_CLOCK_VALIDATION_COLD_SAMPLES", DEFAULT_COLD_SAMPLES);
+  let steady_samples = env_usize("TACH_CLOCK_VALIDATION_STEADY_SAMPLES", DEFAULT_STEADY_SAMPLES);
+  let iters = env_u64("TACH_CLOCK_VALIDATION_ITERS", DEFAULT_ITERS);
+  let max_ratio = env_f64("TACH_CLOCK_VALIDATION_MAX_RATIO", DEFAULT_MAX_RATIO);
+  let max_delta_ns = env_f64("TACH_CLOCK_VALIDATION_MAX_DELTA_NS", DEFAULT_MAX_DELTA_NS);
 
   let cold = cold_measurements(class, cold_samples);
   black_box(now_raw(class));
   let selected = implementation(class);
   let Some(baseline) = baseline_for(class, selected) else {
-    println!("hotclock {} validation", class.name());
+    println!("tach {} validation", class.name());
     println!("selected: {selected}");
     println!("known fastest baseline: unavailable for this benchmark host");
     return true;
   };
 
-  black_box(run_hotclock_loop(class, 1));
+  black_box(run_tach_loop(class, 1));
   black_box((baseline.loop_fn)(1));
   black_box(run_noop_loop(1));
 
   let loop_overhead = measure_loop(run_noop_loop, iters, steady_samples);
-  let hotclock = measure_class_loop(class, iters, steady_samples);
+  let tach = measure_class_loop(class, iters, steady_samples);
   let baseline_measurement = measure_loop(baseline.loop_fn, iters, steady_samples);
 
-  let hotclock_net_best = subtract_ns(hotclock.best_ns, loop_overhead.best_ns);
-  let hotclock_net_median = subtract_ns(hotclock.median_ns, loop_overhead.median_ns);
+  let tach_net_best = subtract_ns(tach.best_ns, loop_overhead.best_ns);
+  let tach_net_median = subtract_ns(tach.median_ns, loop_overhead.median_ns);
   let baseline_net_best = subtract_ns(baseline_measurement.best_ns, loop_overhead.best_ns);
   let baseline_net_median = subtract_ns(baseline_measurement.median_ns, loop_overhead.median_ns);
-  let ratio = hotclock.best_ns / baseline_measurement.best_ns.max(0.001);
+  let ratio = tach.best_ns / baseline_measurement.best_ns.max(0.001);
   let allowed = baseline_measurement.best_ns.mul_add(max_ratio, max_delta_ns);
 
   print_report(Report {
@@ -122,10 +121,10 @@ fn validate_class(class: ClockClass) -> bool {
     iters,
     steady_samples,
     loop_overhead,
-    hotclock,
+    tach,
     baseline_measurement,
-    hotclock_net_best,
-    hotclock_net_median,
+    tach_net_best,
+    tach_net_median,
     baseline_net_best,
     baseline_net_median,
     ratio,
@@ -133,11 +132,11 @@ fn validate_class(class: ClockClass) -> bool {
     max_delta_ns,
   });
 
-  if hotclock.best_ns > allowed {
+  if tach.best_ns > allowed {
     eprintln!(
-      "hotclock {} steady-state cost exceeded selected baseline: {:.3} ns/call > {:.3} ns/call allowed",
+      "tach {} steady-state cost exceeded selected baseline: {:.3} ns/call > {:.3} ns/call allowed",
       class.name(),
-      hotclock.best_ns,
+      tach.best_ns,
       allowed
     );
     false
@@ -187,8 +186,8 @@ fn cold_measurements(class: ClockClass, samples: usize) -> ColdMeasurements {
 
 fn measure_class_loop(class: ClockClass, iters: u64, samples: usize) -> Measurement {
   match class {
-    ClockClass::Instant => measure_loop(run_hotclock_instant_loop, iters, samples),
-    ClockClass::Cycles => measure_loop(run_hotclock_cycles_loop, iters, samples),
+    ClockClass::Instant => measure_loop(run_tach_instant_loop, iters, samples),
+    ClockClass::Cycles => measure_loop(run_tach_cycles_loop, iters, samples),
   }
 }
 
@@ -205,15 +204,15 @@ fn measure_loop(loop_fn: LoopFn, iters: u64, samples: usize) -> Measurement {
 }
 
 #[inline(never)]
-fn run_hotclock_loop(class: ClockClass, iters: u64) -> u64 {
+fn run_tach_loop(class: ClockClass, iters: u64) -> u64 {
   match class {
-    ClockClass::Instant => run_hotclock_instant_loop(iters),
-    ClockClass::Cycles => run_hotclock_cycles_loop(iters),
+    ClockClass::Instant => run_tach_instant_loop(iters),
+    ClockClass::Cycles => run_tach_cycles_loop(iters),
   }
 }
 
 #[inline(never)]
-fn run_hotclock_instant_loop(iters: u64) -> u64 {
+fn run_tach_instant_loop(iters: u64) -> u64 {
   let mut acc = 0_u64;
   for _ in 0..iters {
     acc = acc.wrapping_add(black_box(Instant::now().as_raw()));
@@ -222,7 +221,7 @@ fn run_hotclock_instant_loop(iters: u64) -> u64 {
 }
 
 #[inline(never)]
-fn run_hotclock_cycles_loop(iters: u64) -> u64 {
+fn run_tach_cycles_loop(iters: u64) -> u64 {
   let mut acc = 0_u64;
   for _ in 0..iters {
     acc = acc.wrapping_add(black_box(Cycles::now().as_raw()));
@@ -332,7 +331,7 @@ fn run_direct_rdpmc_loop(iters: u64) -> u64 {
 
   let mut acc = 0_u64;
   for _ in 0..iters {
-    // SAFETY: This baseline is used only after hotclock selected the same userspace RDPMC path.
+    // SAFETY: This baseline is used only after tach selected the same userspace RDPMC path.
     acc = acc.wrapping_add(black_box(unsafe { rdpmc(RDPMC_FIXED_CORE_CYCLES) }));
   }
   acc
@@ -395,7 +394,7 @@ fn run_pmccntr_loop(iters: u64) -> u64 {
 #[inline(always)]
 fn pmccntr() -> u64 {
   let cnt: u64;
-  // SAFETY: This baseline is used only after hotclock selected the same userspace PMU path.
+  // SAFETY: This baseline is used only after tach selected the same userspace PMU path.
   unsafe {
     core::arch::asm!(
       "mrs {}, pmccntr_el0",
@@ -552,10 +551,10 @@ struct Report<'a> {
   iters: u64,
   steady_samples: usize,
   loop_overhead: Measurement,
-  hotclock: Measurement,
+  tach: Measurement,
   baseline_measurement: Measurement,
-  hotclock_net_best: f64,
-  hotclock_net_median: f64,
+  tach_net_best: f64,
+  tach_net_median: f64,
   baseline_net_best: f64,
   baseline_net_median: f64,
   ratio: f64,
@@ -576,7 +575,7 @@ fn print_report(mut report: Report<'_>) {
     .collect::<Vec<_>>()
     .join(", ");
 
-  println!("hotclock {} validation", report.class.name());
+  println!("tach {} validation", report.class.name());
   println!("target: {}-{}", env::consts::OS, env::consts::ARCH);
   println!("selected: {}", report.selected);
   println!("known fastest baseline: {}", report.baseline);
@@ -593,16 +592,16 @@ fn print_report(mut report: Report<'_>) {
     report.loop_overhead.best_ns, report.loop_overhead.median_ns
   );
   println!(
-    "steady hotclock raw: best={:.3} ns/call median={:.3} ns/call",
-    report.hotclock.best_ns, report.hotclock.median_ns
+    "steady tach raw: best={:.3} ns/call median={:.3} ns/call",
+    report.tach.best_ns, report.tach.median_ns
   );
   println!(
     "steady baseline raw: best={:.3} ns/call median={:.3} ns/call",
     report.baseline_measurement.best_ns, report.baseline_measurement.median_ns
   );
   println!(
-    "steady hotclock net: best={:.3} ns/call median={:.3} ns/call",
-    report.hotclock_net_best, report.hotclock_net_median
+    "steady tach net: best={:.3} ns/call median={:.3} ns/call",
+    report.tach_net_best, report.tach_net_median
   );
   println!(
     "steady baseline net: best={:.3} ns/call median={:.3} ns/call",

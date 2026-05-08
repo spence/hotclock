@@ -1,7 +1,7 @@
-use hotclock::Instant;
+use tach::Instant;
 
 fn main() {
-  println!("hotclock v{}", env!("CARGO_PKG_VERSION"));
+  println!("tach v{}", env!("CARGO_PKG_VERSION"));
   println!("==================\n");
 
   println!("Implementation: {}", Instant::implementation());

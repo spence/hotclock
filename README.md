@@ -1,6 +1,6 @@
-# hotclock
+# tach
 
-`hotclock` is an ultra-fast drop-in replacement for `Instant` designed for hot loops, profiling and benchmarks.
+`tach` is an ultra-fast drop-in replacement for `Instant` designed for hot loops, profiling and benchmarks.
 
 Internally, it mirrors [cpucycles](https://cpucycles.cr.yp.to), so whether you're running
 in a container, a VM or on bare metal, it automatically selects the fastest machine-level timer at runtime.
@@ -36,7 +36,7 @@ against the expected fastest valid clocks for that target/environment.
 
 ## feature comparison
 
-| Feature                 | `hotclock` | `tick_counter@0.4.5` | `quanta@0.12.6` | `minstant@0.1.7` | `std::time` |
+| Feature                 | `tach` | `tick_counter@0.4.5` | `quanta@0.12.6` | `minstant@0.1.7` | `std::time` |
 |-------------------------|------------|----------------------|-----------------|------------------|-------------|
 | `Instant` API           | ✅         | ❌                   | ✅              | ✅               | ✅          |
 | runtime clock selection | ✅         | ❌                   | ✅              | ✅               | ❌          |
@@ -46,7 +46,7 @@ against the expected fastest valid clocks for that target/environment.
 ## usage
 
 ```rust
-use hotclock::Instant;
+use tach::Instant;
 
 let start = Instant::now();
 // ... work ...
@@ -76,7 +76,7 @@ On AWS m7i Linux, `Cycles` selected `perf-RDPMC` and read in `5.526ns` where
 
 ## platform / architecture support
 
-For common modern systems, hotclock uses a direct counter where the target has
+For common modern systems, tach uses a direct counter where the target has
 one clear path and uses runtime selection when the hardware counter can vary
 by machine, kernel, or hypervisor.
 

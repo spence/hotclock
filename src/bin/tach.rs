@@ -1,10 +1,10 @@
-use hotclock::{Cycles, Instant};
+use tach::{Cycles, Instant};
 
 fn main() {
   let freq = Instant::frequency();
   let cycle_freq = Cycles::frequency();
 
-  println!("hotclock v{}", env!("CARGO_PKG_VERSION"));
+  println!("tach v{}", env!("CARGO_PKG_VERSION"));
   println!();
   println!("Instant implementation: {}", Instant::implementation());
   println!("Instant frequency:      {freq} Hz ({:.2} MHz)", mhz(freq));

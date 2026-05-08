@@ -15,7 +15,7 @@ use crate::{Ticks, arch, convert};
 /// [`Duration`]. Use [`elapsed_ticks`](Instant::elapsed_ticks) when raw counter deltas are needed:
 ///
 /// ```
-/// use hotclock::Instant;
+/// use tach::Instant;
 ///
 /// let start = Instant::now();
 /// // ... work ...
@@ -38,7 +38,7 @@ impl Instant {
   /// # Example
   ///
   /// ```
-  /// use hotclock::Instant;
+  /// use tach::Instant;
   /// let t = Instant::now();
   /// assert!(t.as_raw() > 0);
   /// ```
@@ -56,7 +56,7 @@ impl Instant {
   /// # Example
   ///
   /// ```
-  /// use hotclock::Instant;
+  /// use tach::Instant;
   /// let start = Instant::now();
   /// // ... work ...
   /// let elapsed = start.elapsed();
@@ -88,7 +88,7 @@ impl Instant {
   /// # Example
   ///
   /// ```
-  /// use hotclock::Instant;
+  /// use tach::Instant;
   /// let freq = Instant::frequency();
   /// println!("{:.2} MHz", freq as f64 / 1e6);
   /// ```

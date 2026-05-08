@@ -1,4 +1,4 @@
-use hotclock::Instant;
+use tach::Instant;
 
 #[test]
 #[cfg(all(target_os = "linux", target_arch = "x86_64"))]

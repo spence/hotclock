@@ -55,42 +55,42 @@ struct CallsiteRecord {
 
 #[cfg(not(any(target_os = "macos", windows)))]
 #[used]
-#[unsafe(link_section = "hotclock_instant_cs")]
+#[unsafe(link_section = "tach_instant_cs")]
 static INSTANT_CALLSITE_SENTINEL: CallsiteRecord =
   CallsiteRecord { patch_address: 0, cold_address: 0, fallback_address: 0, hardware_address: 0 };
 
 #[cfg(not(any(target_os = "macos", windows)))]
 #[used]
-#[unsafe(link_section = "hotclock_cycle_cs")]
+#[unsafe(link_section = "tach_cycle_cs")]
 static CYCLE_CALLSITE_SENTINEL: CallsiteRecord =
   CallsiteRecord { patch_address: 0, cold_address: 0, fallback_address: 0, hardware_address: 0 };
 
 #[cfg(not(any(target_os = "macos", windows)))]
 unsafe extern "C" {
-  #[link_name = "__start_hotclock_instant_cs"]
+  #[link_name = "__start_tach_instant_cs"]
   static INSTANT_CALLSITE_START: CallsiteRecord;
 
-  #[link_name = "__stop_hotclock_instant_cs"]
+  #[link_name = "__stop_tach_instant_cs"]
   static INSTANT_CALLSITE_STOP: CallsiteRecord;
 
-  #[link_name = "__start_hotclock_cycle_cs"]
+  #[link_name = "__start_tach_cycle_cs"]
   static CYCLE_CALLSITE_START: CallsiteRecord;
 
-  #[link_name = "__stop_hotclock_cycle_cs"]
+  #[link_name = "__stop_tach_cycle_cs"]
   static CYCLE_CALLSITE_STOP: CallsiteRecord;
 }
 
 #[cfg(not(any(target_os = "macos", windows)))]
 macro_rules! instant_callsite_section_start {
   () => {
-    ".pushsection hotclock_instant_cs,\"awR\",@progbits"
+    ".pushsection tach_instant_cs,\"awR\",@progbits"
   };
 }
 
 #[cfg(not(any(target_os = "macos", windows)))]
 macro_rules! cycle_callsite_section_start {
   () => {
-    ".pushsection hotclock_cycle_cs,\"awR\",@progbits"
+    ".pushsection tach_cycle_cs,\"awR\",@progbits"
   };
 }
 
@@ -98,7 +98,7 @@ macro_rules! cycle_callsite_section_start {
 #[allow(unused_macros)]
 macro_rules! cold_section_start {
   () => {
-    ".pushsection .text.hotclock_cold,\"ax\",@progbits"
+    ".pushsection .text.tach_cold,\"ax\",@progbits"
   };
 }
 
@@ -106,7 +106,7 @@ macro_rules! cold_section_start {
 #[allow(unused_macros)]
 macro_rules! cold_section_start {
   () => {
-    ".pushsection __TEXT,__hotclock_cold,regular,pure_instructions"
+    ".pushsection __TEXT,__tach_cold,regular,pure_instructions"
   };
 }
 
@@ -114,7 +114,7 @@ macro_rules! cold_section_start {
 #[allow(unused_macros)]
 macro_rules! cold_section_start {
   () => {
-    ".pushsection .text$hotclock_cold,\"xr\""
+    ".pushsection .text$tach_cold,\"xr\""
   };
 }
 

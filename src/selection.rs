@@ -24,7 +24,7 @@ use crate::arch::x86;
 use crate::arch::x86_64;
 
 const VALIDATION_ATTEMPTS: usize = 3;
-const TRACE_SELECTION_ENV: &str = "HOTCLOCK_SELECTOR_TRACE";
+const TRACE_SELECTION_ENV: &str = "TACH_SELECTOR_TRACE";
 
 #[derive(Clone, Copy)]
 struct Candidate {
@@ -610,7 +610,7 @@ fn select_fastest(
     None => {
       let fallback = candidates
         .last()
-        .expect("hotclock selector must have at least one fallback candidate");
+        .expect("tach selector must have at least one fallback candidate");
       trace_candidate(class, fallback, true, None, None, true, trace);
       (fallback.index, fallback.name)
     }
@@ -649,7 +649,7 @@ fn trace_candidate(
   let latency = latency.map_or_else(|| "none".to_owned(), |value| format!("{value} ns"));
 
   eprintln!(
-    "hotclock selector class={class} candidate={} prepared={prepared} attempts={attempts} \
+    "tach selector class={class} candidate={} prepared={prepared} attempts={attempts} \
      valid={passed} failed_stage={failed_stage} latency={latency} selected={selected}",
     candidate.name,
   );

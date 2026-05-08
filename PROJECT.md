@@ -1,11 +1,12 @@
 # Charter
 
-hotclock provides a zero-dependency Rust API for reading fast CPU or platform tick counters and converting elapsed ticks into wall-clock units. The crate should be safe to use in hot runtime paths, explicit about timing guarantees and caveats, and validated on supported platforms before release.
+tach provides a zero-dependency Rust API for reading fast CPU or platform tick counters and converting elapsed ticks into wall-clock units. The crate should be safe to use in hot runtime paths, explicit about timing guarantees and caveats, and validated on supported platforms before release.
 
 # Milestones
 
 ## Cross-architecture inline selected clocks
 
+- [x] Rename crate and GitHub repository to `tach`
 - [x] Replace noisy m7i GNU row with pinned high-confidence benchmark
 - [x] Keep heatmap and bar chart README benchmark graphics
 - [x] Convert README performance graphic to a bar chart
@@ -33,7 +34,7 @@ hotclock provides a zero-dependency Rust API for reading fast CPU or platform ti
 - [x] Benchmark selected-clock dispatch overhead
 - [x] Cut concise 0.2.0 release notes
 - [x] Refine README performance framing
-- [x] Reframe README rationale around when to choose hotclock
+- [x] Reframe README rationale around when to choose tach
 - [x] Move benchmark-generated assets under benches
 - [x] Retarget crate keywords for timer and profiling search
 - [x] Retarget crate positioning around benchmarks, profilers, and hot loops
@@ -53,7 +54,7 @@ hotclock provides a zero-dependency Rust API for reading fast CPU or platform ti
 - [x] Clarify direct macOS aarch64 platform support
 - [x] Sort platform table by OS priority
 - [x] Clarify non-mainstream platform rows
-- [x] Rename crate to `hotclock`
+- [x] Rename crate to `tach`
 - [x] Remove redundant README detail sections
 - [x] Treat tick_counter as performance-equivalent in README
 - [x] Clarify raw tick access and relative benchmark scores

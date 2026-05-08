@@ -17,7 +17,7 @@ digraph benchmark {
       <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="5" COLOR="#E4D8C2">
         <TR>
           <TD BGCOLOR="#1B1A17"><FONT COLOR="#FBF6EC"><B>target / env</B></FONT></TD>
-          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC"><B>hotclock</B></FONT></TD>
+          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC"><B>tach</B></FONT></TD>
           <TD BGCOLOR="#1B1A17"><FONT COLOR="#FBF6EC"><B>quanta</B></FONT></TD>
           <TD BGCOLOR="#1B1A17"><FONT COLOR="#FBF6EC"><B>minstant</B></FONT></TD>
           <TD BGCOLOR="#1B1A17"><FONT COLOR="#FBF6EC"><B>fastant</B></FONT></TD>

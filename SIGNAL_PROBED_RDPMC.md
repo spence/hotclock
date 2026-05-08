@@ -62,7 +62,7 @@ If the probe succeeds, the `Cycles` selector can benchmark direct `RDPMC` agains
 5. Add `signal_probed_direct_rdpmc_fixed_core_cycles_available()`.
 6. Update the direct `RDPMC` candidate prepare function to accept sysfs permission or the
    signal-probed result.
-7. Extend `HOTCLOCK_SELECTOR_TRACE=1` output so the trace reports whether direct `RDPMC` was
+7. Extend `TACH_SELECTOR_TRACE=1` output so the trace reports whether direct `RDPMC` was
    enabled by sysfs or by signal probing.
 8. Add selector tests that prove a failed probe falls through to `RDTSC` without aborting.
 9. Add AWS validation rows for t3/Lambda, c5/m7i metal, and local Linux.

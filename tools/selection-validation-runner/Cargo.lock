@@ -71,20 +71,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "hotclock"
-version = "0.2.0"
-
-[[package]]
-name = "hotclock-selection-validation-runner"
-version = "0.1.0"
-dependencies = [
- "fastant",
- "hotclock",
- "minstant",
- "quanta",
-]
-
-[[package]]
 name = "js-sys"
 version = "0.3.98"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -204,6 +190,20 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
+]
+
+[[package]]
+name = "tach"
+version = "0.2.0"
+
+[[package]]
+name = "tach-selection-validation-runner"
+version = "0.1.0"
+dependencies = [
+ "fastant",
+ "minstant",
+ "quanta",
+ "tach",
 ]
 
 [[package]]
