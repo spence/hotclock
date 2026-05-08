@@ -5,6 +5,19 @@ pub mod aarch64;
 pub mod fallback;
 #[cfg(target_arch = "loongarch64")]
 pub mod loongarch64;
+#[cfg(not(any(
+  all(target_arch = "aarch64", target_os = "macos"),
+  not(any(
+    target_arch = "x86_64",
+    target_arch = "x86",
+    target_arch = "aarch64",
+    target_arch = "riscv64",
+    target_arch = "powerpc64",
+    target_arch = "s390x",
+    target_arch = "loongarch64",
+  )),
+)))]
+mod patch;
 #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_os = "linux"))]
 pub mod perf_rdpmc_linux;
 #[cfg(target_arch = "powerpc64")]

@@ -7,9 +7,9 @@
 //! A Rust port of [libcpucycles](https://cpucycles.cr.yp.to/) that provides sub-nanosecond
 //! timing by directly reading hardware counters (RDTSC, CNTVCT\_EL0, etc.). Deterministic
 //! targets use a compiled-in counter path; targets with meaningful runtime variation select the
-//! best available counter lazily on first use and cache it for the lifetime of the process. On
-//! Linux x86_64, hardware-counter selections also patch crate-owned call sites so warmed RDTSC
-//! reads do not keep selected-index dispatch on the hot path.
+//! best available counter lazily on first use and cache it for the lifetime of the process.
+//! Runtime-selected targets patch crate-owned warmed call sites where supported so hot reads do
+//! not keep selected-index dispatch on the hot path.
 //!
 //! Roughly **~30x faster** than [`std::time::Instant`] on typical hardware.
 //!
@@ -122,6 +122,39 @@ mod tests {
 
   fn assert_send_sync<T: Send + Sync>() {}
 
+  fn wait_for_instant_duration(start: Instant) -> Duration {
+    for _ in 0..1_000_000 {
+      let elapsed = start.elapsed();
+      if elapsed > Duration::ZERO {
+        return elapsed;
+      }
+      std::hint::spin_loop();
+    }
+    start.elapsed()
+  }
+
+  fn wait_for_instant_ticks(start: Instant) -> Ticks {
+    for _ in 0..1_000_000 {
+      let elapsed = start.elapsed_ticks();
+      if elapsed.as_raw() > 0 {
+        return elapsed;
+      }
+      std::hint::spin_loop();
+    }
+    start.elapsed_ticks()
+  }
+
+  fn wait_for_cycle_ticks(start: Cycles) -> CycleTicks {
+    for _ in 0..1_000_000 {
+      let elapsed = start.elapsed_ticks();
+      if elapsed.as_raw() > 0 {
+        return elapsed;
+      }
+      std::hint::spin_loop();
+    }
+    start.elapsed_ticks()
+  }
+
   #[test]
   fn test_instant_now() {
     let c = Instant::now();
@@ -145,36 +178,21 @@ mod tests {
   #[test]
   fn test_instant_elapsed() {
     let start = Instant::now();
-    let mut sum = 0u64;
-    for i in 0..1000 {
-      sum = sum.wrapping_add(i);
-    }
-    let _ = std::hint::black_box(sum);
-    let elapsed = start.elapsed();
+    let elapsed = wait_for_instant_duration(start);
     assert!(elapsed > Duration::ZERO);
   }
 
   #[test]
   fn test_instant_elapsed_ticks() {
     let start = Instant::now();
-    let mut sum = 0u64;
-    for i in 0..1000 {
-      sum = sum.wrapping_add(i);
-    }
-    let _ = std::hint::black_box(sum);
-    let elapsed = start.elapsed_ticks();
+    let elapsed = wait_for_instant_ticks(start);
     assert!(elapsed.as_raw() > 0);
   }
 
   #[test]
   fn test_cycles_elapsed_ticks() {
     let start = Cycles::now();
-    let mut sum = 0u64;
-    for i in 0..1000 {
-      sum = sum.wrapping_add(i);
-    }
-    let _ = std::hint::black_box(sum);
-    let elapsed = start.elapsed_ticks();
+    let elapsed = wait_for_cycle_ticks(start);
     assert!(elapsed.as_raw() > 0);
   }
 

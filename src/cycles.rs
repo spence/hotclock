@@ -7,7 +7,8 @@ use crate::{CycleTicks, arch, convert};
 /// `Cycles` is the lower-level sibling of [`crate::Instant`]. It keeps the same value shape and
 /// elapsed-time convenience methods, but it can select PMU/core-cycle sources that are faster
 /// than the `Instant` clock on some machines. Use it for same-thread hot-loop timing,
-/// profiling, and microbenchmarks where counter-read cost dominates.
+/// profiling, and microbenchmarks where counter-read cost dominates. Runtime-selected targets
+/// patch warmed `Cycles::now()` call sites independently from [`crate::Instant`].
 ///
 /// Do not use `Cycles` for cross-thread ordering or measurements that must survive OS thread
 /// migration, descheduling, suspend/resume, or hypervisor migration with `Instant` semantics.

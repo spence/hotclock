@@ -250,10 +250,12 @@ fn direct_rdpmc_enabled_for_all_processes() -> bool {
 }
 
 #[cfg(target_arch = "x86_64")]
+#[allow(unused_unsafe)]
 fn cpu_vendor_is_intel() -> bool {
   use core::arch::x86_64::__cpuid;
 
-  let cpuid = __cpuid(0);
+  // SAFETY: CPUID leaf 0 is always supported on x86_64 and only reports vendor metadata.
+  let cpuid = unsafe { __cpuid(0) };
   let mut vendor = [0u8; 12];
   vendor[0..4].copy_from_slice(&cpuid.ebx.to_le_bytes());
   vendor[4..8].copy_from_slice(&cpuid.edx.to_le_bytes());
@@ -262,10 +264,12 @@ fn cpu_vendor_is_intel() -> bool {
 }
 
 #[cfg(target_arch = "x86")]
+#[allow(unused_unsafe)]
 fn cpu_vendor_is_intel() -> bool {
   use core::arch::x86::__cpuid;
 
-  let cpuid = __cpuid(0);
+  // SAFETY: CPUID leaf 0 is supported on x86 targets that expose Rust's x86 CPUID intrinsic.
+  let cpuid = unsafe { __cpuid(0) };
   let mut vendor = [0u8; 12];
   vendor[0..4].copy_from_slice(&cpuid.ebx.to_le_bytes());
   vendor[4..8].copy_from_slice(&cpuid.edx.to_le_bytes());

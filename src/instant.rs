@@ -5,9 +5,9 @@ use crate::{Ticks, arch, convert};
 /// A sampled point in the process-wide counter timeline.
 ///
 /// `Instant` is a `#[repr(transparent)]` newtype over [`u64`]. The value wrapper is zero-cost;
-/// [`Instant::now()`] is either a direct counter read, a cached runtime-selected read, or a
-/// patched-selected hardware read depending on target. `Instant` is `Send` and `Sync`,
-/// comparable, and hashable. It is not a civil-time or OS timestamp.
+/// [`Instant::now()`] is either a direct counter read, a runtime-selected patched callsite, or
+/// a selected fallback read depending on target. `Instant` is `Send` and `Sync`, comparable, and
+/// hashable. It is not a civil-time or OS timestamp.
 ///
 /// # Obtaining elapsed time
 ///
@@ -31,9 +31,9 @@ pub struct Instant(u64);
 impl Instant {
   /// Reads the current value of the process-wide tick counter.
   ///
-  /// Direct targets compile to a single counter read. Linux x86_64 lazily selects the best
-  /// counter and patches warmed RDTSC call sites to direct clock bytes. Other runtime-selected
-  /// targets add a cached selected-index load and dispatch before the selected counter read.
+  /// Direct targets compile to a single counter read. Runtime-selected targets lazily select the
+  /// best valid counter and patch warmed call sites to the chosen counter or fallback trampoline
+  /// where the target supports crate-owned patchpoints.
   ///
   /// # Example
   ///

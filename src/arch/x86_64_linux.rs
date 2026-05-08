@@ -1,24 +1,29 @@
 use core::arch::asm;
 use core::ptr::NonNull;
-use std::ffi::{c_int, c_long, c_void};
 use std::sync::OnceLock;
-use std::sync::atomic::{AtomicU8, AtomicU64, Ordering, compiler_fence};
+use std::sync::atomic::{AtomicU8, AtomicUsize, Ordering};
+
+use super::patch;
 
 const PATCH_LEN: usize = RDTSC_BYTES.len();
 const COMMIT_LEN: usize = 8;
 const UNSELECTED: u8 = u8::MAX;
 const SELECTING: u8 = u8::MAX - 1;
-const PROT_READ: c_int = 0x1;
-const PROT_WRITE: c_int = 0x2;
-const PROT_EXEC: c_int = 0x4;
-const SC_PAGESIZE: c_int = 30;
-
 const RDTSC_BYTES: [u8; 9] = [0x0F, 0x31, 0x48, 0xC1, 0xE2, 0x20, 0x48, 0x09, 0xD0];
 
 static SELECTED: AtomicU8 = AtomicU8::new(UNSELECTED);
 static SELECTED_NAME: OnceLock<&'static str> = OnceLock::new();
 static CYCLE_SELECTED: AtomicU8 = AtomicU8::new(UNSELECTED);
 static CYCLE_SELECTED_NAME: OnceLock<&'static str> = OnceLock::new();
+
+static INSTANT_PATCH_REGISTERED: AtomicUsize = AtomicUsize::new(0);
+static INSTANT_PATCH_PATCHED: AtomicUsize = AtomicUsize::new(0);
+static INSTANT_PATCH_ALREADY_PATCHED: AtomicUsize = AtomicUsize::new(0);
+static INSTANT_PATCH_FAILED: AtomicUsize = AtomicUsize::new(0);
+static CYCLE_PATCH_REGISTERED: AtomicUsize = AtomicUsize::new(0);
+static CYCLE_PATCH_PATCHED: AtomicUsize = AtomicUsize::new(0);
+static CYCLE_PATCH_ALREADY_PATCHED: AtomicUsize = AtomicUsize::new(0);
+static CYCLE_PATCH_FAILED: AtomicUsize = AtomicUsize::new(0);
 
 pub mod indices {
   pub const RDTSC: u8 = 0;
@@ -27,25 +32,60 @@ pub mod indices {
   pub const PERF_RDPMC: u8 = 3;
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum ClockClass {
+  Instant,
+  Cycles,
+}
+
 #[repr(C)]
 #[derive(Clone, Copy)]
 struct CallsiteRecord {
   patch_address: usize,
+  cold_address: usize,
+  fallback_address: usize,
+  direct_rdpmc_address: usize,
+  perf_rdpmc_address: usize,
 }
 
 #[used]
-#[unsafe(link_section = "hotclock_x86_64_callsite")]
-static CALLSITE_SENTINEL: CallsiteRecord = CallsiteRecord { patch_address: 0 };
+#[unsafe(link_section = "hotclock_x86_64_instant_callsite")]
+static INSTANT_CALLSITE_SENTINEL: CallsiteRecord = CallsiteRecord {
+  patch_address: 0,
+  cold_address: 0,
+  fallback_address: 0,
+  direct_rdpmc_address: 0,
+  perf_rdpmc_address: 0,
+};
+
+#[used]
+#[unsafe(link_section = "hotclock_x86_64_cycle_callsite")]
+static CYCLE_CALLSITE_SENTINEL: CallsiteRecord = CallsiteRecord {
+  patch_address: 0,
+  cold_address: 0,
+  fallback_address: 0,
+  direct_rdpmc_address: 0,
+  perf_rdpmc_address: 0,
+};
 
 unsafe extern "C" {
-  #[link_name = "__start_hotclock_x86_64_callsite"]
-  static CALLSITE_START: CallsiteRecord;
+  #[link_name = "__start_hotclock_x86_64_instant_callsite"]
+  static INSTANT_CALLSITE_START: CallsiteRecord;
 
-  #[link_name = "__stop_hotclock_x86_64_callsite"]
-  static CALLSITE_STOP: CallsiteRecord;
+  #[link_name = "__stop_hotclock_x86_64_instant_callsite"]
+  static INSTANT_CALLSITE_STOP: CallsiteRecord;
 
-  fn sysconf(name: c_int) -> c_long;
-  fn mprotect(addr: *mut c_void, len: usize, prot: c_int) -> c_int;
+  #[link_name = "__start_hotclock_x86_64_cycle_callsite"]
+  static CYCLE_CALLSITE_START: CallsiteRecord;
+
+  #[link_name = "__stop_hotclock_x86_64_cycle_callsite"]
+  static CYCLE_CALLSITE_STOP: CallsiteRecord;
+}
+
+macro_rules! callsite_record {
+  () => {
+    ".balign 8\n.quad 2f\n.quad 4f\n.quad 5f\n.quad 6f\n.quad 7f"
+  };
 }
 
 #[inline(always)]
@@ -53,73 +93,50 @@ unsafe extern "C" {
 pub fn ticks() -> u64 {
   let out: u64;
 
-  // SAFETY: This assembly emits a crate-owned 9-byte gate and a cold trampoline for this exact
-  // call site. Before selection, execution jumps to the cold trampoline, which preserves the
-  // caller's registers around the Rust fallback call and then jumps back to the continuation.
-  // After an RDTSC selection, the gate is atomically replaced with `RDTSC_BYTES`, which leaves
-  // the tick value in RAX and falls through directly to the continuation.
+  // SAFETY: This emits a crate-owned 9-byte gate plus cold and selected trampolines. The first
+  // call selects and patches all registered gates. Warmed RDTSC gates become raw RDTSC bytes;
+  // fallback gates become direct jumps to the monotonic trampoline.
   unsafe {
     asm!(
-      ".pushsection hotclock_x86_64_callsite,\"awR\",@progbits",
-      ".balign 8",
-      ".quad 2f",
+      ".pushsection hotclock_x86_64_instant_callsite,\"awR\",@progbits",
+      callsite_record!(),
       ".popsection",
       ".pushsection .text.hotclock_x86_64_cold,\"ax\",@progbits",
       ".p2align 4",
       "4:",
-      "push rcx",
-      "push rsi",
-      "push rdi",
-      "push r8",
-      "push r9",
-      "push r10",
-      "push r11",
       "mov r11, rsp",
       "and rsp, -16",
-      "sub rsp, 272",
-      "mov qword ptr [rsp + 256], r11",
-      "movdqu xmmword ptr [rsp + 0], xmm0",
-      "movdqu xmmword ptr [rsp + 16], xmm1",
-      "movdqu xmmword ptr [rsp + 32], xmm2",
-      "movdqu xmmword ptr [rsp + 48], xmm3",
-      "movdqu xmmword ptr [rsp + 64], xmm4",
-      "movdqu xmmword ptr [rsp + 80], xmm5",
-      "movdqu xmmword ptr [rsp + 96], xmm6",
-      "movdqu xmmword ptr [rsp + 112], xmm7",
-      "movdqu xmmword ptr [rsp + 128], xmm8",
-      "movdqu xmmword ptr [rsp + 144], xmm9",
-      "movdqu xmmword ptr [rsp + 160], xmm10",
-      "movdqu xmmword ptr [rsp + 176], xmm11",
-      "movdqu xmmword ptr [rsp + 192], xmm12",
-      "movdqu xmmword ptr [rsp + 208], xmm13",
-      "movdqu xmmword ptr [rsp + 224], xmm14",
-      "movdqu xmmword ptr [rsp + 240], xmm15",
+      "sub rsp, 48",
+      "mov qword ptr [rsp + 32], r11",
+      "call {select}",
+      "mov rsp, qword ptr [rsp + 32]",
+      "jmp 3f",
+      ".p2align 4",
+      "5:",
+      "mov r11, rsp",
+      "and rsp, -16",
+      "sub rsp, 48",
+      "mov qword ptr [rsp + 32], r11",
       "call {fallback}",
-      "movdqu xmm0, xmmword ptr [rsp + 0]",
-      "movdqu xmm1, xmmword ptr [rsp + 16]",
-      "movdqu xmm2, xmmword ptr [rsp + 32]",
-      "movdqu xmm3, xmmword ptr [rsp + 48]",
-      "movdqu xmm4, xmmword ptr [rsp + 64]",
-      "movdqu xmm5, xmmword ptr [rsp + 80]",
-      "movdqu xmm6, xmmword ptr [rsp + 96]",
-      "movdqu xmm7, xmmword ptr [rsp + 112]",
-      "movdqu xmm8, xmmword ptr [rsp + 128]",
-      "movdqu xmm9, xmmword ptr [rsp + 144]",
-      "movdqu xmm10, xmmword ptr [rsp + 160]",
-      "movdqu xmm11, xmmword ptr [rsp + 176]",
-      "movdqu xmm12, xmmword ptr [rsp + 192]",
-      "movdqu xmm13, xmmword ptr [rsp + 208]",
-      "movdqu xmm14, xmmword ptr [rsp + 224]",
-      "movdqu xmm15, xmmword ptr [rsp + 240]",
-      "mov r11, qword ptr [rsp + 256]",
-      "mov rsp, r11",
-      "pop r11",
-      "pop r10",
-      "pop r9",
-      "pop r8",
-      "pop rdi",
-      "pop rsi",
-      "pop rcx",
+      "mov rsp, qword ptr [rsp + 32]",
+      "jmp 3f",
+      ".p2align 4",
+      "6:",
+      "mov r11, rsp",
+      "and rsp, -16",
+      "sub rsp, 48",
+      "mov qword ptr [rsp + 32], r11",
+      "call {direct_rdpmc}",
+      "mov rsp, qword ptr [rsp + 32]",
+      "jmp 3f",
+      ".p2align 4",
+      "7:",
+      "mov r11, rsp",
+      "and rsp, -16",
+      "sub rsp, 48",
+      "mov qword ptr [rsp + 32], r11",
+      "call {perf_rdpmc}",
+      "mov rsp, qword ptr [rsp + 32]",
       "jmp 3f",
       ".popsection",
       ".p2align 3",
@@ -129,9 +146,81 @@ pub fn ticks() -> u64 {
       "nop",
       ".endr",
       "3:",
-      fallback = sym select_fallback,
+      select = sym instant_select_fallback,
+      fallback = sym direct_clock_monotonic,
+      direct_rdpmc = sym direct_rdpmc,
+      perf_rdpmc = sym perf_rdpmc,
       lateout("rax") out,
-      lateout("rdx") _,
+      clobber_abi("C"),
+    );
+  }
+
+  out
+}
+
+#[inline(always)]
+#[allow(clippy::inline_always)]
+pub fn cycle_ticks() -> u64 {
+  let out: u64;
+
+  // SAFETY: Same patchpoint shape as `ticks`, with independent cycle selection and cycle
+  // trampolines for RDPMC-backed sources.
+  unsafe {
+    asm!(
+      ".pushsection hotclock_x86_64_cycle_callsite,\"awR\",@progbits",
+      callsite_record!(),
+      ".popsection",
+      ".pushsection .text.hotclock_x86_64_cold,\"ax\",@progbits",
+      ".p2align 4",
+      "4:",
+      "mov r11, rsp",
+      "and rsp, -16",
+      "sub rsp, 48",
+      "mov qword ptr [rsp + 32], r11",
+      "call {select}",
+      "mov rsp, qword ptr [rsp + 32]",
+      "jmp 3f",
+      ".p2align 4",
+      "5:",
+      "mov r11, rsp",
+      "and rsp, -16",
+      "sub rsp, 48",
+      "mov qword ptr [rsp + 32], r11",
+      "call {fallback}",
+      "mov rsp, qword ptr [rsp + 32]",
+      "jmp 3f",
+      ".p2align 4",
+      "6:",
+      "mov r11, rsp",
+      "and rsp, -16",
+      "sub rsp, 48",
+      "mov qword ptr [rsp + 32], r11",
+      "call {direct_rdpmc}",
+      "mov rsp, qword ptr [rsp + 32]",
+      "jmp 3f",
+      ".p2align 4",
+      "7:",
+      "mov r11, rsp",
+      "and rsp, -16",
+      "sub rsp, 48",
+      "mov qword ptr [rsp + 32], r11",
+      "call {perf_rdpmc}",
+      "mov rsp, qword ptr [rsp + 32]",
+      "jmp 3f",
+      ".popsection",
+      ".p2align 3",
+      "2:",
+      "jmp 4b",
+      ".rept 4",
+      "nop",
+      ".endr",
+      "3:",
+      select = sym cycle_select_fallback,
+      fallback = sym direct_clock_monotonic,
+      direct_rdpmc = sym direct_rdpmc,
+      perf_rdpmc = sym perf_rdpmc,
+      lateout("rax") out,
+      clobber_abi("C"),
     );
   }
 
@@ -147,8 +236,43 @@ pub fn implementation() -> &'static str {
 
 #[inline(always)]
 #[allow(clippy::inline_always)]
-pub fn cycle_ticks() -> u64 {
-  match ensure_cycle_selected() {
+pub fn cycle_implementation() -> &'static str {
+  ensure_cycle_selected();
+  CYCLE_SELECTED_NAME.get().copied().unwrap_or("unknown")
+}
+
+extern "C" fn instant_select_fallback() -> u64 {
+  read_selected(ensure_selected())
+}
+
+extern "C" fn cycle_select_fallback() -> u64 {
+  read_cycle_selected(ensure_cycle_selected())
+}
+
+extern "C" fn direct_clock_monotonic() -> u64 {
+  super::fallback::clock_monotonic()
+}
+
+extern "C" fn direct_rdpmc() -> u64 {
+  super::perf_rdpmc_linux::direct_rdpmc_fixed_core_cycles()
+}
+
+extern "C" fn perf_rdpmc() -> u64 {
+  super::perf_rdpmc_linux::perf_rdpmc_cpu_cycles().unwrap_or_else(super::x86_64::rdtsc)
+}
+
+#[inline(always)]
+fn read_selected(sel: u8) -> u64 {
+  match sel {
+    indices::RDTSC => super::x86_64::rdtsc(),
+    indices::CLOCK_MONOTONIC => super::fallback::clock_monotonic(),
+    _ => unreachable!("invalid selected x86_64 Linux counter"),
+  }
+}
+
+#[inline(always)]
+fn read_cycle_selected(sel: u8) -> u64 {
+  match sel {
     indices::DIRECT_RDPMC => super::perf_rdpmc_linux::direct_rdpmc_fixed_core_cycles(),
     indices::PERF_RDPMC => {
       super::perf_rdpmc_linux::perf_rdpmc_cpu_cycles().unwrap_or_else(super::x86_64::rdtsc)
@@ -156,41 +280,6 @@ pub fn cycle_ticks() -> u64 {
     indices::RDTSC => super::x86_64::rdtsc(),
     indices::CLOCK_MONOTONIC => super::fallback::clock_monotonic(),
     _ => unreachable!("invalid selected x86_64 Linux cycle counter"),
-  }
-}
-
-#[inline(always)]
-#[allow(clippy::inline_always)]
-pub fn cycle_implementation() -> &'static str {
-  ensure_cycle_selected();
-  CYCLE_SELECTED_NAME.get().copied().unwrap_or("unknown")
-}
-
-extern "C" fn select_fallback() -> u64 {
-  match ensure_selected() {
-    indices::RDTSC => super::x86_64::rdtsc(),
-    indices::CLOCK_MONOTONIC => super::fallback::clock_monotonic(),
-    _ => unreachable!("invalid selected x86_64 Linux counter"),
-  }
-}
-
-fn ensure_cycle_selected() -> u8 {
-  loop {
-    match CYCLE_SELECTED.load(Ordering::Acquire) {
-      UNSELECTED => {
-        if CYCLE_SELECTED
-          .compare_exchange(UNSELECTED, SELECTING, Ordering::AcqRel, Ordering::Acquire)
-          .is_ok()
-        {
-          let (idx, name) = crate::selection::select_best_cycles();
-          let _ = CYCLE_SELECTED_NAME.set(name);
-          CYCLE_SELECTED.store(idx, Ordering::Release);
-          return idx;
-        }
-      }
-      SELECTING => std::hint::spin_loop(),
-      selected => return selected,
-    }
   }
 }
 
@@ -204,9 +293,7 @@ fn ensure_selected() -> u8 {
         {
           let (idx, name) = crate::selection::select_best();
           let _ = SELECTED_NAME.set(name);
-          if idx == indices::RDTSC {
-            patch_rdtsc_callsites();
-          }
+          store_patch_stats(ClockClass::Instant, patch_callsites(ClockClass::Instant, idx));
           SELECTED.store(idx, Ordering::Release);
           return idx;
         }
@@ -217,18 +304,122 @@ fn ensure_selected() -> u8 {
   }
 }
 
-fn patch_rdtsc_callsites() {
-  for record in callsite_records() {
-    let Some(patch_address) = NonNull::new(record.patch_address as *mut u8) else {
-      continue;
-    };
-    let _ = patch_rdtsc_callsite(patch_address);
+fn ensure_cycle_selected() -> u8 {
+  loop {
+    match CYCLE_SELECTED.load(Ordering::Acquire) {
+      UNSELECTED => {
+        if CYCLE_SELECTED
+          .compare_exchange(UNSELECTED, SELECTING, Ordering::AcqRel, Ordering::Acquire)
+          .is_ok()
+        {
+          let (idx, name) = crate::selection::select_best_cycles();
+          let _ = CYCLE_SELECTED_NAME.set(name);
+          store_patch_stats(ClockClass::Cycles, patch_callsites(ClockClass::Cycles, idx));
+          CYCLE_SELECTED.store(idx, Ordering::Release);
+          return idx;
+        }
+      }
+      SELECTING => std::hint::spin_loop(),
+      selected => return selected,
+    }
   }
 }
 
-fn callsite_records() -> &'static [CallsiteRecord] {
-  let start = core::ptr::addr_of!(CALLSITE_START) as usize;
-  let stop = core::ptr::addr_of!(CALLSITE_STOP) as usize;
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum PatchOutcome {
+  Patched,
+  AlreadyPatched,
+  Failed,
+}
+
+fn patch_callsites(class: ClockClass, selected: u8) -> patch::PatchStats {
+  let mut stats = patch::PatchStats::default();
+
+  for record in callsite_records(class) {
+    let Some(patch_address) = NonNull::new(record.patch_address as *mut u8) else {
+      continue;
+    };
+    stats.registered += 1;
+    match patch_callsite(class, patch_address, record, selected) {
+      PatchOutcome::Patched => stats.patched += 1,
+      PatchOutcome::AlreadyPatched => stats.already_patched += 1,
+      PatchOutcome::Failed => stats.failed += 1,
+    }
+  }
+
+  stats
+}
+
+fn patch_callsite(
+  class: ClockClass,
+  patch_address: NonNull<u8>,
+  record: &CallsiteRecord,
+  selected: u8,
+) -> PatchOutcome {
+  let ptr = patch_address.as_ptr();
+  let Some(selected_bytes) = selected_gate_bytes(class, record, selected) else {
+    return PatchOutcome::Failed;
+  };
+  let Some(unselected_bytes) = branch_bytes(record.patch_address, record.cold_address) else {
+    return PatchOutcome::Failed;
+  };
+
+  let current = read_patch_bytes(ptr);
+  if current == selected_bytes {
+    return PatchOutcome::AlreadyPatched;
+  }
+  if current != unselected_bytes {
+    return PatchOutcome::Failed;
+  }
+
+  if patch::patch_bytes_with_u64_commit(ptr, &selected_bytes, COMMIT_LEN) {
+    PatchOutcome::Patched
+  } else {
+    PatchOutcome::Failed
+  }
+}
+
+fn selected_gate_bytes(
+  class: ClockClass,
+  record: &CallsiteRecord,
+  selected: u8,
+) -> Option<[u8; PATCH_LEN]> {
+  match class {
+    ClockClass::Instant => match selected {
+      indices::RDTSC => Some(RDTSC_BYTES),
+      indices::CLOCK_MONOTONIC => branch_bytes(record.patch_address, record.fallback_address),
+      _ => None,
+    },
+    ClockClass::Cycles => match selected {
+      indices::RDTSC => Some(RDTSC_BYTES),
+      indices::CLOCK_MONOTONIC => branch_bytes(record.patch_address, record.fallback_address),
+      indices::DIRECT_RDPMC => branch_bytes(record.patch_address, record.direct_rdpmc_address),
+      indices::PERF_RDPMC => branch_bytes(record.patch_address, record.perf_rdpmc_address),
+      _ => None,
+    },
+  }
+}
+
+fn branch_bytes(from: usize, to: usize) -> Option<[u8; PATCH_LEN]> {
+  let rel = patch::branch_i32(from, to, 5)?;
+  let mut bytes = [0x90; PATCH_LEN];
+  bytes[0] = 0xE9;
+  bytes[1..5].copy_from_slice(&rel.to_le_bytes());
+  Some(bytes)
+}
+
+fn callsite_records(class: ClockClass) -> &'static [CallsiteRecord] {
+  let (start, stop) = match class {
+    ClockClass::Instant => (
+      core::ptr::addr_of!(INSTANT_CALLSITE_START) as usize,
+      core::ptr::addr_of!(INSTANT_CALLSITE_STOP) as usize,
+    ),
+    ClockClass::Cycles => (
+      core::ptr::addr_of!(CYCLE_CALLSITE_START) as usize,
+      core::ptr::addr_of!(CYCLE_CALLSITE_STOP) as usize,
+    ),
+  };
+
   if stop < start {
     return &[];
   }
@@ -238,49 +429,14 @@ fn callsite_records() -> &'static [CallsiteRecord] {
     return &[];
   }
 
-  // SAFETY: The linker start/stop symbols bound the contiguous metadata section populated by
-  // the inline assembly above plus the sentinel record in this module.
+  // SAFETY: The linker start/stop symbols bound a metadata section populated by this module's
+  // inline assembly plus the sentinel record.
   unsafe {
     core::slice::from_raw_parts(
-      core::ptr::addr_of!(CALLSITE_START),
+      start as *const CallsiteRecord,
       byte_len / core::mem::size_of::<CallsiteRecord>(),
     )
   }
-}
-
-fn patch_rdtsc_callsite(patch_address: NonNull<u8>) -> bool {
-  let ptr = patch_address.as_ptr();
-  let address = ptr as usize;
-  if address % COMMIT_LEN != 0 {
-    return false;
-  }
-
-  let current = read_patch_bytes(ptr);
-  if current == RDTSC_BYTES {
-    return true;
-  }
-  if !is_unselected_gate(&current) {
-    return false;
-  }
-
-  let Ok(guard) = PageWriteGuard::enable(ptr, PATCH_LEN) else {
-    return false;
-  };
-
-  // SAFETY: The page guard made the crate-owned call-site bytes writable. The old gate is an
-  // out-of-line jump, so writing the final tail byte first cannot affect threads that already
-  // entered the cold path. The aligned atomic store commits the first eight selected bytes in
-  // one step.
-  unsafe {
-    ptr.add(COMMIT_LEN).write(RDTSC_BYTES[COMMIT_LEN]);
-    compiler_fence(Ordering::SeqCst);
-    AtomicU64::from_ptr(ptr.cast::<u64>())
-      .store(u64::from_le_bytes(RDTSC_BYTES[..COMMIT_LEN].try_into().unwrap()), Ordering::SeqCst);
-  }
-
-  flush_instruction_cache();
-  let _ = guard.restore();
-  true
 }
 
 fn read_patch_bytes(ptr: *mut u8) -> [u8; PATCH_LEN] {
@@ -293,91 +449,87 @@ fn read_patch_bytes(ptr: *mut u8) -> [u8; PATCH_LEN] {
   bytes
 }
 
-fn is_unselected_gate(bytes: &[u8; PATCH_LEN]) -> bool {
-  bytes[0] == 0xE9 && bytes[5..] == [0x90, 0x90, 0x90, 0x90]
+fn store_patch_stats(class: ClockClass, stats: patch::PatchStats) {
+  let (registered, patched, already_patched, failed) = match class {
+    ClockClass::Instant => (
+      &INSTANT_PATCH_REGISTERED,
+      &INSTANT_PATCH_PATCHED,
+      &INSTANT_PATCH_ALREADY_PATCHED,
+      &INSTANT_PATCH_FAILED,
+    ),
+    ClockClass::Cycles => (
+      &CYCLE_PATCH_REGISTERED,
+      &CYCLE_PATCH_PATCHED,
+      &CYCLE_PATCH_ALREADY_PATCHED,
+      &CYCLE_PATCH_FAILED,
+    ),
+  };
+
+  registered.store(stats.registered, Ordering::Relaxed);
+  patched.store(stats.patched, Ordering::Relaxed);
+  already_patched.store(stats.already_patched, Ordering::Relaxed);
+  failed.store(stats.failed, Ordering::Relaxed);
 }
 
-fn flush_instruction_cache() {
-  compiler_fence(Ordering::SeqCst);
-}
+#[cfg(test)]
+fn last_patch_stats(class: ClockClass) -> patch::PatchStats {
+  let (registered, patched, already_patched, failed) = match class {
+    ClockClass::Instant => (
+      &INSTANT_PATCH_REGISTERED,
+      &INSTANT_PATCH_PATCHED,
+      &INSTANT_PATCH_ALREADY_PATCHED,
+      &INSTANT_PATCH_FAILED,
+    ),
+    ClockClass::Cycles => (
+      &CYCLE_PATCH_REGISTERED,
+      &CYCLE_PATCH_PATCHED,
+      &CYCLE_PATCH_ALREADY_PATCHED,
+      &CYCLE_PATCH_FAILED,
+    ),
+  };
 
-struct PageWriteGuard {
-  start: *mut c_void,
-  len: usize,
-  active: bool,
-}
-
-impl PageWriteGuard {
-  fn enable(ptr: *mut u8, len: usize) -> Result<Self, ()> {
-    let (start, len) = page_span(ptr as usize, len)?;
-    let mut guard = Self { start: start as *mut c_void, len, active: false };
-    guard.mprotect(PROT_READ | PROT_WRITE | PROT_EXEC)?;
-    guard.active = true;
-    Ok(guard)
+  patch::PatchStats {
+    registered: registered.load(Ordering::Relaxed),
+    patched: patched.load(Ordering::Relaxed),
+    already_patched: already_patched.load(Ordering::Relaxed),
+    failed: failed.load(Ordering::Relaxed),
   }
-
-  fn restore(mut self) -> Result<(), ()> {
-    self.mprotect(PROT_READ | PROT_EXEC)?;
-    self.active = false;
-    Ok(())
-  }
-
-  fn mprotect(&self, protection: c_int) -> Result<(), ()> {
-    // SAFETY: `start` and `len` are page-aligned values returned by `page_span`, and
-    // `protection` is a valid Linux page-protection bitset.
-    if unsafe { mprotect(self.start, self.len, protection) } == 0 { Ok(()) } else { Err(()) }
-  }
-}
-
-impl Drop for PageWriteGuard {
-  fn drop(&mut self) {
-    if self.active {
-      let _ = self.mprotect(PROT_READ | PROT_EXEC);
-    }
-  }
-}
-
-fn page_span(addr: usize, len: usize) -> Result<(usize, usize), ()> {
-  let page_size = page_size()?;
-  let page_mask = !(page_size - 1);
-  let start = addr & page_mask;
-  let end = addr.checked_add(len).ok_or(())?;
-  let end = end.checked_add(page_size - 1).ok_or(())? & page_mask;
-  let len = end.checked_sub(start).ok_or(())?;
-  Ok((start, len))
-}
-
-fn page_size() -> Result<usize, ()> {
-  // SAFETY: `sysconf(_SC_PAGESIZE)` has no Rust-side safety preconditions.
-  let value = unsafe { sysconf(SC_PAGESIZE) };
-  if value <= 0 {
-    return Err(());
-  }
-  usize::try_from(value).map_err(|_| ())
 }
 
 #[cfg(test)]
 mod tests {
-  use super::{PATCH_LEN, RDTSC_BYTES};
+  use super::{ClockClass, RDTSC_BYTES};
 
   #[test]
-  fn rdtsc_selection_patches_registered_callsites_when_selected() {
+  fn rdtsc_selection_patches_registered_instant_callsites_when_selected() {
     let _ = super::ticks();
     if super::implementation() != "x86_64-rdtsc" {
       return;
     }
 
-    let callsites: Vec<_> = super::callsite_records()
+    let callsites: Vec<_> = super::callsite_records(ClockClass::Instant)
       .iter()
       .filter_map(|record| core::ptr::NonNull::new(record.patch_address as *mut u8))
       .map(|address| super::read_patch_bytes(address.as_ptr()))
       .collect();
     assert!(!callsites.is_empty());
     assert!(callsites.iter().all(|bytes| bytes == &RDTSC_BYTES), "{callsites:02x?}");
+
+    let stats = super::last_patch_stats(ClockClass::Instant);
+    assert_eq!(stats.failed, 0, "{stats:?}");
+    assert_eq!(stats.patched + stats.already_patched, stats.registered, "{stats:?}");
+  }
+
+  #[test]
+  fn cycle_selection_patches_registered_callsites() {
+    let _ = super::cycle_ticks();
+    let stats = super::last_patch_stats(ClockClass::Cycles);
+    assert_eq!(stats.failed, 0, "{stats:?}");
+    assert_eq!(stats.patched + stats.already_patched, stats.registered, "{stats:?}");
   }
 
   #[test]
   fn rdtsc_patch_bytes_fill_the_entire_hot_region() {
-    assert_eq!(RDTSC_BYTES.len(), PATCH_LEN);
+    assert_eq!(RDTSC_BYTES.len(), super::PATCH_LEN);
   }
 }
