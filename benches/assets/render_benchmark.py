@@ -28,6 +28,7 @@ CRATES = [
 GROUPS = [
   (("AWS t3 KVM", "x86_64-musl"), [8.711, 13.254, 9.356, 9.356, 24.249]),
   (("AWS m7i metal", "x86_64-musl"), [6.841, 7.130, 6.841, 6.841, 14.734]),
+  (("AWS Windows", "c5.large", "x86_64-msvc"), [8.236, 12.355, 36.757, 35.516, None]),
   (("AWS t3 KVM", "x86-musl"), [13.552, 69.312, 14.363, 14.154, 66.458]),
   (("AWS m7i metal", "x86-musl"), [6.841, 23.066, 6.841, 6.841, 22.743]),
   (("Docker", "x86_64-gnu"), [15.394, 25.079, 39.050, 22.066, 28.070]),
@@ -42,18 +43,19 @@ BAR_GAP = 4
 GROUP_WIDTH = 81
 GROUP_GAP = 20
 LEFT = 6
-HEIGHT = 218
+HEIGHT = 436
 LEGEND_Y = 15
 LEGEND_GAP = 18
 LEGEND_SQUARE = 6
 NOTE_Y = 30
 GROUP_TOP = 42
-GROUP_HEIGHT = 164
-BAR_BOTTOM = 166
-MAX_BAR_HEIGHT = 86
+GROUP_HEIGHT = 382
+BAR_BOTTOM = 384
+MAX_BAR_HEIGHT = 304
 VALUE_FONT_SIZE = 7
 LABEL_FONT_SIZE = 12
 LEGEND_FONT_SIZE = LABEL_FONT_SIZE
+GLOBAL_MAX = max(value for _, values in GROUPS for value in values if value is not None)
 
 
 def value_label(value: float) -> str:
@@ -110,7 +112,7 @@ def render_svg() -> str:
       f'<text x="{x + LEGEND_SQUARE + 4:g}" y="{LEGEND_Y:g}" text-anchor="start" '
       f'font-family="{FONT}" font-size="{LEGEND_FONT_SIZE}" fill="#2E231B">{esc(name)}</text>'
     )
-  parts.append(text(width / 2, NOTE_Y, "All measurements are nanoseconds.", 9))
+  parts.append(text(width / 2, NOTE_Y, "All measurements are nanoseconds; bars share one vertical scale.", 9))
 
   for group_x, (labels, values) in zip(group_xs, GROUPS):
     parts.append(
@@ -119,10 +121,11 @@ def render_svg() -> str:
     )
 
     bar_x = group_x + (GROUP_WIDTH - bars_width) / 2
-    group_max = max(values)
     placed_labels = []
     for i, value in enumerate(values):
-      height = max(2, round(value / group_max * MAX_BAR_HEIGHT))
+      if value is None:
+        continue
+      height = max(2, round(value / GLOBAL_MAX * MAX_BAR_HEIGHT))
       x = bar_x + i * (BAR_WIDTH + BAR_GAP)
       y = BAR_BOTTOM - height
       color = CRATES[i][1]
@@ -141,8 +144,9 @@ def render_svg() -> str:
       parts.append(text(label_x, label_y, label, VALUE_FONT_SIZE))
 
     center = group_x + GROUP_WIDTH / 2
-    parts.append(text(center, 185, labels[0], LABEL_FONT_SIZE))
-    parts.append(text(center, 199, labels[1], LABEL_FONT_SIZE))
+    label_start = 419 - (len(labels) - 1) * 14
+    for line, label in enumerate(labels):
+      parts.append(text(center, label_start + line * 14, label, LABEL_FONT_SIZE))
 
   parts.append("</g>")
   parts.append("</svg>")

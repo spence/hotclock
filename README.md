@@ -15,18 +15,21 @@ Full target/environment results: [runtime selection validation](benches/runtime-
 Pinned m7i GNU rerun: [high-confidence benchmark](benches/m7i-gnu-high-confidence-2026-05-08.md).
 
 The primary benchmark is `Instant::now()` read cost across target/environment
-pairs. Bars are scaled within each target group so same-environment crate costs
-are directly comparable.
+pairs. Bars use one shared vertical scale so target environments are directly
+comparable.
 
 Fresh validation runs below were produced with
 `tools/selection-validation-runner` on May 8, 2026. Each row was enforced
-against the expected fastest valid clocks for that target/environment.
+against the expected fastest valid clocks for that target/environment. The
+Windows c5.large row comes from the May 7, 2026 selection validation run, which
+did not capture `std`.
 
 | Environment        | Target              | Instant clock | Cycles clock     | Instant | Cycles | quanta | minstant | fastant | std    |
 |--------------------|---------------------|---------------|------------------|--------:|-------:|-------:|---------:|--------:|-------:|
 | AWS t3 KVM         | x86_64-linux-musl   | x86_64-rdtsc  | x86_64-rdtsc     | 8.711ns | 8.066ns | 13.254ns | 9.356ns | 9.356ns | 24.249ns |
 | AWS m7i metal      | x86_64-linux-musl   | x86_64-rdtsc  | x86_64-perf-rdpmc | 6.841ns | 5.262ns | 7.130ns | 6.841ns | 6.841ns | 14.734ns |
 | AWS m7i metal      | x86_64-linux-gnu    | x86_64-rdtsc  | x86_64-perf-rdpmc | 6.842ns | 5.526ns | 7.395ns | 6.842ns | 6.842ns | 14.812ns |
+| AWS Windows c5.large | x86_64-windows-msvc | x86_64-rdtsc | x86_64-rdtsc    | 8.236ns | 8.237ns | 12.355ns | 36.757ns | 35.516ns | — |
 | AWS t3 KVM         | x86-linux-musl      | x86-rdtsc     | x86-rdtsc        | 13.552ns | 13.551ns | 69.312ns | 14.363ns | 14.154ns | 66.458ns |
 | AWS m7i metal      | x86-linux-musl      | x86-rdtsc     | x86-rdtsc        | 6.841ns | 6.841ns | 23.066ns | 6.841ns | 6.841ns | 22.743ns |
 | Docker amd64       | x86_64-linux-gnu    | x86_64-rdtsc  | x86_64-rdtsc     | 15.394ns | 15.222ns | 25.079ns | 39.050ns | 22.066ns | 28.070ns |
