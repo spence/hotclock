@@ -693,11 +693,9 @@ pub fn ticks() -> u64 {
   // branch relocations. The patched hot gate still removes selected-index dispatch.
   unsafe {
     asm!(
-      ".p2align 2",
       "2:",
       "b 4f",
       "b 3f",
-      ".p2align 2",
       "4:",
       "adr x0, 2b",
       "adr x1, 4b",
@@ -705,7 +703,6 @@ pub fn ticks() -> u64 {
       "mov x3, xzr",
       "bl {select}",
       "b 3f",
-      ".p2align 2",
       "5:",
       "bl {fallback}",
       "b 3f",

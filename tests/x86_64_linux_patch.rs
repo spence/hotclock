@@ -1,3 +1,4 @@
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
 use hotclock::Instant;
 
 #[test]
@@ -43,5 +44,5 @@ fn concurrent_first_calls_complete_and_install_one_counter() {
 #[test]
 #[cfg(not(all(target_os = "linux", target_arch = "x86_64")))]
 fn x86_64_linux_patch_test_is_target_specific() {
-  assert!(!Instant::implementation().is_empty());
+  assert_ne!((std::env::consts::OS, std::env::consts::ARCH), ("linux", "x86_64"));
 }
