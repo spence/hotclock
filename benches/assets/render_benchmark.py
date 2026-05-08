@@ -19,10 +19,10 @@ FONT = "Avenir Next, Helvetica, Arial, sans-serif"
 
 CRATES = [
   ("tach@0.2.0", "#0067FF"),
-  ("quanta@0.12.6", "#6B7280"),
-  ("minstant@0.1.7", "#8B7B6B"),
-  ("fastant@0.1.11", "#4F5D5F"),
-  ("std@1.91", "#A0907F"),
+  ("quanta@0.12.6", "#5B6472"),
+  ("minstant@0.1.7", "#8B5E3C"),
+  ("fastant@0.1.11", "#4F6F6A"),
+  ("std@1.91", "#9A8A3A"),
 ]
 
 GROUPS = [
