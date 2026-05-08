@@ -33,10 +33,10 @@ println!("using {} @ {} Hz", Instant::implementation(), Instant::frequency());
 
 ## `Instant` vs `Cycles`
 
-`Instant` is the safe elapsed-time clock. It uses the fastest counter that satisfies
-hotclock's monotonic timing contract across normal OS thread behavior. Use it for
+`Instant` is the safe elapsed-time clock. It uses the fastest counter that stays
+monotonic across OS thread migration and cross-thread handoffs. Use it for
 deadlines, budgets, runtime scheduling, cross-thread timestamps, and measurements
-that must survive migration, descheduling, suspend/resume, or VM movement.
+that must survive descheduling, suspend/resume, or VM movement.
 
 `Cycles` is the lower-level hot-loop clock contract. It is an `Instant`-shaped
 counter for taking a sample, taking another sample, and subtracting them, but it
@@ -65,7 +65,7 @@ path.
 | Windows (aarch64)      | ✅ CNTVCT_EL0    | ✅          | ✅       |
 | Linux (x86/x86_64)     | ✅ RDTSC         | ✅          | ✅       |
 | Linux (aarch64)        | ✅ CNTVCT_EL0    | ✅          | ✅       |
-| Linux (s390x)          | ✅ stckf         | ✅          | ✅       |
+| Linux (s390x)          | ❌              | ✅          | ✅       |
 | Linux (loongarch64)    | ✅ rdtime.d      | ✅          | ✅       |
 | Unix/other (riscv64)   | ✅ rdtime        | ✅          | ✅       |
 | Unix/other (powerpc64) | ✅ mftb          | ✅          | ✅       |

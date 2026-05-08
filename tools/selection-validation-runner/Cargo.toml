@@ -1,0 +1,11 @@
+[package]
+name = "hotclock-selection-validation-runner"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+fastant = "0.1.11"
+hotclock = { path = "../.." }
+minstant = "0.1.7"
+quanta = "0.12.6"

@@ -56,6 +56,12 @@ pub fn ticks() -> u64 {
   }
 }
 
+#[inline(always)]
+#[allow(clippy::inline_always)]
+pub fn cycle_ticks() -> u64 {
+  ticks()
+}
+
 #[inline]
 #[must_use]
 pub const fn implementation() -> &'static str {
@@ -112,4 +118,10 @@ pub const fn implementation() -> &'static str {
   {
     "std-instant"
   }
+}
+
+#[inline]
+#[must_use]
+pub const fn cycle_implementation() -> &'static str {
+  implementation()
 }

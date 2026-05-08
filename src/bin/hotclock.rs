@@ -1,17 +1,22 @@
-use hotclock::Instant;
+use hotclock::{Cycles, Instant};
 
 fn main() {
   let freq = Instant::frequency();
+  let cycle_freq = Cycles::frequency();
 
   println!("hotclock v{}", env!("CARGO_PKG_VERSION"));
   println!();
-  println!("Implementation: {}", Instant::implementation());
-  println!("Frequency:      {freq} Hz ({:.2} MHz)", mhz(freq));
-  println!("Overhead:       {:.0} ps per call", measure_overhead());
-  println!("Resolution:     {}", format_resolution(freq));
+  println!("Instant implementation: {}", Instant::implementation());
+  println!("Instant frequency:      {freq} Hz ({:.2} MHz)", mhz(freq));
+  println!("Instant overhead:       {:.0} ps per call", measure_instant_overhead());
+  println!("Instant resolution:     {}", format_instant_resolution(freq));
+  println!();
+  println!("Cycles implementation:  {}", Cycles::implementation());
+  println!("Cycles frequency:       {cycle_freq} Hz ({:.2} MHz)", mhz(cycle_freq));
+  println!("Cycles overhead:        {:.0} ps per call", measure_cycles_overhead());
 }
 
-fn measure_overhead() -> f64 {
+fn measure_instant_overhead() -> f64 {
   const N: usize = 1_000_000;
   let start = std::time::Instant::now();
   for _ in 0..N {
@@ -20,7 +25,16 @@ fn measure_overhead() -> f64 {
   nanos_per_call(start.elapsed().as_nanos(), N) * 1000.0
 }
 
-fn format_resolution(freq: u64) -> String {
+fn measure_cycles_overhead() -> f64 {
+  const N: usize = 1_000_000;
+  let start = std::time::Instant::now();
+  for _ in 0..N {
+    std::hint::black_box(Cycles::now().as_raw());
+  }
+  nanos_per_call(start.elapsed().as_nanos(), N) * 1000.0
+}
+
+fn format_instant_resolution(freq: u64) -> String {
   let mut deltas = Vec::with_capacity(1000);
 
   for _ in 0..1000 {

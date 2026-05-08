@@ -10,6 +10,8 @@ hotclock provides a zero-dependency Rust API for reading fast CPU or platform ti
 
 ## Runtime-ready timing contract
 
+- [x] Ship separate `Cycles` counter selection and validation
+- [x] Prove selected clocks match fastest-known clocks per target environment
 - [x] Clarify `Instant` and `Cycles` as separate clock contracts
 - [x] Use RISC-V `rdtime` for Instant-class elapsed timing
 - [x] Benchmark selected-clock dispatch overhead

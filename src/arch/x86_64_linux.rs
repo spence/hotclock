@@ -17,10 +17,14 @@ const RDTSC_BYTES: [u8; 9] = [0x0F, 0x31, 0x48, 0xC1, 0xE2, 0x20, 0x48, 0x09, 0x
 
 static SELECTED: AtomicU8 = AtomicU8::new(UNSELECTED);
 static SELECTED_NAME: OnceLock<&'static str> = OnceLock::new();
+static CYCLE_SELECTED: AtomicU8 = AtomicU8::new(UNSELECTED);
+static CYCLE_SELECTED_NAME: OnceLock<&'static str> = OnceLock::new();
 
 pub mod indices {
   pub const RDTSC: u8 = 0;
   pub const CLOCK_MONOTONIC: u8 = 1;
+  pub const DIRECT_RDPMC: u8 = 2;
+  pub const PERF_RDPMC: u8 = 3;
 }
 
 #[repr(C)]
@@ -141,11 +145,52 @@ pub fn implementation() -> &'static str {
   SELECTED_NAME.get().copied().unwrap_or("unknown")
 }
 
+#[inline(always)]
+#[allow(clippy::inline_always)]
+pub fn cycle_ticks() -> u64 {
+  match ensure_cycle_selected() {
+    indices::DIRECT_RDPMC => super::perf_rdpmc_linux::direct_rdpmc_fixed_core_cycles(),
+    indices::PERF_RDPMC => {
+      super::perf_rdpmc_linux::perf_rdpmc_cpu_cycles().unwrap_or_else(super::x86_64::rdtsc)
+    }
+    indices::RDTSC => super::x86_64::rdtsc(),
+    indices::CLOCK_MONOTONIC => super::fallback::clock_monotonic(),
+    _ => unreachable!("invalid selected x86_64 Linux cycle counter"),
+  }
+}
+
+#[inline(always)]
+#[allow(clippy::inline_always)]
+pub fn cycle_implementation() -> &'static str {
+  ensure_cycle_selected();
+  CYCLE_SELECTED_NAME.get().copied().unwrap_or("unknown")
+}
+
 extern "C" fn select_fallback() -> u64 {
   match ensure_selected() {
     indices::RDTSC => super::x86_64::rdtsc(),
     indices::CLOCK_MONOTONIC => super::fallback::clock_monotonic(),
     _ => unreachable!("invalid selected x86_64 Linux counter"),
+  }
+}
+
+fn ensure_cycle_selected() -> u8 {
+  loop {
+    match CYCLE_SELECTED.load(Ordering::Acquire) {
+      UNSELECTED => {
+        if CYCLE_SELECTED
+          .compare_exchange(UNSELECTED, SELECTING, Ordering::AcqRel, Ordering::Acquire)
+          .is_ok()
+        {
+          let (idx, name) = crate::selection::select_best_cycles();
+          let _ = CYCLE_SELECTED_NAME.set(name);
+          CYCLE_SELECTED.store(idx, Ordering::Release);
+          return idx;
+        }
+      }
+      SELECTING => std::hint::spin_loop(),
+      selected => return selected,
+    }
   }
 }
 

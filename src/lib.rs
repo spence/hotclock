@@ -34,7 +34,7 @@
 //! | aarch64 non-macOS   | CNTVCT\_EL0    | OS timer       |
 //! | riscv64             | rdtime         | OS timer       |
 //! | powerpc64           | mftb           | OS timer       |
-//! | s390x               | stckf          | OS timer       |
+//! | s390x               | OS timer       | none           |
 //! | loongarch64         | rdtime.d       | OS timer       |
 //! | other               | OS timer       | none           |
 //!
@@ -75,6 +75,8 @@
 mod arch;
 mod calibration;
 mod convert;
+mod cycle_ticks;
+mod cycles;
 mod instant;
 #[cfg(not(any(
   all(target_arch = "aarch64", target_os = "macos"),
@@ -91,9 +93,19 @@ mod instant;
 mod selection;
 mod ticks;
 
+pub use cycle_ticks::CycleTicks;
+pub use cycles::Cycles;
 pub use instant::Instant;
 pub use ticks::Ticks;
 
+/// Returns the selected cycle-counter frequency in Hz.
+///
+/// This is the free-function form of [`Cycles::frequency()`]. See that method for details.
+pub use arch::cycle_frequency;
+/// Returns the name of the selected cycle-counter implementation.
+///
+/// This is the free-function form of [`Cycles::implementation()`]. See that method for details.
+pub use arch::cycle_implementation;
 /// Returns the tick counter frequency in Hz.
 ///
 /// This is the free-function form of [`Instant::frequency()`]. See that method for details.
@@ -120,6 +132,14 @@ mod tests {
   fn test_instant_is_send_sync() {
     assert_send_sync::<Instant>();
     assert_send_sync::<Ticks>();
+    assert_send_sync::<Cycles>();
+    assert_send_sync::<CycleTicks>();
+  }
+
+  #[test]
+  fn test_cycles_now() {
+    let c = Cycles::now();
+    assert!(c.as_raw() > 0);
   }
 
   #[test]
@@ -137,6 +157,18 @@ mod tests {
   #[test]
   fn test_instant_elapsed_ticks() {
     let start = Instant::now();
+    let mut sum = 0u64;
+    for i in 0..1000 {
+      sum = sum.wrapping_add(i);
+    }
+    let _ = std::hint::black_box(sum);
+    let elapsed = start.elapsed_ticks();
+    assert!(elapsed.as_raw() > 0);
+  }
+
+  #[test]
+  fn test_cycles_elapsed_ticks() {
+    let start = Cycles::now();
     let mut sum = 0u64;
     for i in 0..1000 {
       sum = sum.wrapping_add(i);
@@ -254,6 +286,16 @@ mod tests {
 
     for thread in threads {
       assert_eq!(thread.join().expect("frequency thread panicked"), expected);
+    }
+  }
+
+  #[test]
+  fn test_cycle_frequency_concurrent_initialization() {
+    let threads: Vec<_> = (0..8).map(|_| std::thread::spawn(Cycles::frequency)).collect();
+    let expected = Cycles::frequency();
+
+    for thread in threads {
+      assert_eq!(thread.join().expect("cycle frequency thread panicked"), expected);
     }
   }
 
