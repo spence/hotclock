@@ -2,132 +2,132 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="901" height="218" viewBox="0 0 901 218">
 <rect width="901" height="218" fill="#FBF6EC"/>
 <g shape-rendering="crispEdges">
-<rect x="335.5" y="9" width="5" height="5" fill="#075A4A"/>
-<text x="343.5" y="15" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="9" fill="#2E231B">tach</text>
-<rect x="377.5" y="9" width="5" height="5" fill="#D48A22"/>
-<text x="385.5" y="15" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="9" fill="#2E231B">quanta</text>
-<rect x="438.5" y="9" width="5" height="5" fill="#8F2E2E"/>
-<text x="446.5" y="15" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="9" fill="#2E231B">minstant</text>
-<rect x="499.5" y="9" width="5" height="5" fill="#4B6F78"/>
-<text x="507.5" y="15" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="9" fill="#2E231B">fastant</text>
-<rect x="560.5" y="9" width="5" height="5" fill="#B95032"/>
-<text x="568.5" y="15" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="9" fill="#2E231B">std</text>
+<rect x="191.26" y="9" width="6" height="6" fill="#075A4A"/>
+<text x="201.26" y="15" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">tach@0.2.0</text>
+<rect x="286.46" y="9" width="6" height="6" fill="#D48A22"/>
+<text x="296.46" y="15" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">quanta@0.12.6</text>
+<rect x="401.82" y="9" width="6" height="6" fill="#8F2E2E"/>
+<text x="411.82" y="15" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">minstant@0.1.7</text>
+<rect x="523.9" y="9" width="6" height="6" fill="#4B6F78"/>
+<text x="533.9" y="15" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">fastant@0.1.11</text>
+<rect x="645.98" y="9" width="6" height="6" fill="#B95032"/>
+<text x="655.98" y="15" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">std@1.91</text>
 <text x="450.5" y="30" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="9" fill="#2E231B">All measurements are nanoseconds.</text>
 <rect x="6" y="42" width="81" height="164" fill="#FFF8E8"/>
-<rect x="21" y="135" width="7" height="31" fill="#075A4A"/>
-<text x="24.5" y="131" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">8.71</text>
-<rect x="32" y="119" width="7" height="47" fill="#D48A22"/>
-<text x="35.5" y="115" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">13.3</text>
-<rect x="43" y="133" width="7" height="33" fill="#8F2E2E"/>
+<rect x="18.5" y="135" width="8" height="31" fill="#075A4A"/>
+<text x="22.5" y="131" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">8.71</text>
+<rect x="30.5" y="119" width="8" height="47" fill="#D48A22"/>
+<text x="34.5" y="115" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">13.3</text>
+<rect x="42.5" y="133" width="8" height="33" fill="#8F2E2E"/>
 <text x="46.5" y="129" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">9.36</text>
-<rect x="54" y="133" width="7" height="33" fill="#4B6F78"/>
-<text x="57.5" y="119" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">9.36</text>
-<rect x="65" y="80" width="7" height="86" fill="#B95032"/>
-<text x="68.5" y="76" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">24.2</text>
+<rect x="54.5" y="133" width="8" height="33" fill="#4B6F78"/>
+<text x="58.5" y="119" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">9.36</text>
+<rect x="66.5" y="80" width="8" height="86" fill="#B95032"/>
+<text x="70.5" y="76" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">24.2</text>
 <text x="46.5" y="185" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">AWS t3 KVM</text>
 <text x="46.5" y="199" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">x86_64-musl</text>
 <rect x="107" y="42" width="81" height="164" fill="#FFF8E8"/>
-<rect x="122" y="126" width="7" height="40" fill="#075A4A"/>
-<text x="125.5" y="122" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">6.84</text>
-<rect x="133" y="124" width="7" height="42" fill="#D48A22"/>
-<text x="136.5" y="110" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">7.13</text>
-<rect x="144" y="126" width="7" height="40" fill="#8F2E2E"/>
+<rect x="119.5" y="126" width="8" height="40" fill="#075A4A"/>
+<text x="123.5" y="122" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">6.84</text>
+<rect x="131.5" y="124" width="8" height="42" fill="#D48A22"/>
+<text x="135.5" y="110" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">7.13</text>
+<rect x="143.5" y="126" width="8" height="40" fill="#8F2E2E"/>
 <text x="147.5" y="122" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">6.84</text>
-<rect x="155" y="126" width="7" height="40" fill="#4B6F78"/>
-<text x="158.5" y="112" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">6.84</text>
-<rect x="166" y="80" width="7" height="86" fill="#B95032"/>
-<text x="169.5" y="76" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">14.7</text>
+<rect x="155.5" y="126" width="8" height="40" fill="#4B6F78"/>
+<text x="159.5" y="112" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">6.84</text>
+<rect x="167.5" y="80" width="8" height="86" fill="#B95032"/>
+<text x="171.5" y="76" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">14.7</text>
 <text x="147.5" y="185" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">AWS m7i metal</text>
 <text x="147.5" y="199" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">x86_64-musl</text>
 <rect x="208" y="42" width="81" height="164" fill="#FFF8E8"/>
-<rect x="223" y="149" width="7" height="17" fill="#075A4A"/>
-<text x="226.5" y="145" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">13.6</text>
-<rect x="234" y="80" width="7" height="86" fill="#D48A22"/>
-<text x="237.5" y="76" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">69.3</text>
-<rect x="245" y="148" width="7" height="18" fill="#8F2E2E"/>
+<rect x="220.5" y="149" width="8" height="17" fill="#075A4A"/>
+<text x="224.5" y="145" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">13.6</text>
+<rect x="232.5" y="80" width="8" height="86" fill="#D48A22"/>
+<text x="236.5" y="76" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">69.3</text>
+<rect x="244.5" y="148" width="8" height="18" fill="#8F2E2E"/>
 <text x="248.5" y="144" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">14.4</text>
-<rect x="256" y="148" width="7" height="18" fill="#4B6F78"/>
-<text x="259.5" y="134" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">14.2</text>
-<rect x="267" y="84" width="7" height="82" fill="#B95032"/>
-<text x="270.5" y="80" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">66.5</text>
+<rect x="256.5" y="148" width="8" height="18" fill="#4B6F78"/>
+<text x="260.5" y="134" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">14.2</text>
+<rect x="268.5" y="84" width="8" height="82" fill="#B95032"/>
+<text x="272.5" y="80" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">66.5</text>
 <text x="248.5" y="185" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">AWS t3 KVM</text>
 <text x="248.5" y="199" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">x86-musl</text>
 <rect x="309" y="42" width="81" height="164" fill="#FFF8E8"/>
-<rect x="324" y="140" width="7" height="26" fill="#075A4A"/>
-<text x="327.5" y="136" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">6.84</text>
-<rect x="335" y="80" width="7" height="86" fill="#D48A22"/>
-<text x="338.5" y="76" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">23.1</text>
-<rect x="346" y="140" width="7" height="26" fill="#8F2E2E"/>
+<rect x="321.5" y="140" width="8" height="26" fill="#075A4A"/>
+<text x="325.5" y="136" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">6.84</text>
+<rect x="333.5" y="80" width="8" height="86" fill="#D48A22"/>
+<text x="337.5" y="76" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">23.1</text>
+<rect x="345.5" y="140" width="8" height="26" fill="#8F2E2E"/>
 <text x="349.5" y="136" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">6.84</text>
-<rect x="357" y="140" width="7" height="26" fill="#4B6F78"/>
-<text x="360.5" y="126" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">6.84</text>
-<rect x="368" y="81" width="7" height="85" fill="#B95032"/>
-<text x="371.5" y="77" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">22.7</text>
+<rect x="357.5" y="140" width="8" height="26" fill="#4B6F78"/>
+<text x="361.5" y="126" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">6.84</text>
+<rect x="369.5" y="81" width="8" height="85" fill="#B95032"/>
+<text x="373.5" y="77" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">22.7</text>
 <text x="349.5" y="185" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">AWS m7i metal</text>
 <text x="349.5" y="199" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">x86-musl</text>
 <rect x="410" y="42" width="81" height="164" fill="#FFF8E8"/>
-<rect x="425" y="132" width="7" height="34" fill="#075A4A"/>
-<text x="428.5" y="128" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">15.4</text>
-<rect x="436" y="111" width="7" height="55" fill="#D48A22"/>
-<text x="439.5" y="107" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">25.1</text>
-<rect x="447" y="80" width="7" height="86" fill="#8F2E2E"/>
+<rect x="422.5" y="132" width="8" height="34" fill="#075A4A"/>
+<text x="426.5" y="128" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">15.4</text>
+<rect x="434.5" y="111" width="8" height="55" fill="#D48A22"/>
+<text x="438.5" y="107" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">25.1</text>
+<rect x="446.5" y="80" width="8" height="86" fill="#8F2E2E"/>
 <text x="450.5" y="76" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">39.0</text>
-<rect x="458" y="117" width="7" height="49" fill="#4B6F78"/>
-<text x="461.5" y="113" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">22.1</text>
-<rect x="469" y="104" width="7" height="62" fill="#B95032"/>
-<text x="472.5" y="100" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">28.1</text>
+<rect x="458.5" y="117" width="8" height="49" fill="#4B6F78"/>
+<text x="462.5" y="113" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">22.1</text>
+<rect x="470.5" y="104" width="8" height="62" fill="#B95032"/>
+<text x="474.5" y="100" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">28.1</text>
 <text x="450.5" y="185" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">Docker</text>
 <text x="450.5" y="199" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">x86_64-gnu</text>
 <rect x="511" y="42" width="81" height="164" fill="#FFF8E8"/>
-<rect x="526" y="159" width="7" height="7" fill="#075A4A"/>
-<text x="529.5" y="155" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">25.8</text>
-<rect x="537" y="99" width="7" height="67" fill="#D48A22"/>
-<text x="540.5" y="95" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">254</text>
-<rect x="548" y="80" width="7" height="86" fill="#8F2E2E"/>
+<rect x="523.5" y="159" width="8" height="7" fill="#075A4A"/>
+<text x="527.5" y="155" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">25.8</text>
+<rect x="535.5" y="99" width="8" height="67" fill="#D48A22"/>
+<text x="539.5" y="95" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">254</text>
+<rect x="547.5" y="80" width="8" height="86" fill="#8F2E2E"/>
 <text x="551.5" y="76" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">323</text>
-<rect x="559" y="80" width="7" height="86" fill="#4B6F78"/>
-<text x="562.5" y="66" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">324</text>
-<rect x="570" y="107" width="7" height="59" fill="#B95032"/>
-<text x="573.5" y="103" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">223</text>
+<rect x="559.5" y="80" width="8" height="86" fill="#4B6F78"/>
+<text x="563.5" y="66" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">324</text>
+<rect x="571.5" y="107" width="8" height="59" fill="#B95032"/>
+<text x="575.5" y="103" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">223</text>
 <text x="551.5" y="185" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">Docker</text>
 <text x="551.5" y="199" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">x86-gnu</text>
 <rect x="612" y="42" width="81" height="164" fill="#FFF8E8"/>
-<rect x="627" y="164" width="7" height="2" fill="#075A4A"/>
-<text x="630.5" y="160" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">0.33</text>
-<rect x="638" y="152" width="7" height="14" fill="#D48A22"/>
-<text x="641.5" y="148" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">4.47</text>
-<rect x="649" y="80" width="7" height="86" fill="#8F2E2E"/>
+<rect x="624.5" y="164" width="8" height="2" fill="#075A4A"/>
+<text x="628.5" y="160" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">0.33</text>
+<rect x="636.5" y="152" width="8" height="14" fill="#D48A22"/>
+<text x="640.5" y="148" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">4.47</text>
+<rect x="648.5" y="80" width="8" height="86" fill="#8F2E2E"/>
 <text x="652.5" y="76" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">27.2</text>
-<rect x="660" y="80" width="7" height="86" fill="#4B6F78"/>
-<text x="663.5" y="66" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">27.3</text>
-<rect x="671" y="102" width="7" height="64" fill="#B95032"/>
-<text x="674.5" y="98" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">20.2</text>
+<rect x="660.5" y="80" width="8" height="86" fill="#4B6F78"/>
+<text x="664.5" y="66" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">27.3</text>
+<rect x="672.5" y="102" width="8" height="64" fill="#B95032"/>
+<text x="676.5" y="98" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">20.2</text>
 <text x="652.5" y="185" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">Docker</text>
 <text x="652.5" y="199" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">aarch64-gnu</text>
 <rect x="713" y="42" width="81" height="164" fill="#FFF8E8"/>
-<rect x="728" y="147" width="7" height="19" fill="#075A4A"/>
-<text x="731.5" y="143" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">59.6</text>
-<rect x="739" y="98" width="7" height="68" fill="#D48A22"/>
-<text x="742.5" y="94" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">215</text>
-<rect x="750" y="80" width="7" height="86" fill="#8F2E2E"/>
+<rect x="725.5" y="147" width="8" height="19" fill="#075A4A"/>
+<text x="729.5" y="143" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">59.6</text>
+<rect x="737.5" y="98" width="8" height="68" fill="#D48A22"/>
+<text x="741.5" y="94" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">215</text>
+<rect x="749.5" y="80" width="8" height="86" fill="#8F2E2E"/>
 <text x="753.5" y="76" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">271</text>
-<rect x="761" y="80" width="7" height="86" fill="#4B6F78"/>
-<text x="764.5" y="66" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">271</text>
-<rect x="772" y="107" width="7" height="59" fill="#B95032"/>
-<text x="775.5" y="103" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">185</text>
+<rect x="761.5" y="80" width="8" height="86" fill="#4B6F78"/>
+<text x="765.5" y="66" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">271</text>
+<rect x="773.5" y="107" width="8" height="59" fill="#B95032"/>
+<text x="777.5" y="103" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">185</text>
 <text x="753.5" y="185" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">Docker</text>
 <text x="753.5" y="199" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">riscv64-gnu</text>
 <rect x="814" y="42" width="81" height="164" fill="#FFF8E8"/>
-<rect x="829" y="164" width="7" height="2" fill="#075A4A"/>
-<text x="832.5" y="160" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">0.33</text>
-<rect x="840" y="151" width="7" height="15" fill="#D48A22"/>
-<text x="843.5" y="147" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">4.62</text>
-<rect x="851" y="80" width="7" height="86" fill="#8F2E2E"/>
+<rect x="826.5" y="164" width="8" height="2" fill="#075A4A"/>
+<text x="830.5" y="160" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">0.33</text>
+<rect x="838.5" y="151" width="8" height="15" fill="#D48A22"/>
+<text x="842.5" y="147" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">4.62</text>
+<rect x="850.5" y="80" width="8" height="86" fill="#8F2E2E"/>
 <text x="854.5" y="76" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">25.7</text>
-<rect x="862" y="80" width="7" height="86" fill="#4B6F78"/>
-<text x="865.5" y="66" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">25.7</text>
-<rect x="873" y="104" width="7" height="62" fill="#B95032"/>
-<text x="876.5" y="100" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">18.4</text>
+<rect x="862.5" y="80" width="8" height="86" fill="#4B6F78"/>
+<text x="866.5" y="66" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">25.7</text>
+<rect x="874.5" y="104" width="8" height="62" fill="#B95032"/>
+<text x="878.5" y="100" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">18.4</text>
 <text x="854.5" y="185" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">macOS</text>
 <text x="854.5" y="199" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">aarch64</text>
 </g>

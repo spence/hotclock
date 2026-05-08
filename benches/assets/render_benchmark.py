@@ -18,11 +18,11 @@ GROUP_BACKGROUND = "#FFF8E8"
 FONT = "Avenir Next, Helvetica, Arial, sans-serif"
 
 CRATES = [
-  ("tach", "#075A4A"),
-  ("quanta", "#D48A22"),
-  ("minstant", "#8F2E2E"),
-  ("fastant", "#4B6F78"),
-  ("std", "#B95032"),
+  ("tach@0.2.0", "#075A4A"),
+  ("quanta@0.12.6", "#D48A22"),
+  ("minstant@0.1.7", "#8F2E2E"),
+  ("fastant@0.1.11", "#4B6F78"),
+  ("std@1.91", "#B95032"),
 ]
 
 GROUPS = [
@@ -37,13 +37,15 @@ GROUPS = [
   (("macOS", "aarch64"), [0.330, 4.620, 25.700, 25.700, 18.400]),
 ]
 
-BAR_WIDTH = 7
+BAR_WIDTH = 8
 BAR_GAP = 4
 GROUP_WIDTH = 81
 GROUP_GAP = 20
 LEFT = 6
 HEIGHT = 218
 LEGEND_Y = 15
+LEGEND_GAP = 18
+LEGEND_SQUARE = 6
 NOTE_Y = 30
 GROUP_TOP = 42
 GROUP_HEIGHT = 164
@@ -51,6 +53,7 @@ BAR_BOTTOM = 166
 MAX_BAR_HEIGHT = 86
 VALUE_FONT_SIZE = 7
 LABEL_FONT_SIZE = 12
+LEGEND_FONT_SIZE = LABEL_FONT_SIZE
 
 
 def value_label(value: float) -> str:
@@ -72,8 +75,8 @@ def text(x: float, y: float, value: str, size: int, anchor: str = "middle") -> s
   )
 
 
-def label_width(value: str) -> float:
-  return len(value) * VALUE_FONT_SIZE * 0.56
+def text_width(value: str, size: int) -> float:
+  return len(value) * size * 0.56
 
 
 def render_svg() -> str:
@@ -92,15 +95,20 @@ def render_svg() -> str:
   ]
 
   legend_items = []
-  legend_x = width / 2 - 115
+  legend_width = sum(LEGEND_SQUARE + 4 + text_width(name, LEGEND_FONT_SIZE) for name, _ in CRATES)
+  legend_width += LEGEND_GAP * (len(CRATES) - 1)
+  legend_x = (width - legend_width) / 2
   for name, color in CRATES:
     legend_items.append((legend_x, name, color))
-    legend_x += 42 if name in {"tach", "std"} else 61
+    legend_x += LEGEND_SQUARE + 4 + text_width(name, LEGEND_FONT_SIZE) + LEGEND_GAP
   for x, name, color in legend_items:
-    parts.append(f'<rect x="{x:g}" y="{LEGEND_Y - 6}" width="5" height="5" fill="{color}"/>')
     parts.append(
-      f'<text x="{x + 8:g}" y="{LEGEND_Y:g}" text-anchor="start" '
-      f'font-family="{FONT}" font-size="9" fill="#2E231B">{esc(name)}</text>'
+      f'<rect x="{x:g}" y="{LEGEND_Y - LEGEND_SQUARE}" '
+      f'width="{LEGEND_SQUARE}" height="{LEGEND_SQUARE}" fill="{color}"/>'
+    )
+    parts.append(
+      f'<text x="{x + LEGEND_SQUARE + 4:g}" y="{LEGEND_Y:g}" text-anchor="start" '
+      f'font-family="{FONT}" font-size="{LEGEND_FONT_SIZE}" fill="#2E231B">{esc(name)}</text>'
     )
   parts.append(text(width / 2, NOTE_Y, "All measurements are nanoseconds.", 9))
 
@@ -121,7 +129,7 @@ def render_svg() -> str:
       label = value_label(value)
       label_x = x + BAR_WIDTH / 2
       label_y = y - 4
-      width_estimate = label_width(label)
+      width_estimate = text_width(label, VALUE_FONT_SIZE)
       while any(
         abs(label_x - other_x) < (width_estimate + other_width) / 2 + 1
         and abs(label_y - other_y) < VALUE_FONT_SIZE + 3
