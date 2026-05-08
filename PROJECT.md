@@ -11,6 +11,7 @@ tach provides a zero-dependency Rust API for reading fast CPU or platform tick c
 - [x] Render README benchmark chart as grouped vertical bars
 - [x] Tighten benchmark chart bar geometry and legend
 - [x] Move benchmark chart legend below the bars
+- [x] Move benchmark chart legend above the bars
 - [x] Replace noisy m7i GNU row with pinned high-confidence benchmark
 - [x] Keep heatmap and bar chart README benchmark graphics
 - [x] Convert README performance graphic to a bar chart
