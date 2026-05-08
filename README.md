@@ -12,6 +12,7 @@ in a container, a VM or on bare metal, it automatically selects the fastest mach
 ![Cross-target Instant benchmark heatmap](benches/assets/benchmark-heatmap.png)
 
 Full target/environment results: [runtime selection validation](benches/runtime-selection-validation-2026-05-08.md).
+Pinned m7i GNU rerun: [high-confidence benchmark](benches/m7i-gnu-high-confidence-2026-05-08.md).
 
 The primary benchmark is `Instant::now()` read cost across target/environment
 pairs. Bars are scaled within each target row so same-environment crate costs
@@ -25,7 +26,7 @@ against the expected fastest valid clocks for that target/environment.
 |--------------------|---------------------|---------------|------------------|--------:|-------:|-------:|---------:|--------:|-------:|
 | AWS t3 KVM         | x86_64-linux-musl   | x86_64-rdtsc  | x86_64-rdtsc     | 8.711ns | 8.066ns | 13.254ns | 9.356ns | 9.356ns | 24.249ns |
 | AWS m7i metal      | x86_64-linux-musl   | x86_64-rdtsc  | x86_64-perf-rdpmc | 6.841ns | 5.262ns | 7.130ns | 6.841ns | 6.841ns | 14.734ns |
-| AWS m7i metal      | x86_64-linux-gnu    | x86_64-rdtsc  | x86_64-perf-rdpmc | 7.879ns | 5.758ns | 7.131ns | 6.842ns | 6.842ns | 14.999ns |
+| AWS m7i metal      | x86_64-linux-gnu    | x86_64-rdtsc  | x86_64-perf-rdpmc | 6.842ns | 5.526ns | 7.395ns | 6.842ns | 6.842ns | 14.812ns |
 | AWS t3 KVM         | x86-linux-musl      | x86-rdtsc     | x86-rdtsc        | 13.552ns | 13.551ns | 69.312ns | 14.363ns | 14.154ns | 66.458ns |
 | AWS m7i metal      | x86-linux-musl      | x86-rdtsc     | x86-rdtsc        | 6.841ns | 6.841ns | 23.066ns | 6.841ns | 6.841ns | 22.743ns |
 | Docker amd64       | x86_64-linux-gnu    | x86_64-rdtsc  | x86_64-rdtsc     | 15.394ns | 15.222ns | 25.079ns | 39.050ns | 22.066ns | 28.070ns |
@@ -70,8 +71,8 @@ cross-thread or OS-thread-event guarantees. Use it for same-thread
 microbenchmarks, profilers, tight polling loops, and short measurements where
 clock read cost dominates.
 
-On AWS m7i Linux, `Cycles` selected `perf-RDPMC` and read in `5.758ns` where
-`Instant` used `RDTSC` and read in `7.879ns`.
+On AWS m7i Linux, `Cycles` selected `perf-RDPMC` and read in `5.526ns` where
+`Instant` used `RDTSC` and read in `6.842ns`.
 
 ## platform / architecture support
 

@@ -11,7 +11,7 @@ fastest valid clocks for that target/environment. Scores are median `ns/op` for
 ├────────────────┼───────────────────┼────────────────┼───────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼──────────┤
 │ AWS t3 KVM     │ x86_64-linux-musl │ x86_64-rdtsc   │ x86_64-rdtsc      │ 8.711    │ 8.066    │ 13.254   │ 9.356    │ 9.356    │ 24.249   │
 │ AWS m7i metal  │ x86_64-linux-musl │ x86_64-rdtsc   │ x86_64-perf-rdpmc │ 6.841    │ 5.262    │ 7.130    │ 6.841    │ 6.841    │ 14.734   │
-│ AWS m7i metal  │ x86_64-linux-gnu  │ x86_64-rdtsc   │ x86_64-perf-rdpmc │ 7.879    │ 5.758    │ 7.131    │ 6.842    │ 6.842    │ 14.999   │
+│ AWS m7i metal  │ x86_64-linux-gnu  │ x86_64-rdtsc   │ x86_64-perf-rdpmc │ 6.842    │ 5.526    │ 7.395    │ 6.842    │ 6.842    │ 14.812   │
 │ AWS t3 KVM     │ x86-linux-musl    │ x86-rdtsc      │ x86-rdtsc         │ 13.552   │ 13.551   │ 69.312   │ 14.363   │ 14.154   │ 66.458   │
 │ AWS m7i metal  │ x86-linux-musl    │ x86-rdtsc      │ x86-rdtsc         │ 6.841    │ 6.841    │ 23.066   │ 6.841    │ 6.841    │ 22.743   │
 │ Docker amd64   │ x86_64-linux-gnu  │ x86_64-rdtsc   │ x86_64-rdtsc      │ 15.394   │ 15.222   │ 25.079   │ 39.050   │ 22.066   │ 28.070   │

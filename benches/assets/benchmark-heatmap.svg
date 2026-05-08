@@ -71,19 +71,19 @@
 <text xml:space="preserve" text-anchor="start" x="6" y="-210" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">AWS m7i metal / x86_64&#45;gnu</text>
 <polygon fill="#075a4a" stroke="none" points="174.75,-199.5 174.75,-228 237,-228 237,-199.5 174.75,-199.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="174.75,-199.5 174.75,-228 237,-228 237,-199.5 174.75,-199.5"/>
-<text xml:space="preserve" text-anchor="start" x="184.88" y="-210" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">7.879ns</text>
+<text xml:space="preserve" text-anchor="start" x="184.88" y="-210" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">6.842ns</text>
 <polygon fill="#ddeed9" stroke="none" points="237,-199.5 237,-228 336.75,-228 336.75,-199.5 237,-199.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="237,-199.5 237,-228 336.75,-228 336.75,-199.5 237,-199.5"/>
-<text xml:space="preserve" text-anchor="start" x="249.75" y="-210" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">7.131ns 0.91x</text>
+<text xml:space="preserve" text-anchor="start" x="249.75" y="-210" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">7.395ns 1.08x</text>
 <polygon fill="#ddeed9" stroke="none" points="336.75,-199.5 336.75,-228 443.25,-228 443.25,-199.5 336.75,-199.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="336.75,-199.5 336.75,-228 443.25,-228 443.25,-199.5 336.75,-199.5"/>
-<text xml:space="preserve" text-anchor="start" x="352.88" y="-210" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">6.842ns 0.87x</text>
+<text xml:space="preserve" text-anchor="start" x="352.88" y="-210" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">6.842ns 1.00x</text>
 <polygon fill="#ddeed9" stroke="none" points="443.25,-199.5 443.25,-228 549.75,-228 549.75,-199.5 443.25,-199.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="443.25,-199.5 443.25,-228 549.75,-228 549.75,-199.5 443.25,-199.5"/>
-<text xml:space="preserve" text-anchor="start" x="459.38" y="-210" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">6.842ns 0.87x</text>
+<text xml:space="preserve" text-anchor="start" x="459.38" y="-210" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">6.842ns 1.00x</text>
 <polygon fill="#d9874a" stroke="none" points="549.75,-199.5 549.75,-228 649.5,-228 649.5,-199.5 549.75,-199.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="549.75,-199.5 549.75,-228 649.5,-228 649.5,-199.5 549.75,-199.5"/>
-<text xml:space="preserve" text-anchor="start" x="559.12" y="-210" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">14.999ns 1.90x</text>
+<text xml:space="preserve" text-anchor="start" x="559.12" y="-210" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">14.812ns 2.17x</text>
 <polygon fill="#fff8e8" stroke="none" points="0,-171 0,-199.5 174.75,-199.5 174.75,-171 0,-171"/>
 <polygon fill="none" stroke="#e4d8c2" points="0,-171 0,-199.5 174.75,-199.5 174.75,-171 0,-171"/>
 <text xml:space="preserve" text-anchor="start" x="6" y="-181.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">AWS t3 KVM / x86&#45;musl</text>

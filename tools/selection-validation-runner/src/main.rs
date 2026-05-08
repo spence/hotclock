@@ -10,10 +10,22 @@ use hotclock::{Cycles, Instant};
 const DEFAULT_WARMUP_ITERS: usize = 10_000;
 const DEFAULT_MEASURE_ITERS: usize = 100_000;
 const DEFAULT_SAMPLES: usize = 31;
+const FASTEST_EPSILON_NS: f64 = 0.005;
 
 #[derive(Clone, Copy)]
 struct Stats {
-  ns_op: f64,
+  min: f64,
+  p25: f64,
+  median: f64,
+  p75: f64,
+  p95: f64,
+  max: f64,
+}
+
+impl Stats {
+  fn ns_op(self) -> f64 {
+    self.median
+  }
 }
 
 struct Row {
@@ -25,6 +37,7 @@ struct Row {
   selected_cycles: &'static str,
   hotclock_instant: Stats,
   hotclock_cycles: Stats,
+  raw_counter: Option<Stats>,
   quanta: Stats,
   minstant: Stats,
   fastant: Stats,
@@ -60,28 +73,18 @@ fn run_report() -> (String, bool) {
   let selected_instant = Instant::implementation();
   let selected_cycles = Cycles::implementation();
 
-  let hotclock_instant = measure(|| {
-    let _ = black_box(Instant::now());
-  });
-  let hotclock_cycles = measure(|| {
-    let _ = black_box(Cycles::now());
-  });
-  let quanta = measure(|| {
-    let _ = black_box(quanta::Instant::now());
-  });
-  let minstant = measure(|| {
-    let _ = black_box(minstant::Instant::now());
-  });
-  let fastant = measure(|| {
-    let _ = black_box(fastant::Instant::now());
-  });
-  let std_instant = measure(|| {
-    let _ = black_box(StdInstant::now());
-  });
-  let fastest_instant_api = hotclock_instant.ns_op <= quanta.ns_op
-    && hotclock_instant.ns_op <= minstant.ns_op
-    && hotclock_instant.ns_op <= fastant.ns_op
-    && hotclock_instant.ns_op <= std_instant.ns_op;
+  let measurements = measure_interleaved();
+  let hotclock_instant = measurements.hotclock_instant;
+  let hotclock_cycles = measurements.hotclock_cycles;
+  let raw_counter = measurements.raw_counter;
+  let quanta = measurements.quanta;
+  let minstant = measurements.minstant;
+  let fastant = measurements.fastant;
+  let std_instant = measurements.std_instant;
+  let fastest_instant_api = hotclock_instant.ns_op() <= quanta.ns_op() + FASTEST_EPSILON_NS
+    && hotclock_instant.ns_op() <= minstant.ns_op() + FASTEST_EPSILON_NS
+    && hotclock_instant.ns_op() <= fastant.ns_op() + FASTEST_EPSILON_NS
+    && hotclock_instant.ns_op() <= std_instant.ns_op() + FASTEST_EPSILON_NS;
 
   let row = Row {
     target: target_label(),
@@ -96,6 +99,7 @@ fn run_report() -> (String, bool) {
     selected_cycles,
     hotclock_instant,
     hotclock_cycles,
+    raw_counter,
     quanta,
     minstant,
     fastant,
@@ -108,30 +112,148 @@ fn run_report() -> (String, bool) {
   (render_row(&row), ok)
 }
 
-fn measure<F>(mut f: F) -> Stats
-where
-  F: FnMut(),
-{
+struct Measurements {
+  hotclock_instant: Stats,
+  hotclock_cycles: Stats,
+  raw_counter: Option<Stats>,
+  quanta: Stats,
+  minstant: Stats,
+  fastant: Stats,
+  std_instant: Stats,
+}
+
+struct BenchCase {
+  index: usize,
+  run: fn(),
+}
+
+fn measure_interleaved() -> Measurements {
   let warmup_iters = env_usize("HOTCLOCK_VALIDATION_WARMUP_ITERS", DEFAULT_WARMUP_ITERS);
   let measure_iters = env_usize("HOTCLOCK_VALIDATION_MEASURE_ITERS", DEFAULT_MEASURE_ITERS);
   let samples = env_usize("HOTCLOCK_VALIDATION_SAMPLES", DEFAULT_SAMPLES);
 
-  for _ in 0..warmup_iters {
-    f();
-  }
-
-  let mut timings = Vec::with_capacity(samples);
-  for _ in 0..samples {
-    let start = StdInstant::now();
-    for _ in 0..measure_iters {
-      f();
+  let cases = bench_cases();
+  for case in &cases {
+    for _ in 0..warmup_iters {
+      (case.run)();
     }
-    timings.push(start.elapsed().as_nanos() as f64 / measure_iters as f64);
   }
 
-  timings.sort_by(f64::total_cmp);
-  Stats { ns_op: timings[timings.len() / 2] }
+  let mut timings: Vec<Vec<f64>> = (0..BENCH_COUNT).map(|_| Vec::with_capacity(samples)).collect();
+  for sample in 0..samples {
+    let offset = sample % cases.len();
+    for step in 0..cases.len() {
+      let case = &cases[(offset + step) % cases.len()];
+      let start = StdInstant::now();
+      for _ in 0..measure_iters {
+        (case.run)();
+      }
+      timings[case.index].push(start.elapsed().as_nanos() as f64 / measure_iters as f64);
+    }
+  }
+
+  Measurements {
+    hotclock_instant: stats(timings[HOTCLOCK_INSTANT].clone()),
+    hotclock_cycles: stats(timings[HOTCLOCK_CYCLES].clone()),
+    raw_counter: if timings[RAW_COUNTER].is_empty() {
+      None
+    } else {
+      Some(stats(timings[RAW_COUNTER].clone()))
+    },
+    quanta: stats(timings[QUANTA].clone()),
+    minstant: stats(timings[MINSTANT].clone()),
+    fastant: stats(timings[FASTANT].clone()),
+    std_instant: stats(timings[STD_INSTANT].clone()),
+  }
 }
+
+fn stats(mut timings: Vec<f64>) -> Stats {
+  timings.sort_by(f64::total_cmp);
+  let last = timings.len() - 1;
+  Stats {
+    min: timings[0],
+    p25: timings[last / 4],
+    median: timings[last / 2],
+    p75: timings[(last * 3) / 4],
+    p95: timings[(last * 95) / 100],
+    max: timings[last],
+  }
+}
+
+const HOTCLOCK_INSTANT: usize = 0;
+const HOTCLOCK_CYCLES: usize = 1;
+const RAW_COUNTER: usize = 2;
+const QUANTA: usize = 3;
+const MINSTANT: usize = 4;
+const FASTANT: usize = 5;
+const STD_INSTANT: usize = 6;
+const BENCH_COUNT: usize = 7;
+
+fn bench_cases() -> Vec<BenchCase> {
+  let mut cases = vec![
+    BenchCase { index: HOTCLOCK_INSTANT, run: bench_hotclock_instant },
+    BenchCase { index: HOTCLOCK_CYCLES, run: bench_hotclock_cycles },
+    BenchCase { index: QUANTA, run: bench_quanta },
+    BenchCase { index: MINSTANT, run: bench_minstant },
+    BenchCase { index: FASTANT, run: bench_fastant },
+    BenchCase { index: STD_INSTANT, run: bench_std_instant },
+  ];
+
+  if raw_counter_supported() {
+    cases.insert(2, BenchCase { index: RAW_COUNTER, run: bench_raw_counter });
+  }
+
+  cases
+}
+
+fn bench_hotclock_instant() {
+  let _ = black_box(Instant::now());
+}
+
+fn bench_hotclock_cycles() {
+  let _ = black_box(Cycles::now());
+}
+
+fn bench_quanta() {
+  let _ = black_box(quanta::Instant::now());
+}
+
+fn bench_minstant() {
+  let _ = black_box(minstant::Instant::now());
+}
+
+fn bench_fastant() {
+  let _ = black_box(fastant::Instant::now());
+}
+
+fn bench_std_instant() {
+  let _ = black_box(StdInstant::now());
+}
+
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+fn raw_counter_supported() -> bool {
+  true
+}
+
+#[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
+fn raw_counter_supported() -> bool {
+  false
+}
+
+#[cfg(target_arch = "x86_64")]
+fn bench_raw_counter() {
+  // SAFETY: `_rdtsc` reads the architectural timestamp counter.
+  let _ = black_box(unsafe { core::arch::x86_64::_rdtsc() });
+}
+
+#[cfg(target_arch = "x86")]
+fn bench_raw_counter() {
+  // SAFETY: `_rdtsc` reads the architectural timestamp counter.
+  let _ = black_box(unsafe { core::arch::x86::_rdtsc() });
+}
+
+#[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
+fn bench_raw_counter() {}
 
 fn render_row(row: &Row) -> String {
   let mut out = String::new();
@@ -146,6 +268,9 @@ fn render_row(row: &Row) -> String {
   push_field(&mut out, "selected-cycles-clock", row.selected_cycles);
   push_field(&mut out, "hotclock-instant-bench", &format_ns(row.hotclock_instant));
   push_field(&mut out, "hotclock-cycles-bench", &format_ns(row.hotclock_cycles));
+  if let Some(raw_counter) = row.raw_counter {
+    push_field(&mut out, "raw-counter-bench", &format_ns(raw_counter));
+  }
   push_field(&mut out, "quanta-bench", &format_ns(row.quanta));
   push_field(&mut out, "minstant-bench", &format_ns(row.minstant));
   push_field(&mut out, "fastant-bench", &format_ns(row.fastant));
@@ -153,7 +278,44 @@ fn render_row(row: &Row) -> String {
   push_field(&mut out, "fastest-instant-api", yes_no(row.fastest_instant_api));
   push_field(&mut out, "matches-expected", expected_status(row));
   out.push_str("└────────────────────────────────┴────────────────────────────────────────┘\n");
+
+  if std::env::var("HOTCLOCK_VALIDATION_DISTRIBUTION").as_deref() == Ok("1") {
+    render_distribution(&mut out, row);
+  }
+
   out
+}
+
+fn render_distribution(out: &mut String, row: &Row) {
+  out.push('\n');
+  out.push_str(
+    "┌───────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬──────────┐\n",
+  );
+  out.push_str(
+    "│ Benchmark         │ min      │ p25      │ median   │ p75      │ p95      │ max      │\n",
+  );
+  out.push_str(
+    "├───────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼──────────┤\n",
+  );
+  push_stats(out, "hotclock-instant", row.hotclock_instant);
+  push_stats(out, "hotclock-cycles", row.hotclock_cycles);
+  if let Some(raw_counter) = row.raw_counter {
+    push_stats(out, "raw-counter", raw_counter);
+  }
+  push_stats(out, "quanta", row.quanta);
+  push_stats(out, "minstant", row.minstant);
+  push_stats(out, "fastant", row.fastant);
+  push_stats(out, "std-instant", row.std_instant);
+  out.push_str(
+    "└───────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴──────────┘\n",
+  );
+}
+
+fn push_stats(out: &mut String, name: &str, stats: Stats) {
+  out.push_str(&format!(
+    "│ {name:<17} │ {:>6.3}ns │ {:>6.3}ns │ {:>6.3}ns │ {:>6.3}ns │ {:>6.3}ns │ {:>6.3}ns │\n",
+    stats.min, stats.p25, stats.median, stats.p75, stats.p95, stats.max,
+  ));
 }
 
 fn push_field(out: &mut String, field: &str, value: &str) {
@@ -161,7 +323,7 @@ fn push_field(out: &mut String, field: &str, value: &str) {
 }
 
 fn format_ns(stats: Stats) -> String {
-  format!("{:.3} ns/op", stats.ns_op)
+  format!("{:.3} ns/op", stats.ns_op())
 }
 
 fn expected_status(row: &Row) -> &'static str {

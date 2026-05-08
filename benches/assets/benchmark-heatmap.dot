@@ -41,11 +41,11 @@ digraph benchmark {
         </TR>
         <TR>
           <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">AWS m7i metal / x86_64-gnu</TD>
-          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC">7.879ns</FONT></TD>
-          <TD BGCOLOR="#DDEED9">7.131ns 0.91x</TD>
-          <TD BGCOLOR="#DDEED9">6.842ns 0.87x</TD>
-          <TD BGCOLOR="#DDEED9">6.842ns 0.87x</TD>
-          <TD BGCOLOR="#D9874A">14.999ns 1.90x</TD>
+          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC">6.842ns</FONT></TD>
+          <TD BGCOLOR="#DDEED9">7.395ns 1.08x</TD>
+          <TD BGCOLOR="#DDEED9">6.842ns 1.00x</TD>
+          <TD BGCOLOR="#DDEED9">6.842ns 1.00x</TD>
+          <TD BGCOLOR="#D9874A">14.812ns 2.17x</TD>
         </TR>
         <TR>
           <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">AWS t3 KVM / x86-musl</TD>
