@@ -15,7 +15,7 @@ Full target/environment results: [runtime selection validation](benches/runtime-
 Pinned m7i GNU rerun: [high-confidence benchmark](benches/m7i-gnu-high-confidence-2026-05-08.md).
 
 The primary benchmark is `Instant::now()` read cost across target/environment
-pairs. Bars are scaled within each target row so same-environment crate costs
+pairs. Bars are scaled within each target group so same-environment crate costs
 are directly comparable.
 
 Fresh validation runs below were produced with
