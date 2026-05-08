@@ -6,6 +6,7 @@ hotclock provides a zero-dependency Rust API for reading fast CPU or platform ti
 
 ## Cross-architecture inline selected clocks
 
+- [x] Add GNU m7i metal benchmark row showing stronger `Cycles` performance
 - [x] Surface the `Cycles`-only speedup without extra table columns
 - [x] Stabilize i686 bare-metal RDTSC validation false negatives
 - [x] README shows fresh runtime-selection benchmarks across selected targets
