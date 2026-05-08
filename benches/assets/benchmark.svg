@@ -2,7 +2,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1002" height="436" viewBox="0 0 1002 436">
 <rect width="1002" height="436" fill="#FBF6EC"/>
 <g shape-rendering="crispEdges">
-<rect x="241.76" y="9" width="6" height="6" fill="#0067FF"/>
+<rect x="241.76" y="9" width="6" height="6" fill="#D72D24"/>
 <text x="251.76" y="15" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">tach@0.2.0</text>
 <rect x="336.96" y="9" width="6" height="6" fill="#5B6472"/>
 <text x="346.96" y="15" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">quanta@0.12.6</text>
@@ -14,7 +14,7 @@
 <text x="706.48" y="15" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">std@1.91</text>
 <text x="501" y="30" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="9" fill="#2E231B">All measurements are nanoseconds; squiggle marks compressed upper range.</text>
 <rect x="6" y="42" width="81" height="382" fill="#FFF8E8"/>
-<rect x="18.5" y="367" width="8" height="17" fill="#0067FF"/>
+<rect x="18.5" y="367" width="8" height="17" fill="#D72D24"/>
 <text x="22.5" y="363" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">8.71</text>
 <rect x="30.5" y="357" width="8" height="27" fill="#5B6472"/>
 <text x="34.5" y="353" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">13.3</text>
@@ -24,10 +24,10 @@
 <text x="58.5" y="361" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">9.36</text>
 <rect x="66.5" y="336" width="8" height="48" fill="#9A8A3A"/>
 <text x="70.5" y="332" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">24.2</text>
-<text x="46.5" y="405" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">AWS t3 KVM</text>
+<text x="46.5" y="405" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">AWS t3 Nitro</text>
 <text x="46.5" y="419" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">x86_64</text>
 <rect x="107" y="42" width="81" height="382" fill="#FFF8E8"/>
-<rect x="119.5" y="370" width="8" height="14" fill="#0067FF"/>
+<rect x="119.5" y="370" width="8" height="14" fill="#D72D24"/>
 <text x="123.5" y="366" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">6.84</text>
 <rect x="131.5" y="370" width="8" height="14" fill="#5B6472"/>
 <text x="135.5" y="356" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">7.13</text>
@@ -40,7 +40,7 @@
 <text x="147.5" y="405" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">AWS m7i metal</text>
 <text x="147.5" y="419" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">x86_64</text>
 <rect x="208" y="42" width="81" height="382" fill="#FFF8E8"/>
-<rect x="220.5" y="368" width="8" height="16" fill="#0067FF"/>
+<rect x="220.5" y="368" width="8" height="16" fill="#D72D24"/>
 <text x="224.5" y="364" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">8.24</text>
 <rect x="232.5" y="359" width="8" height="25" fill="#5B6472"/>
 <text x="236.5" y="345" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">12.4</text>
@@ -52,7 +52,7 @@
 <text x="248.5" y="405" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">c5.large</text>
 <text x="248.5" y="419" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">x86_64</text>
 <rect x="309" y="42" width="81" height="382" fill="#FFF8E8"/>
-<rect x="321.5" y="357" width="8" height="27" fill="#0067FF"/>
+<rect x="321.5" y="357" width="8" height="27" fill="#D72D24"/>
 <text x="325.5" y="353" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">13.6</text>
 <rect x="333.5" y="245" width="8" height="139" fill="#5B6472"/>
 <text x="337.5" y="241" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">69.3</text>
@@ -62,10 +62,10 @@
 <text x="361.5" y="332" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">14.2</text>
 <rect x="369.5" y="251" width="8" height="133" fill="#9A8A3A"/>
 <text x="373.5" y="247" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">66.5</text>
-<text x="349.5" y="405" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">AWS t3 KVM</text>
+<text x="349.5" y="405" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">AWS t3 Nitro</text>
 <text x="349.5" y="419" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">x86</text>
 <rect x="410" y="42" width="81" height="382" fill="#FFF8E8"/>
-<rect x="422.5" y="370" width="8" height="14" fill="#0067FF"/>
+<rect x="422.5" y="370" width="8" height="14" fill="#D72D24"/>
 <text x="426.5" y="366" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">6.84</text>
 <rect x="434.5" y="338" width="8" height="46" fill="#5B6472"/>
 <text x="438.5" y="334" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">23.1</text>
@@ -78,7 +78,7 @@
 <text x="450.5" y="405" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">AWS m7i metal</text>
 <text x="450.5" y="419" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">x86</text>
 <rect x="511" y="42" width="81" height="382" fill="#FFF8E8"/>
-<rect x="523.5" y="353" width="8" height="31" fill="#0067FF"/>
+<rect x="523.5" y="353" width="8" height="31" fill="#D72D24"/>
 <text x="527.5" y="349" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">15.4</text>
 <rect x="535.5" y="334" width="8" height="50" fill="#5B6472"/>
 <text x="539.5" y="330" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">25.1</text>
@@ -91,7 +91,7 @@
 <text x="551.5" y="405" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">Docker</text>
 <text x="551.5" y="419" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">x86_64</text>
 <rect x="612" y="42" width="81" height="382" fill="#FFF8E8"/>
-<rect x="624.5" y="332" width="8" height="52" fill="#0067FF"/>
+<rect x="624.5" y="332" width="8" height="52" fill="#D72D24"/>
 <text x="628.5" y="328" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">25.8</text>
 <rect x="636.5" y="146" width="8" height="238" fill="#5B6472"/>
 <path d="M635.5 221 C637.5 216 639.5 226 641.5 221 S645.5 226 645.5 221" stroke="#FFF8E8" stroke-width="4" fill="none" stroke-linecap="round"/>
@@ -112,7 +112,7 @@
 <text x="652.5" y="405" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">Docker</text>
 <text x="652.5" y="419" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">x86</text>
 <rect x="713" y="42" width="81" height="382" fill="#FFF8E8"/>
-<rect x="725.5" y="382" width="8" height="2" fill="#0067FF"/>
+<rect x="725.5" y="382" width="8" height="2" fill="#D72D24"/>
 <text x="729.5" y="378" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">0.33</text>
 <rect x="737.5" y="375" width="8" height="9" fill="#5B6472"/>
 <text x="741.5" y="361" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">4.47</text>
@@ -125,7 +125,7 @@
 <text x="753.5" y="405" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">Docker</text>
 <text x="753.5" y="419" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">aarch64</text>
 <rect x="814" y="42" width="81" height="382" fill="#FFF8E8"/>
-<rect x="826.5" y="265" width="8" height="119" fill="#0067FF"/>
+<rect x="826.5" y="265" width="8" height="119" fill="#D72D24"/>
 <text x="830.5" y="261" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">59.6</text>
 <rect x="838.5" y="163" width="8" height="221" fill="#5B6472"/>
 <path d="M837.5 221 C839.5 216 841.5 226 843.5 221 S847.5 226 847.5 221" stroke="#FFF8E8" stroke-width="4" fill="none" stroke-linecap="round"/>
@@ -146,7 +146,7 @@
 <text x="854.5" y="405" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">Docker</text>
 <text x="854.5" y="419" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">riscv64</text>
 <rect x="915" y="42" width="81" height="382" fill="#FFF8E8"/>
-<rect x="927.5" y="382" width="8" height="2" fill="#0067FF"/>
+<rect x="927.5" y="382" width="8" height="2" fill="#D72D24"/>
 <text x="931.5" y="378" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">0.33</text>
 <rect x="939.5" y="375" width="8" height="9" fill="#5B6472"/>
 <text x="943.5" y="361" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">4.62</text>
