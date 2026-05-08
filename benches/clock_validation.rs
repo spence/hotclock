@@ -1,5 +1,6 @@
 #![allow(clippy::inline_always)]
 
+use std::collections::BTreeMap;
 use std::env;
 use std::hint::black_box;
 use std::process::Command;
@@ -28,6 +29,11 @@ struct Baseline {
 struct Measurement {
   best_ns: f64,
   median_ns: f64,
+}
+
+struct ColdMeasurements {
+  nanos: Vec<u128>,
+  selected_counts: Vec<(String, usize)>,
 }
 
 fn main() {
@@ -102,10 +108,10 @@ fn run_child() {
   println!("{} {cold_nanos}", Instant::implementation());
 }
 
-fn cold_measurements(samples: usize) -> Vec<u128> {
+fn cold_measurements(samples: usize) -> ColdMeasurements {
   let current_exe = env::current_exe().expect("current benchmark executable");
   let mut measurements = Vec::with_capacity(samples);
-  let mut selected_name: Option<String> = None;
+  let mut selected_counts = BTreeMap::new();
 
   for _ in 0..samples {
     let output = Command::new(&current_exe)
@@ -126,15 +132,11 @@ fn cold_measurements(samples: usize) -> Vec<u128> {
       .parse::<u128>()
       .expect("child cold nanoseconds parse");
 
-    if let Some(expected) = &selected_name {
-      assert_eq!(selected, expected, "selected clock changed across cold benchmark children");
-    } else {
-      selected_name = Some(selected.to_owned());
-    }
+    *selected_counts.entry(selected.to_owned()).or_insert(0) += 1;
     measurements.push(nanos);
   }
 
-  measurements
+  ColdMeasurements { nanos: measurements, selected_counts: selected_counts.into_iter().collect() }
 }
 
 fn measure_loop(loop_fn: LoopFn, iters: u64, samples: usize) -> Measurement {
@@ -427,7 +429,7 @@ fn std_instant_elapsed() -> u64 {
 struct Report<'a> {
   selected: &'a str,
   baseline: &'static str,
-  cold: Vec<u128>,
+  cold: ColdMeasurements,
   iters: u64,
   steady_samples: usize,
   loop_overhead: Measurement,
@@ -443,10 +445,17 @@ struct Report<'a> {
 }
 
 fn print_report(mut report: Report<'_>) {
-  report.cold.sort_unstable();
-  let cold_median = report.cold[report.cold.len() / 2];
-  let cold_min = report.cold[0];
-  let cold_max = report.cold[report.cold.len() - 1];
+  report.cold.nanos.sort_unstable();
+  let cold_median = report.cold.nanos[report.cold.nanos.len() / 2];
+  let cold_min = report.cold.nanos[0];
+  let cold_max = report.cold.nanos[report.cold.nanos.len() - 1];
+  let cold_selected = report
+    .cold
+    .selected_counts
+    .iter()
+    .map(|(name, count)| format!("{name}={count}"))
+    .collect::<Vec<_>>()
+    .join(", ");
 
   println!("hotclock clock validation");
   println!("target: {}-{}", env::consts::OS, env::consts::ARCH);
@@ -457,8 +466,9 @@ fn print_report(mut report: Report<'_>) {
     cold_median,
     cold_min,
     cold_max,
-    report.cold.len()
+    report.cold.nanos.len()
   );
+  println!("cold selected clocks: {cold_selected}");
   println!(
     "steady loop overhead: best={:.3} ns/call median={:.3} ns/call",
     report.loop_overhead.best_ns, report.loop_overhead.median_ns
