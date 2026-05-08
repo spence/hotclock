@@ -8,6 +8,7 @@ tach provides a zero-dependency Rust API for reading fast CPU or platform tick c
 
 - [x] Fix macOS x86_64 self-patching call-target corruption
 - [x] Rename crate and GitHub repository to `tach`
+- [x] Drop libc and ABI suffixes from chart labels
 - [x] Add Windows c5.large to shared-scale benchmark chart
 - [x] Add benchmark chart crate versions and wider bars
 - [x] Double benchmark bar gaps and label nanosecond units
