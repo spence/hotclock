@@ -281,12 +281,6 @@ fn baseline_for(class: ClockClass, selected: &str) -> Option<Baseline> {
       Some(Baseline { name: "raw rdcycle", loop_fn: run_rdcycle_loop })
     }
 
-    #[cfg(target_arch = "powerpc64")]
-    (_, "powerpc64-mftb") => Some(Baseline { name: "raw mftb", loop_fn: run_mftb_loop }),
-
-    #[cfg(target_arch = "s390x")]
-    (_, "s390x-stckf") => Some(Baseline { name: "raw stckf", loop_fn: run_stckf_loop }),
-
     #[cfg(target_arch = "loongarch64")]
     (_, "loongarch64-rdtime") => Some(Baseline { name: "raw rdtime.d", loop_fn: run_rdtime_loop }),
 
@@ -450,48 +444,6 @@ fn rdcycle() -> u64 {
   // SAFETY: `rdcycle` reads the cycle CSR.
   unsafe {
     core::arch::asm!("rdcycle {}", out(reg) cnt, options(nostack, nomem, preserves_flags));
-  }
-  cnt
-}
-
-#[cfg(target_arch = "powerpc64")]
-#[inline(never)]
-fn run_mftb_loop(iters: u64) -> u64 {
-  let mut acc = 0_u64;
-  for _ in 0..iters {
-    acc = acc.wrapping_add(black_box(mftb()));
-  }
-  acc
-}
-
-#[cfg(target_arch = "powerpc64")]
-#[inline(always)]
-fn mftb() -> u64 {
-  let cnt: u64;
-  // SAFETY: `mftb` reads the time-base register.
-  unsafe {
-    core::arch::asm!("mftb {}", out(reg) cnt, options(nostack, nomem, preserves_flags));
-  }
-  cnt
-}
-
-#[cfg(target_arch = "s390x")]
-#[inline(never)]
-fn run_stckf_loop(iters: u64) -> u64 {
-  let mut acc = 0_u64;
-  for _ in 0..iters {
-    acc = acc.wrapping_add(black_box(stckf()));
-  }
-  acc
-}
-
-#[cfg(target_arch = "s390x")]
-#[inline(always)]
-fn stckf() -> u64 {
-  let mut cnt = 0_u64;
-  // SAFETY: `cnt` is a valid writable 8-byte slot for the STCKF store.
-  unsafe {
-    core::arch::asm!("stckf 0({})", in(reg) &mut cnt, options(nostack, preserves_flags));
   }
   cnt
 }

@@ -9,6 +9,8 @@ in a container, a VM or on bare metal, it automatically selects the fastest mach
 
 ![Benchmark comparison](benches/assets/benchmark.png)
 
+Full target/environment results: [inline selected-clock benchmark](benches/inline-selection-benchmark-2026-05-08.md).
+
 ## feature comparison
 
 | Feature                 | `hotclock` | `tick_counter@0.4.5` | `quanta@0.12.6` | `minstant@0.1.7` | `std::time` |
@@ -68,7 +70,7 @@ dispatch on the hot path.
 | Linux (s390x)          | ❌              | ✅          | ✅       |
 | Linux (loongarch64)    | ✅ rdtime.d      | ✅          | ✅       |
 | Unix/other (riscv64)   | ✅ rdtime        | ✅          | ✅       |
-| Unix/other (powerpc64) | ✅ mftb          | ✅          | ✅       |
+| Unix/other (powerpc64) | ❌               | ✅          | ✅       |
 | other                  | ❌               | ✅          | ✅       |
 
 ## changelog
@@ -77,7 +79,7 @@ dispatch on the hot path.
 
 - `Instant` API compatability
 - skip selection for known fast hardware counters
-- thread-safe timer selection, including patched warmed RDTSC call sites on Linux x86_64
+- thread-safe `OnceLock` timer selection
 - overflow-safe unit conversions
 
 ### 0.1.0

@@ -28,8 +28,10 @@ struct Row {
   quanta: Stats,
   minstant: Stats,
   fastant: Stats,
+  std_instant: Stats,
   expected_set: bool,
   matches_expected: bool,
+  fastest_instant_api: bool,
 }
 
 fn main() {
@@ -58,6 +60,29 @@ fn run_report() -> (String, bool) {
   let selected_instant = Instant::implementation();
   let selected_cycles = Cycles::implementation();
 
+  let hotclock_instant = measure(|| {
+    let _ = black_box(Instant::now());
+  });
+  let hotclock_cycles = measure(|| {
+    let _ = black_box(Cycles::now());
+  });
+  let quanta = measure(|| {
+    let _ = black_box(quanta::Instant::now());
+  });
+  let minstant = measure(|| {
+    let _ = black_box(minstant::Instant::now());
+  });
+  let fastant = measure(|| {
+    let _ = black_box(fastant::Instant::now());
+  });
+  let std_instant = measure(|| {
+    let _ = black_box(StdInstant::now());
+  });
+  let fastest_instant_api = hotclock_instant.ns_op <= quanta.ns_op
+    && hotclock_instant.ns_op <= minstant.ns_op
+    && hotclock_instant.ns_op <= fastant.ns_op
+    && hotclock_instant.ns_op <= std_instant.ns_op;
+
   let row = Row {
     target: target_label(),
     environment: environment_label(),
@@ -69,21 +94,13 @@ fn run_report() -> (String, bool) {
     expected_cycles,
     selected_instant,
     selected_cycles,
-    hotclock_instant: measure(|| {
-      let _ = black_box(Instant::now());
-    }),
-    hotclock_cycles: measure(|| {
-      let _ = black_box(Cycles::now());
-    }),
-    quanta: measure(|| {
-      let _ = black_box(quanta::Instant::now());
-    }),
-    minstant: measure(|| {
-      let _ = black_box(minstant::Instant::now());
-    }),
-    fastant: measure(|| {
-      let _ = black_box(fastant::Instant::now());
-    }),
+    hotclock_instant,
+    hotclock_cycles,
+    quanta,
+    minstant,
+    fastant,
+    std_instant,
+    fastest_instant_api,
   };
 
   let ok = std::env::var("HOTCLOCK_ENFORCE_EXPECTED").as_deref() != Ok("1")
@@ -132,6 +149,8 @@ fn render_row(row: &Row) -> String {
   push_field(&mut out, "quanta-bench", &format_ns(row.quanta));
   push_field(&mut out, "minstant-bench", &format_ns(row.minstant));
   push_field(&mut out, "fastant-bench", &format_ns(row.fastant));
+  push_field(&mut out, "std-instant-bench", &format_ns(row.std_instant));
+  push_field(&mut out, "fastest-instant-api", yes_no(row.fastest_instant_api));
   push_field(&mut out, "matches-expected", expected_status(row));
   out.push_str("└────────────────────────────────┴────────────────────────────────────────┘\n");
   out
@@ -153,6 +172,10 @@ fn expected_status(row: &Row) -> &'static str {
   } else {
     "no"
   }
+}
+
+fn yes_no(value: bool) -> &'static str {
+  if value { "yes" } else { "no" }
 }
 
 fn env_usize(name: &str, default: usize) -> usize {

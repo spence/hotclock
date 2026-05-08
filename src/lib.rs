@@ -33,7 +33,7 @@
 //! | x86                 | RDTSC          | OS timer       |
 //! | aarch64 non-macOS   | CNTVCT\_EL0    | OS timer       |
 //! | riscv64             | rdtime         | OS timer       |
-//! | powerpc64           | mftb           | OS timer       |
+//! | powerpc64           | OS timer       | none           |
 //! | s390x               | OS timer       | none           |
 //! | loongarch64         | rdtime.d       | OS timer       |
 //! | other               | OS timer       | none           |
@@ -85,8 +85,6 @@ mod instant;
     target_arch = "x86",
     target_arch = "aarch64",
     target_arch = "riscv64",
-    target_arch = "powerpc64",
-    target_arch = "s390x",
     target_arch = "loongarch64",
   )),
 )))]

@@ -12,20 +12,14 @@ pub mod loongarch64;
     target_arch = "x86",
     target_arch = "aarch64",
     target_arch = "riscv64",
-    target_arch = "powerpc64",
-    target_arch = "s390x",
     target_arch = "loongarch64",
   )),
 )))]
 mod patch;
 #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_os = "linux"))]
 pub mod perf_rdpmc_linux;
-#[cfg(target_arch = "powerpc64")]
-pub mod powerpc64;
 #[cfg(target_arch = "riscv64")]
 pub mod riscv64;
-#[cfg(target_arch = "s390x")]
-pub mod s390x;
 #[cfg(target_arch = "x86")]
 pub mod x86;
 #[cfg(target_arch = "x86_64")]
@@ -50,8 +44,6 @@ pub use x86_64_linux::{cycle_implementation, cycle_ticks, implementation, indice
     target_arch = "x86",
     target_arch = "aarch64",
     target_arch = "riscv64",
-    target_arch = "powerpc64",
-    target_arch = "s390x",
     target_arch = "loongarch64",
   )),
 ))]
@@ -64,8 +56,6 @@ mod direct;
     target_arch = "x86",
     target_arch = "aarch64",
     target_arch = "riscv64",
-    target_arch = "powerpc64",
-    target_arch = "s390x",
     target_arch = "loongarch64",
   )),
 ))]
@@ -83,8 +73,6 @@ pub use direct::{cycle_implementation, cycle_ticks, implementation, ticks};
     target_arch = "x86",
     target_arch = "aarch64",
     target_arch = "riscv64",
-    target_arch = "powerpc64",
-    target_arch = "s390x",
     target_arch = "loongarch64",
   )),
 )))]
@@ -98,8 +86,6 @@ mod selected;
     target_arch = "x86",
     target_arch = "aarch64",
     target_arch = "riscv64",
-    target_arch = "powerpc64",
-    target_arch = "s390x",
     target_arch = "loongarch64",
   )),
 )))]
