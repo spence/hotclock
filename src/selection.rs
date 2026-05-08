@@ -1,7 +1,7 @@
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::sync::Arc;
 use std::sync::Barrier;
-use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering, fence};
 use std::time::Instant as StdInstant;
 
 use crate::arch::{self, fallback};
@@ -23,12 +23,28 @@ use crate::arch::x86;
 #[cfg(target_arch = "x86_64")]
 use crate::arch::x86_64;
 
+const VALIDATION_ATTEMPTS: usize = 3;
+const TRACE_SELECTION_ENV: &str = "HOTCLOCK_SELECTOR_TRACE";
+
 #[derive(Clone, Copy)]
 struct Candidate {
   name: &'static str,
   index: u8,
   prepare: fn() -> bool,
   counter: fn() -> u64,
+}
+
+#[derive(Clone, Copy)]
+struct ValidationResult {
+  works: bool,
+  local_monotonic: bool,
+  cross_thread_ordering: Option<bool>,
+}
+
+#[derive(Clone, Copy)]
+struct ValidationReport {
+  attempts: usize,
+  result: ValidationResult,
 }
 
 impl Candidate {
@@ -434,6 +450,7 @@ fn test_cross_thread_ordering(counter: fn() -> u64) -> bool {
           }
 
           let before = published.load(Ordering::Acquire);
+          fence(Ordering::SeqCst);
           let after = counter();
           seen = next;
           if after < before {
@@ -461,6 +478,10 @@ fn test_cross_thread_ordering(counter: fn() -> u64) -> bool {
         if failed.load(Ordering::Relaxed) {
           break;
         }
+        if reader.is_finished() {
+          failed.store(true, Ordering::Relaxed);
+          break;
+        }
         std::hint::spin_loop();
       }
     }
@@ -470,10 +491,54 @@ fn test_cross_thread_ordering(counter: fn() -> u64) -> bool {
   .unwrap_or(false)
 }
 
-fn validate(counter: fn() -> u64, cross_thread: bool) -> bool {
-  test_works(counter)
-    && test_local_monotonic(counter)
-    && (!cross_thread || test_cross_thread_ordering(counter))
+fn validate_once(counter: fn() -> u64, cross_thread: bool) -> ValidationResult {
+  let works = test_works(counter);
+  let local_monotonic = works && test_local_monotonic(counter);
+  let cross_thread_ordering =
+    if cross_thread && local_monotonic { Some(test_cross_thread_ordering(counter)) } else { None };
+
+  ValidationResult { works, local_monotonic, cross_thread_ordering }
+}
+
+fn validate_with_retries(counter: fn() -> u64, cross_thread: bool) -> ValidationReport {
+  let mut last = None;
+
+  for attempts in 1..=VALIDATION_ATTEMPTS {
+    let result = validate_once(counter, cross_thread);
+    last = Some(result);
+    if result.passed() {
+      return ValidationReport { attempts, result };
+    }
+  }
+
+  ValidationReport {
+    attempts: VALIDATION_ATTEMPTS,
+    result: last.expect("validation must run at least one attempt"),
+  }
+}
+
+impl ValidationReport {
+  fn passed(self) -> bool {
+    self.result.passed()
+  }
+}
+
+impl ValidationResult {
+  fn passed(self) -> bool {
+    self.works && self.local_monotonic && self.cross_thread_ordering.unwrap_or(true)
+  }
+
+  fn failed_stage(self) -> &'static str {
+    if !self.works {
+      "works"
+    } else if !self.local_monotonic {
+      "local-monotonic"
+    } else if self.cross_thread_ordering == Some(false) {
+      "cross-thread-ordering"
+    } else {
+      "none"
+    }
+  }
 }
 
 fn measure_latency(counter: fn() -> u64) -> Option<u128> {
@@ -500,41 +565,116 @@ fn measure_latency(counter: fn() -> u64) -> Option<u128> {
   .ok()
 }
 
-fn select_fastest(candidates: &'static [Candidate], cross_thread: bool) -> (u8, &'static str) {
-  let mut best: Option<(&Candidate, u128)> = None;
+fn select_fastest(
+  class: &'static str,
+  candidates: &'static [Candidate],
+  cross_thread: bool,
+) -> (u8, &'static str) {
+  let mut best: Option<(&Candidate, u128, ValidationReport)> = None;
+  let trace = trace_selection();
 
   for candidate in candidates {
     let prepared = catch_unwind(AssertUnwindSafe(|| (candidate.prepare)())).unwrap_or(false);
-    if !prepared || !validate(candidate.counter, cross_thread) {
+    if !prepared {
+      trace_candidate(class, candidate, prepared, None, None, false, trace);
+      continue;
+    }
+
+    let validation = validate_with_retries(candidate.counter, cross_thread);
+    if !validation.passed() {
+      trace_candidate(class, candidate, prepared, Some(validation), None, false, trace);
       continue;
     }
 
     let Some(latency) = measure_latency(candidate.counter) else {
+      trace_candidate(class, candidate, prepared, Some(validation), None, false, trace);
       continue;
     };
 
     match best {
-      None => best = Some((candidate, latency)),
-      Some((_, best_latency)) if latency < best_latency => best = Some((candidate, latency)),
+      None => best = Some((candidate, latency, validation)),
+      Some((_, best_latency, _)) if latency < best_latency => {
+        best = Some((candidate, latency, validation))
+      }
       _ => {}
     }
+
+    trace_candidate(class, candidate, prepared, Some(validation), Some(latency), false, trace);
   }
 
   match best {
-    Some((candidate, _)) => (candidate.index, candidate.name),
+    Some((candidate, latency, validation)) => {
+      trace_candidate(class, candidate, true, Some(validation), Some(latency), true, trace);
+      (candidate.index, candidate.name)
+    }
     None => {
       let fallback = candidates
         .last()
         .expect("hotclock selector must have at least one fallback candidate");
+      trace_candidate(class, fallback, true, None, None, true, trace);
       (fallback.index, fallback.name)
     }
   }
 }
 
 pub fn select_best() -> (u8, &'static str) {
-  select_fastest(candidates(), true)
+  select_fastest("instant", candidates(), true)
 }
 
 pub fn select_best_cycles() -> (u8, &'static str) {
-  select_fastest(cycle_candidates(), false)
+  select_fastest("cycles", cycle_candidates(), false)
+}
+
+fn trace_selection() -> bool {
+  std::env::var(TRACE_SELECTION_ENV).as_deref() == Ok("1")
+}
+
+fn trace_candidate(
+  class: &str,
+  candidate: &Candidate,
+  prepared: bool,
+  validation: Option<ValidationReport>,
+  latency: Option<u128>,
+  selected: bool,
+  trace: bool,
+) {
+  if !trace {
+    return;
+  }
+
+  let (attempts, passed, failed_stage) = match validation {
+    Some(report) => (report.attempts, report.result.passed(), report.result.failed_stage()),
+    None => (0, false, if prepared { "not-measured" } else { "prepare" }),
+  };
+  let latency = latency.map_or_else(|| "none".to_owned(), |value| format!("{value} ns"));
+
+  eprintln!(
+    "hotclock selector class={class} candidate={} prepared={prepared} attempts={attempts} \
+     valid={passed} failed_stage={failed_stage} latency={latency} selected={selected}",
+    candidate.name,
+  );
+}
+
+#[cfg(test)]
+mod tests {
+  use std::sync::atomic::{AtomicUsize, Ordering};
+
+  use super::validate_with_retries;
+
+  static FLAKY_COUNTER_CALLS: AtomicUsize = AtomicUsize::new(0);
+
+  fn flaky_counter() -> u64 {
+    let call = FLAKY_COUNTER_CALLS.fetch_add(1, Ordering::Relaxed);
+    if call == 4 { 0 } else { call as u64 + 1 }
+  }
+
+  #[test]
+  fn validation_retries_transient_local_monotonic_failure() {
+    FLAKY_COUNTER_CALLS.store(0, Ordering::Relaxed);
+
+    let report = validate_with_retries(flaky_counter, false);
+
+    assert!(report.passed());
+    assert_eq!(report.attempts, 2);
+  }
 }

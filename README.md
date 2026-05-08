@@ -22,9 +22,10 @@ target/environment.
 
 | Environment        | Target              | Instant clock | Cycles clock     | Instant | Cycles | quanta | minstant | fastant | std    | ok |
 |--------------------|---------------------|---------------|------------------|--------:|-------:|-------:|---------:|--------:|-------:|----|
-| AWS t3 KVM         | x86_64-linux-musl   | x86_64-rdtsc  | x86_64-rdtsc     | 12.296ns | 12.354ns | 27.088ns | 14.126ns | 14.577ns | 24.098ns | ✅ |
-| AWS m7i metal      | x86_64-linux-musl   | x86_64-rdtsc  | x86_64-perf-rdpmc | 6.841ns | 4.999ns | 7.353ns | 6.841ns | 6.841ns | 14.735ns | ✅ |
-| AWS t3 KVM         | x86-linux-musl      | x86-rdtsc     | x86-rdtsc        | 13.002ns | 13.187ns | 75.085ns | 13.931ns | 15.827ns | 75.004ns | ✅ |
+| AWS t3 KVM         | x86_64-linux-musl   | x86_64-rdtsc  | x86_64-rdtsc     | 8.711ns | 8.066ns | 13.254ns | 9.356ns | 9.356ns | 24.249ns | ✅ |
+| AWS m7i metal      | x86_64-linux-musl   | x86_64-rdtsc  | x86_64-perf-rdpmc | 6.841ns | 5.262ns | 7.130ns | 6.841ns | 6.841ns | 14.734ns | ✅ |
+| AWS t3 KVM         | x86-linux-musl      | x86-rdtsc     | x86-rdtsc        | 13.552ns | 13.551ns | 69.312ns | 14.363ns | 14.154ns | 66.458ns | ✅ |
+| AWS m7i metal      | x86-linux-musl      | x86-rdtsc     | x86-rdtsc        | 6.841ns | 6.841ns | 23.066ns | 6.841ns | 6.841ns | 22.743ns | ✅ |
 | Docker amd64       | x86_64-linux-gnu    | x86_64-rdtsc  | x86_64-rdtsc     | 15.394ns | 15.222ns | 25.079ns | 39.050ns | 22.066ns | 28.070ns | ✅ |
 | Docker 386         | x86-linux-gnu       | x86-rdtsc     | x86-rdtsc        | 25.789ns | 25.780ns | 253.702ns | 323.398ns | 324.264ns | 222.623ns | ✅ |
 | Docker arm64       | aarch64-linux-gnu   | aarch64-cntvct | aarch64-cntvct  | 0.330ns | 0.330ns | 4.466ns | 27.203ns | 27.275ns | 20.222ns | ✅ |
