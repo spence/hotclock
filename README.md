@@ -7,16 +7,13 @@ in a container, a VM or on bare metal, it automatically selects the fastest mach
 
 ## performance
 
-![Benchmark comparison](benches/assets/benchmark.png)
+![Cross-target Instant benchmark comparison](benches/assets/benchmark.png)
 
 Full target/environment results: [runtime selection validation](benches/runtime-selection-validation-2026-05-08.md).
 
-Runtime selection is the point. The same `x86_64-linux-musl` binary selected
-`RDTSC` for `Cycles` inside an AWS t3 KVM VM and `perf-RDPMC` on AWS m7i bare
-metal, then patched warmed call sites to the selected clock.
-
-The m7i GNU row is the concrete `Cycles` win: `perf-RDPMC` reads were
-`5.758ns` while `Instant`'s `RDTSC` reads were `7.879ns`.
+The primary benchmark is `Instant::now()` read cost across target/environment
+pairs. Comparator cells show their measured read cost and their multiple versus
+`hotclock` on the same row.
 
 Fresh validation runs below were produced with
 `tools/selection-validation-runner` on May 8, 2026. Each row was enforced
@@ -70,6 +67,9 @@ fastest equivalent source for the target. It does not carry `Instant`'s
 cross-thread or OS-thread-event guarantees. Use it for same-thread
 microbenchmarks, profilers, tight polling loops, and short measurements where
 clock read cost dominates.
+
+On AWS m7i Linux, `Cycles` selected `perf-RDPMC` and read in `5.758ns` where
+`Instant` used `RDTSC` and read in `7.879ns`.
 
 ## platform / architecture support
 

@@ -2,160 +2,106 @@ digraph benchmark {
   graph [
     bgcolor="#FBF6EC",
     margin=0,
-    pad=0.12,
+    pad=0.08,
     rankdir=TB
   ];
 
   node [
     shape=plain,
     fontname="Avenir Next, Helvetica, Arial, sans-serif",
-    fontsize=13
+    fontsize=12
   ];
 
   benchmark [
     label=<
-      <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="3">
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="5" COLOR="#E4D8C2">
         <TR>
-          <TD ALIGN="LEFT" COLSPAN="2">
-            <FONT POINT-SIZE="14"><B>now()</B></FONT>
-          </TD>
+          <TD BGCOLOR="#1B1A17"><FONT COLOR="#FBF6EC"><B>target / env</B></FONT></TD>
+          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC"><B>hotclock</B></FONT></TD>
+          <TD BGCOLOR="#1B1A17"><FONT COLOR="#FBF6EC"><B>quanta</B></FONT></TD>
+          <TD BGCOLOR="#1B1A17"><FONT COLOR="#FBF6EC"><B>minstant</B></FONT></TD>
+          <TD BGCOLOR="#1B1A17"><FONT COLOR="#FBF6EC"><B>fastant</B></FONT></TD>
+          <TD BGCOLOR="#1B1A17"><FONT COLOR="#FBF6EC"><B>std</B></FONT></TD>
         </TR>
         <TR>
-          <TD ALIGN="RIGHT" WIDTH="140">hotclock</TD>
-          <TD ALIGN="LEFT" WIDTH="437">
-            <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
-              <TR>
-                <TD BGCOLOR="#075A4A" WIDTH="3" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-                <TD BGCOLOR="#FBF6EC" WIDTH="7" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-                <TD ALIGN="LEFT" WIDTH="100">343 ps (1.0x)</TD>
-                <TD BGCOLOR="#FBF6EC" WIDTH="327" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-              </TR>
-            </TABLE>
-          </TD>
+          <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">AWS t3 KVM / x86_64-musl</TD>
+          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC">8.711ns</FONT></TD>
+          <TD BGCOLOR="#EAC17D">13.254ns 1.52x</TD>
+          <TD BGCOLOR="#DDEED9">9.356ns 1.07x</TD>
+          <TD BGCOLOR="#DDEED9">9.356ns 1.07x</TD>
+          <TD BGCOLOR="#D9874A">24.249ns 2.78x</TD>
         </TR>
         <TR>
-          <TD ALIGN="RIGHT">tick_counter@0.4.5</TD>
-          <TD ALIGN="LEFT" WIDTH="437">
-            <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
-              <TR>
-                <TD BGCOLOR="#0E7C66" WIDTH="3" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-                <TD BGCOLOR="#FBF6EC" WIDTH="7" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-                <TD ALIGN="LEFT" WIDTH="100">346 ps (1.0x)</TD>
-                <TD BGCOLOR="#FBF6EC" WIDTH="327" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-              </TR>
-            </TABLE>
-          </TD>
+          <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">AWS m7i metal / x86_64-musl</TD>
+          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC">6.841ns</FONT></TD>
+          <TD BGCOLOR="#DDEED9">7.130ns 1.04x</TD>
+          <TD BGCOLOR="#DDEED9">6.841ns 1.00x</TD>
+          <TD BGCOLOR="#DDEED9">6.841ns 1.00x</TD>
+          <TD BGCOLOR="#D9874A">14.734ns 2.15x</TD>
         </TR>
         <TR>
-          <TD ALIGN="RIGHT">quanta@0.12.6</TD>
-          <TD ALIGN="LEFT" WIDTH="437">
-            <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
-              <TR>
-                <TD BGCOLOR="#D48A22" WIDTH="42" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-                <TD BGCOLOR="#FBF6EC" WIDTH="7" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-                <TD ALIGN="LEFT" WIDTH="115">4.51 ns (13.1x)</TD>
-                <TD BGCOLOR="#FBF6EC" WIDTH="273" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-              </TR>
-            </TABLE>
-          </TD>
+          <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">AWS m7i metal / x86_64-gnu</TD>
+          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC">7.879ns</FONT></TD>
+          <TD BGCOLOR="#DDEED9">7.131ns 0.91x</TD>
+          <TD BGCOLOR="#DDEED9">6.842ns 0.87x</TD>
+          <TD BGCOLOR="#DDEED9">6.842ns 0.87x</TD>
+          <TD BGCOLOR="#D9874A">14.999ns 1.90x</TD>
         </TR>
         <TR>
-          <TD ALIGN="RIGHT">std::time</TD>
-          <TD ALIGN="LEFT" WIDTH="437">
-            <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
-              <TR>
-                <TD BGCOLOR="#B95032" WIDTH="186" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-                <TD BGCOLOR="#FBF6EC" WIDTH="7" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-                <TD ALIGN="LEFT" WIDTH="125">19.72 ns (57.5x)</TD>
-                <TD BGCOLOR="#FBF6EC" WIDTH="119" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-              </TR>
-            </TABLE>
-          </TD>
+          <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">AWS t3 KVM / x86-musl</TD>
+          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC">13.552ns</FONT></TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">69.312ns 5.11x</FONT></TD>
+          <TD BGCOLOR="#DDEED9">14.363ns 1.06x</TD>
+          <TD BGCOLOR="#DDEED9">14.154ns 1.04x</TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">66.458ns 4.90x</FONT></TD>
         </TR>
         <TR>
-          <TD ALIGN="RIGHT">minstant@0.1.7</TD>
-          <TD ALIGN="LEFT" WIDTH="437">
-            <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
-              <TR>
-                <TD BGCOLOR="#8F2E2E" WIDTH="252" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-                <TD BGCOLOR="#FBF6EC" WIDTH="7" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-                <TD ALIGN="LEFT" WIDTH="125">26.76 ns (78.0x)</TD>
-                <TD BGCOLOR="#FBF6EC" WIDTH="53" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-              </TR>
-            </TABLE>
-          </TD>
-        </TR>
-        <TR><TD HEIGHT="4"></TD></TR>
-
-        <TR>
-          <TD ALIGN="LEFT" COLSPAN="2">
-            <FONT POINT-SIZE="14"><B>Elapsed</B></FONT>
-          </TD>
+          <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">AWS m7i metal / x86-musl</TD>
+          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC">6.841ns</FONT></TD>
+          <TD BGCOLOR="#D9874A">23.066ns 3.37x</TD>
+          <TD BGCOLOR="#DDEED9">6.841ns 1.00x</TD>
+          <TD BGCOLOR="#DDEED9">6.841ns 1.00x</TD>
+          <TD BGCOLOR="#D9874A">22.743ns 3.32x</TD>
         </TR>
         <TR>
-          <TD ALIGN="RIGHT">hotclock</TD>
-          <TD ALIGN="LEFT" WIDTH="437">
-            <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
-              <TR>
-                <TD BGCOLOR="#075A4A" WIDTH="3" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-                <TD BGCOLOR="#FBF6EC" WIDTH="7" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-                <TD ALIGN="LEFT" WIDTH="100">640 ps (1.0x)</TD>
-                <TD BGCOLOR="#FBF6EC" WIDTH="327" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-              </TR>
-            </TABLE>
-          </TD>
+          <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">Docker / x86_64-gnu</TD>
+          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC">15.394ns</FONT></TD>
+          <TD BGCOLOR="#F4E7BF">25.079ns 1.63x</TD>
+          <TD BGCOLOR="#D9874A">39.050ns 2.54x</TD>
+          <TD BGCOLOR="#F4E7BF">22.066ns 1.43x</TD>
+          <TD BGCOLOR="#F4E7BF">28.070ns 1.82x</TD>
         </TR>
         <TR>
-          <TD ALIGN="RIGHT">tick_counter@0.4.5</TD>
-          <TD ALIGN="LEFT" WIDTH="437">
-            <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
-              <TR>
-                <TD BGCOLOR="#0E7C66" WIDTH="3" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-                <TD BGCOLOR="#FBF6EC" WIDTH="7" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-                <TD ALIGN="LEFT" WIDTH="100">643 ps (1.0x)</TD>
-                <TD BGCOLOR="#FBF6EC" WIDTH="327" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-              </TR>
-            </TABLE>
-          </TD>
+          <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">Docker / x86-gnu</TD>
+          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC">25.789ns</FONT></TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">253.702ns 9.84x</FONT></TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">323.398ns 12.54x</FONT></TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">324.264ns 12.57x</FONT></TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">222.623ns 8.63x</FONT></TD>
         </TR>
         <TR>
-          <TD ALIGN="RIGHT">quanta@0.12.6</TD>
-          <TD ALIGN="LEFT" WIDTH="437">
-            <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
-              <TR>
-                <TD BGCOLOR="#D48A22" WIDTH="46" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-                <TD BGCOLOR="#FBF6EC" WIDTH="7" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-                <TD ALIGN="LEFT" WIDTH="115">9.04 ns (14.1x)</TD>
-                <TD BGCOLOR="#FBF6EC" WIDTH="269" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-              </TR>
-            </TABLE>
-          </TD>
+          <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">Docker / aarch64-gnu</TD>
+          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC">0.330ns</FONT></TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">4.466ns 13.53x</FONT></TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">27.203ns 82.43x</FONT></TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">27.275ns 82.65x</FONT></TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">20.222ns 61.28x</FONT></TD>
         </TR>
         <TR>
-          <TD ALIGN="RIGHT">std::time</TD>
-          <TD ALIGN="LEFT" WIDTH="437">
-            <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
-              <TR>
-                <TD BGCOLOR="#B95032" WIDTH="217" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-                <TD BGCOLOR="#FBF6EC" WIDTH="7" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-                <TD ALIGN="LEFT" WIDTH="125">42.86 ns (67.0x)</TD>
-                <TD BGCOLOR="#FBF6EC" WIDTH="88" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-              </TR>
-            </TABLE>
-          </TD>
+          <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">Docker / riscv64-gnu</TD>
+          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC">59.584ns</FONT></TD>
+          <TD BGCOLOR="#D9874A">215.296ns 3.61x</TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">271.262ns 4.55x</FONT></TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">271.241ns 4.55x</FONT></TD>
+          <TD BGCOLOR="#D9874A">185.151ns 3.11x</TD>
         </TR>
         <TR>
-          <TD ALIGN="RIGHT">minstant@0.1.7</TD>
-          <TD ALIGN="LEFT" WIDTH="437">
-            <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
-              <TR>
-                <TD BGCOLOR="#8F2E2E" WIDTH="300" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-                <TD BGCOLOR="#FBF6EC" WIDTH="7" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-                <TD ALIGN="LEFT" WIDTH="125">59.32 ns (92.7x)</TD>
-                <TD BGCOLOR="#FBF6EC" WIDTH="5" HEIGHT="13" FIXEDSIZE="TRUE"></TD>
-              </TR>
-            </TABLE>
-          </TD>
+          <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">local macOS / aarch64</TD>
+          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC">0.330ns</FONT></TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">4.622ns 14.01x</FONT></TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">25.740ns 78.00x</FONT></TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">25.683ns 77.83x</FONT></TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">18.422ns 55.82x</FONT></TD>
         </TR>
       </TABLE>
     >
