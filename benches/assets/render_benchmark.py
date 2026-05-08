@@ -38,17 +38,18 @@ GROUPS = [
 ]
 
 BAR_WIDTH = 7
-BAR_GAP = 2
+BAR_GAP = 4
 GROUP_WIDTH = 81
 GROUP_GAP = 20
 LEFT = 6
-HEIGHT = 207
-LEGEND_Y = 17
-GROUP_TOP = 34
-GROUP_HEIGHT = 163
-BAR_BOTTOM = 158
+HEIGHT = 218
+LEGEND_Y = 15
+NOTE_Y = 30
+GROUP_TOP = 42
+GROUP_HEIGHT = 164
+BAR_BOTTOM = 166
 MAX_BAR_HEIGHT = 86
-VALUE_FONT_SIZE = 8
+VALUE_FONT_SIZE = 7
 LABEL_FONT_SIZE = 12
 
 
@@ -71,9 +72,12 @@ def text(x: float, y: float, value: str, size: int, anchor: str = "middle") -> s
   )
 
 
+def label_width(value: str) -> float:
+  return len(value) * VALUE_FONT_SIZE * 0.56
+
+
 def render_svg() -> str:
   width = LEFT * 2 + len(GROUPS) * GROUP_WIDTH + (len(GROUPS) - 1) * GROUP_GAP
-  chart_width = len(GROUPS) * GROUP_WIDTH + (len(GROUPS) - 1) * GROUP_GAP
   group_xs = [LEFT + i * (GROUP_WIDTH + GROUP_GAP) for i in range(len(GROUPS))]
   bars_width = len(CRATES) * BAR_WIDTH + (len(CRATES) - 1) * BAR_GAP
 
@@ -98,6 +102,7 @@ def render_svg() -> str:
       f'<text x="{x + 8:g}" y="{LEGEND_Y:g}" text-anchor="start" '
       f'font-family="{FONT}" font-size="9" fill="#2E231B">{esc(name)}</text>'
     )
+  parts.append(text(width / 2, NOTE_Y, "All measurements are nanoseconds.", 9))
 
   for group_x, (labels, values) in zip(group_xs, GROUPS):
     parts.append(
@@ -107,17 +112,29 @@ def render_svg() -> str:
 
     bar_x = group_x + (GROUP_WIDTH - bars_width) / 2
     group_max = max(values)
+    placed_labels = []
     for i, value in enumerate(values):
       height = max(2, round(value / group_max * MAX_BAR_HEIGHT))
       x = bar_x + i * (BAR_WIDTH + BAR_GAP)
       y = BAR_BOTTOM - height
       color = CRATES[i][1]
+      label = value_label(value)
+      label_x = x + BAR_WIDTH / 2
+      label_y = y - 4
+      width_estimate = label_width(label)
+      while any(
+        abs(label_x - other_x) < (width_estimate + other_width) / 2 + 1
+        and abs(label_y - other_y) < VALUE_FONT_SIZE + 3
+        for other_x, other_y, other_width in placed_labels
+      ):
+        label_y -= VALUE_FONT_SIZE + 3
+      placed_labels.append((label_x, label_y, width_estimate))
       parts.append(f'<rect x="{x:g}" y="{y:g}" width="{BAR_WIDTH}" height="{height}" fill="{color}"/>')
-      parts.append(text(x + BAR_WIDTH / 2, y - 4, value_label(value), VALUE_FONT_SIZE))
+      parts.append(text(label_x, label_y, label, VALUE_FONT_SIZE))
 
     center = group_x + GROUP_WIDTH / 2
-    parts.append(text(center, 177, labels[0], LABEL_FONT_SIZE))
-    parts.append(text(center, 191, labels[1], LABEL_FONT_SIZE))
+    parts.append(text(center, 185, labels[0], LABEL_FONT_SIZE))
+    parts.append(text(center, 199, labels[1], LABEL_FONT_SIZE))
 
   parts.append("</g>")
   parts.append("</svg>")
