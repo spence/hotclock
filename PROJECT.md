@@ -8,6 +8,7 @@ tach provides a zero-dependency Rust API for reading fast CPU or platform tick c
 
 - [x] Fix macOS x86_64 self-patching call-target corruption
 - [x] Rename crate and GitHub repository to `tach`
+- [x] Reorder README benchmark graphics by target family
 - [x] Switch bar chart `tach` accent to red
 - [x] Rename AWS t3 benchmark labels to Nitro
 - [x] Align heatmap target labels with bar chart targets

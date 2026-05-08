@@ -24,44 +24,12 @@ digraph benchmark {
           <TD BGCOLOR="#1B1A17"><FONT COLOR="#FBF6EC"><B>std</B><BR/><FONT POINT-SIZE="9">1.91</FONT></FONT></TD>
         </TR>
         <TR>
-          <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">AWS t3 Nitro / x86_64</TD>
-          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC">8.71ns</FONT></TD>
-          <TD BGCOLOR="#EAC17D">13.3ns</TD>
-          <TD BGCOLOR="#DDEED9">9.36ns</TD>
-          <TD BGCOLOR="#DDEED9">9.36ns</TD>
-          <TD BGCOLOR="#D9874A">24.2ns</TD>
-        </TR>
-        <TR>
-          <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">AWS m7i metal / x86_64</TD>
-          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC">6.84ns</FONT></TD>
-          <TD BGCOLOR="#DDEED9">7.13ns</TD>
-          <TD BGCOLOR="#DDEED9">6.84ns</TD>
-          <TD BGCOLOR="#DDEED9">6.84ns</TD>
-          <TD BGCOLOR="#D9874A">14.7ns</TD>
-        </TR>
-        <TR>
-          <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">AWS Windows c5.large / x86_64</TD>
-          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC">8.24ns</FONT></TD>
-          <TD BGCOLOR="#EAC17D">12.4ns</TD>
-          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">36.8ns</FONT></TD>
-          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">35.5ns</FONT></TD>
-          <TD BGCOLOR="#FFF8E8">—</TD>
-        </TR>
-        <TR>
-          <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">AWS t3 Nitro / x86</TD>
-          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC">13.6ns</FONT></TD>
-          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">69.3ns</FONT></TD>
-          <TD BGCOLOR="#DDEED9">14.4ns</TD>
-          <TD BGCOLOR="#DDEED9">14.2ns</TD>
-          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">66.5ns</FONT></TD>
-        </TR>
-        <TR>
-          <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">AWS m7i metal / x86</TD>
-          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC">6.84ns</FONT></TD>
-          <TD BGCOLOR="#D9874A">23.1ns</TD>
-          <TD BGCOLOR="#DDEED9">6.84ns</TD>
-          <TD BGCOLOR="#DDEED9">6.84ns</TD>
-          <TD BGCOLOR="#D9874A">22.7ns</TD>
+          <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">macOS / aarch64</TD>
+          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC">0.330ns</FONT></TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">4.62ns</FONT></TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">25.7ns</FONT></TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">25.7ns</FONT></TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">18.4ns</FONT></TD>
         </TR>
         <TR>
           <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">Docker / x86_64</TD>
@@ -96,12 +64,44 @@ digraph benchmark {
           <TD BGCOLOR="#D9874A">185ns</TD>
         </TR>
         <TR>
-          <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">macOS / aarch64</TD>
-          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC">0.330ns</FONT></TD>
-          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">4.62ns</FONT></TD>
-          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">25.7ns</FONT></TD>
-          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">25.7ns</FONT></TD>
-          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">18.4ns</FONT></TD>
+          <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">AWS t3 Nitro / x86_64</TD>
+          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC">8.71ns</FONT></TD>
+          <TD BGCOLOR="#EAC17D">13.3ns</TD>
+          <TD BGCOLOR="#DDEED9">9.36ns</TD>
+          <TD BGCOLOR="#DDEED9">9.36ns</TD>
+          <TD BGCOLOR="#D9874A">24.2ns</TD>
+        </TR>
+        <TR>
+          <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">AWS m7i metal / x86_64</TD>
+          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC">6.84ns</FONT></TD>
+          <TD BGCOLOR="#DDEED9">7.13ns</TD>
+          <TD BGCOLOR="#DDEED9">6.84ns</TD>
+          <TD BGCOLOR="#DDEED9">6.84ns</TD>
+          <TD BGCOLOR="#D9874A">14.7ns</TD>
+        </TR>
+        <TR>
+          <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">AWS t3 Nitro / x86</TD>
+          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC">13.6ns</FONT></TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">69.3ns</FONT></TD>
+          <TD BGCOLOR="#DDEED9">14.4ns</TD>
+          <TD BGCOLOR="#DDEED9">14.2ns</TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">66.5ns</FONT></TD>
+        </TR>
+        <TR>
+          <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">AWS m7i metal / x86</TD>
+          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC">6.84ns</FONT></TD>
+          <TD BGCOLOR="#D9874A">23.1ns</TD>
+          <TD BGCOLOR="#DDEED9">6.84ns</TD>
+          <TD BGCOLOR="#DDEED9">6.84ns</TD>
+          <TD BGCOLOR="#D9874A">22.7ns</TD>
+        </TR>
+        <TR>
+          <TD ALIGN="LEFT" BGCOLOR="#FFF8E8">AWS Windows c5.large / x86_64</TD>
+          <TD BGCOLOR="#075A4A"><FONT COLOR="#FBF6EC">8.24ns</FONT></TD>
+          <TD BGCOLOR="#EAC17D">12.4ns</TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">36.8ns</FONT></TD>
+          <TD BGCOLOR="#8F2E2E"><FONT COLOR="#FBF6EC">35.5ns</FONT></TD>
+          <TD BGCOLOR="#FFF8E8">—</TD>
         </TR>
       </TABLE>
     >

@@ -37,184 +37,184 @@
 <text xml:space="preserve" text-anchor="start" x="427.12" y="-292.45" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="9.00" fill="#fbf6ec">1.91</text>
 <polygon fill="#fff8e8" stroke="none" points="0,-256.5 0,-285 189,-285 189,-256.5 0,-256.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="0,-256.5 0,-285 189,-285 189,-256.5 0,-256.5"/>
-<text xml:space="preserve" text-anchor="start" x="6" y="-267" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">AWS t3 Nitro / x86_64</text>
+<text xml:space="preserve" text-anchor="start" x="6" y="-267" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">macOS / aarch64</text>
 <polygon fill="#075a4a" stroke="none" points="189,-256.5 189,-285 243,-285 243,-256.5 189,-256.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="189,-256.5 189,-285 243,-285 243,-256.5 189,-256.5"/>
-<text xml:space="preserve" text-anchor="start" x="198.38" y="-267" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">8.71ns</text>
-<polygon fill="#eac17d" stroke="none" points="243,-256.5 243,-285 296.25,-285 296.25,-256.5 243,-256.5"/>
+<text xml:space="preserve" text-anchor="start" x="195" y="-267" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">0.330ns</text>
+<polygon fill="#8f2e2e" stroke="none" points="243,-256.5 243,-285 296.25,-285 296.25,-256.5 243,-256.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="243,-256.5 243,-285 296.25,-285 296.25,-256.5 243,-256.5"/>
-<text xml:space="preserve" text-anchor="start" x="252" y="-267" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">13.3ns</text>
-<polygon fill="#ddeed9" stroke="none" points="296.25,-256.5 296.25,-285 360,-285 360,-256.5 296.25,-256.5"/>
+<text xml:space="preserve" text-anchor="start" x="252" y="-267" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">4.62ns</text>
+<polygon fill="#8f2e2e" stroke="none" points="296.25,-256.5 296.25,-285 360,-285 360,-256.5 296.25,-256.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="296.25,-256.5 296.25,-285 360,-285 360,-256.5 296.25,-256.5"/>
-<text xml:space="preserve" text-anchor="start" x="310.5" y="-267" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">9.36ns</text>
-<polygon fill="#ddeed9" stroke="none" points="360,-256.5 360,-285 412.5,-285 412.5,-256.5 360,-256.5"/>
+<text xml:space="preserve" text-anchor="start" x="310.5" y="-267" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">25.7ns</text>
+<polygon fill="#8f2e2e" stroke="none" points="360,-256.5 360,-285 412.5,-285 412.5,-256.5 360,-256.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="360,-256.5 360,-285 412.5,-285 412.5,-256.5 360,-256.5"/>
-<text xml:space="preserve" text-anchor="start" x="368.62" y="-267" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">9.36ns</text>
-<polygon fill="#d9874a" stroke="none" points="412.5,-256.5 412.5,-285 459.75,-285 459.75,-256.5 412.5,-256.5"/>
+<text xml:space="preserve" text-anchor="start" x="368.62" y="-267" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">25.7ns</text>
+<polygon fill="#8f2e2e" stroke="none" points="412.5,-256.5 412.5,-285 459.75,-285 459.75,-256.5 412.5,-256.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="412.5,-256.5 412.5,-285 459.75,-285 459.75,-256.5 412.5,-256.5"/>
-<text xml:space="preserve" text-anchor="start" x="418.5" y="-267" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">24.2ns</text>
+<text xml:space="preserve" text-anchor="start" x="418.5" y="-267" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">18.4ns</text>
 <polygon fill="#fff8e8" stroke="none" points="0,-228 0,-256.5 189,-256.5 189,-228 0,-228"/>
 <polygon fill="none" stroke="#e4d8c2" points="0,-228 0,-256.5 189,-256.5 189,-228 0,-228"/>
-<text xml:space="preserve" text-anchor="start" x="6" y="-238.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">AWS m7i metal / x86_64</text>
+<text xml:space="preserve" text-anchor="start" x="6" y="-238.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">Docker / x86_64</text>
 <polygon fill="#075a4a" stroke="none" points="189,-228 189,-256.5 243,-256.5 243,-228 189,-228"/>
 <polygon fill="none" stroke="#e4d8c2" points="189,-228 189,-256.5 243,-256.5 243,-228 189,-228"/>
-<text xml:space="preserve" text-anchor="start" x="198.38" y="-238.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">6.84ns</text>
-<polygon fill="#ddeed9" stroke="none" points="243,-228 243,-256.5 296.25,-256.5 296.25,-228 243,-228"/>
+<text xml:space="preserve" text-anchor="start" x="198.38" y="-238.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">15.4ns</text>
+<polygon fill="#f4e7bf" stroke="none" points="243,-228 243,-256.5 296.25,-256.5 296.25,-228 243,-228"/>
 <polygon fill="none" stroke="#e4d8c2" points="243,-228 243,-256.5 296.25,-256.5 296.25,-228 243,-228"/>
-<text xml:space="preserve" text-anchor="start" x="252" y="-238.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">7.13ns</text>
-<polygon fill="#ddeed9" stroke="none" points="296.25,-228 296.25,-256.5 360,-256.5 360,-228 296.25,-228"/>
+<text xml:space="preserve" text-anchor="start" x="252" y="-238.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">25.1ns</text>
+<polygon fill="#d9874a" stroke="none" points="296.25,-228 296.25,-256.5 360,-256.5 360,-228 296.25,-228"/>
 <polygon fill="none" stroke="#e4d8c2" points="296.25,-228 296.25,-256.5 360,-256.5 360,-228 296.25,-228"/>
-<text xml:space="preserve" text-anchor="start" x="310.5" y="-238.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">6.84ns</text>
-<polygon fill="#ddeed9" stroke="none" points="360,-228 360,-256.5 412.5,-256.5 412.5,-228 360,-228"/>
+<text xml:space="preserve" text-anchor="start" x="310.5" y="-238.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">39.0ns</text>
+<polygon fill="#f4e7bf" stroke="none" points="360,-228 360,-256.5 412.5,-256.5 412.5,-228 360,-228"/>
 <polygon fill="none" stroke="#e4d8c2" points="360,-228 360,-256.5 412.5,-256.5 412.5,-228 360,-228"/>
-<text xml:space="preserve" text-anchor="start" x="368.62" y="-238.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">6.84ns</text>
-<polygon fill="#d9874a" stroke="none" points="412.5,-228 412.5,-256.5 459.75,-256.5 459.75,-228 412.5,-228"/>
+<text xml:space="preserve" text-anchor="start" x="368.62" y="-238.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">22.1ns</text>
+<polygon fill="#f4e7bf" stroke="none" points="412.5,-228 412.5,-256.5 459.75,-256.5 459.75,-228 412.5,-228"/>
 <polygon fill="none" stroke="#e4d8c2" points="412.5,-228 412.5,-256.5 459.75,-256.5 459.75,-228 412.5,-228"/>
-<text xml:space="preserve" text-anchor="start" x="418.5" y="-238.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">14.7ns</text>
+<text xml:space="preserve" text-anchor="start" x="418.5" y="-238.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">28.1ns</text>
 <polygon fill="#fff8e8" stroke="none" points="0,-199.5 0,-228 189,-228 189,-199.5 0,-199.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="0,-199.5 0,-228 189,-228 189,-199.5 0,-199.5"/>
-<text xml:space="preserve" text-anchor="start" x="6" y="-210" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">AWS Windows c5.large / x86_64</text>
+<text xml:space="preserve" text-anchor="start" x="6" y="-210" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">Docker / x86</text>
 <polygon fill="#075a4a" stroke="none" points="189,-199.5 189,-228 243,-228 243,-199.5 189,-199.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="189,-199.5 189,-228 243,-228 243,-199.5 189,-199.5"/>
-<text xml:space="preserve" text-anchor="start" x="198.38" y="-210" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">8.24ns</text>
-<polygon fill="#eac17d" stroke="none" points="243,-199.5 243,-228 296.25,-228 296.25,-199.5 243,-199.5"/>
+<text xml:space="preserve" text-anchor="start" x="198.38" y="-210" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">25.8ns</text>
+<polygon fill="#8f2e2e" stroke="none" points="243,-199.5 243,-228 296.25,-228 296.25,-199.5 243,-199.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="243,-199.5 243,-228 296.25,-228 296.25,-199.5 243,-199.5"/>
-<text xml:space="preserve" text-anchor="start" x="252" y="-210" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">12.4ns</text>
+<text xml:space="preserve" text-anchor="start" x="253.5" y="-210" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">254ns</text>
 <polygon fill="#8f2e2e" stroke="none" points="296.25,-199.5 296.25,-228 360,-228 360,-199.5 296.25,-199.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="296.25,-199.5 296.25,-228 360,-228 360,-199.5 296.25,-199.5"/>
-<text xml:space="preserve" text-anchor="start" x="310.5" y="-210" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">36.8ns</text>
+<text xml:space="preserve" text-anchor="start" x="312" y="-210" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">323ns</text>
 <polygon fill="#8f2e2e" stroke="none" points="360,-199.5 360,-228 412.5,-228 412.5,-199.5 360,-199.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="360,-199.5 360,-228 412.5,-228 412.5,-199.5 360,-199.5"/>
-<text xml:space="preserve" text-anchor="start" x="368.62" y="-210" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">35.5ns</text>
-<polygon fill="#fff8e8" stroke="none" points="412.5,-199.5 412.5,-228 459.75,-228 459.75,-199.5 412.5,-199.5"/>
+<text xml:space="preserve" text-anchor="start" x="370.12" y="-210" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">324ns</text>
+<polygon fill="#8f2e2e" stroke="none" points="412.5,-199.5 412.5,-228 459.75,-228 459.75,-199.5 412.5,-199.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="412.5,-199.5 412.5,-228 459.75,-228 459.75,-199.5 412.5,-199.5"/>
-<text xml:space="preserve" text-anchor="start" x="432.38" y="-210" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">—</text>
+<text xml:space="preserve" text-anchor="start" x="420" y="-210" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">223ns</text>
 <polygon fill="#fff8e8" stroke="none" points="0,-171 0,-199.5 189,-199.5 189,-171 0,-171"/>
 <polygon fill="none" stroke="#e4d8c2" points="0,-171 0,-199.5 189,-199.5 189,-171 0,-171"/>
-<text xml:space="preserve" text-anchor="start" x="6" y="-181.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">AWS t3 Nitro / x86</text>
+<text xml:space="preserve" text-anchor="start" x="6" y="-181.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">Docker / aarch64</text>
 <polygon fill="#075a4a" stroke="none" points="189,-171 189,-199.5 243,-199.5 243,-171 189,-171"/>
 <polygon fill="none" stroke="#e4d8c2" points="189,-171 189,-199.5 243,-199.5 243,-171 189,-171"/>
-<text xml:space="preserve" text-anchor="start" x="198.38" y="-181.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">13.6ns</text>
+<text xml:space="preserve" text-anchor="start" x="195" y="-181.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">0.330ns</text>
 <polygon fill="#8f2e2e" stroke="none" points="243,-171 243,-199.5 296.25,-199.5 296.25,-171 243,-171"/>
 <polygon fill="none" stroke="#e4d8c2" points="243,-171 243,-199.5 296.25,-199.5 296.25,-171 243,-171"/>
-<text xml:space="preserve" text-anchor="start" x="252" y="-181.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">69.3ns</text>
-<polygon fill="#ddeed9" stroke="none" points="296.25,-171 296.25,-199.5 360,-199.5 360,-171 296.25,-171"/>
+<text xml:space="preserve" text-anchor="start" x="252" y="-181.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">4.47ns</text>
+<polygon fill="#8f2e2e" stroke="none" points="296.25,-171 296.25,-199.5 360,-199.5 360,-171 296.25,-171"/>
 <polygon fill="none" stroke="#e4d8c2" points="296.25,-171 296.25,-199.5 360,-199.5 360,-171 296.25,-171"/>
-<text xml:space="preserve" text-anchor="start" x="310.5" y="-181.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">14.4ns</text>
-<polygon fill="#ddeed9" stroke="none" points="360,-171 360,-199.5 412.5,-199.5 412.5,-171 360,-171"/>
+<text xml:space="preserve" text-anchor="start" x="310.5" y="-181.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">27.2ns</text>
+<polygon fill="#8f2e2e" stroke="none" points="360,-171 360,-199.5 412.5,-199.5 412.5,-171 360,-171"/>
 <polygon fill="none" stroke="#e4d8c2" points="360,-171 360,-199.5 412.5,-199.5 412.5,-171 360,-171"/>
-<text xml:space="preserve" text-anchor="start" x="368.62" y="-181.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">14.2ns</text>
+<text xml:space="preserve" text-anchor="start" x="368.62" y="-181.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">27.3ns</text>
 <polygon fill="#8f2e2e" stroke="none" points="412.5,-171 412.5,-199.5 459.75,-199.5 459.75,-171 412.5,-171"/>
 <polygon fill="none" stroke="#e4d8c2" points="412.5,-171 412.5,-199.5 459.75,-199.5 459.75,-171 412.5,-171"/>
-<text xml:space="preserve" text-anchor="start" x="418.5" y="-181.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">66.5ns</text>
+<text xml:space="preserve" text-anchor="start" x="418.5" y="-181.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">20.2ns</text>
 <polygon fill="#fff8e8" stroke="none" points="0,-142.5 0,-171 189,-171 189,-142.5 0,-142.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="0,-142.5 0,-171 189,-171 189,-142.5 0,-142.5"/>
-<text xml:space="preserve" text-anchor="start" x="6" y="-153" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">AWS m7i metal / x86</text>
+<text xml:space="preserve" text-anchor="start" x="6" y="-153" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">Docker / riscv64</text>
 <polygon fill="#075a4a" stroke="none" points="189,-142.5 189,-171 243,-171 243,-142.5 189,-142.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="189,-142.5 189,-171 243,-171 243,-142.5 189,-142.5"/>
-<text xml:space="preserve" text-anchor="start" x="198.38" y="-153" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">6.84ns</text>
+<text xml:space="preserve" text-anchor="start" x="198.38" y="-153" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">59.6ns</text>
 <polygon fill="#d9874a" stroke="none" points="243,-142.5 243,-171 296.25,-171 296.25,-142.5 243,-142.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="243,-142.5 243,-171 296.25,-171 296.25,-142.5 243,-142.5"/>
-<text xml:space="preserve" text-anchor="start" x="252" y="-153" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">23.1ns</text>
-<polygon fill="#ddeed9" stroke="none" points="296.25,-142.5 296.25,-171 360,-171 360,-142.5 296.25,-142.5"/>
+<text xml:space="preserve" text-anchor="start" x="253.5" y="-153" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">215ns</text>
+<polygon fill="#8f2e2e" stroke="none" points="296.25,-142.5 296.25,-171 360,-171 360,-142.5 296.25,-142.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="296.25,-142.5 296.25,-171 360,-171 360,-142.5 296.25,-142.5"/>
-<text xml:space="preserve" text-anchor="start" x="310.5" y="-153" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">6.84ns</text>
-<polygon fill="#ddeed9" stroke="none" points="360,-142.5 360,-171 412.5,-171 412.5,-142.5 360,-142.5"/>
+<text xml:space="preserve" text-anchor="start" x="312" y="-153" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">271ns</text>
+<polygon fill="#8f2e2e" stroke="none" points="360,-142.5 360,-171 412.5,-171 412.5,-142.5 360,-142.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="360,-142.5 360,-171 412.5,-171 412.5,-142.5 360,-142.5"/>
-<text xml:space="preserve" text-anchor="start" x="368.62" y="-153" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">6.84ns</text>
+<text xml:space="preserve" text-anchor="start" x="370.12" y="-153" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">271ns</text>
 <polygon fill="#d9874a" stroke="none" points="412.5,-142.5 412.5,-171 459.75,-171 459.75,-142.5 412.5,-142.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="412.5,-142.5 412.5,-171 459.75,-171 459.75,-142.5 412.5,-142.5"/>
-<text xml:space="preserve" text-anchor="start" x="418.5" y="-153" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">22.7ns</text>
+<text xml:space="preserve" text-anchor="start" x="420" y="-153" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">185ns</text>
 <polygon fill="#fff8e8" stroke="none" points="0,-114 0,-142.5 189,-142.5 189,-114 0,-114"/>
 <polygon fill="none" stroke="#e4d8c2" points="0,-114 0,-142.5 189,-142.5 189,-114 0,-114"/>
-<text xml:space="preserve" text-anchor="start" x="6" y="-124.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">Docker / x86_64</text>
+<text xml:space="preserve" text-anchor="start" x="6" y="-124.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">AWS t3 Nitro / x86_64</text>
 <polygon fill="#075a4a" stroke="none" points="189,-114 189,-142.5 243,-142.5 243,-114 189,-114"/>
 <polygon fill="none" stroke="#e4d8c2" points="189,-114 189,-142.5 243,-142.5 243,-114 189,-114"/>
-<text xml:space="preserve" text-anchor="start" x="198.38" y="-124.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">15.4ns</text>
-<polygon fill="#f4e7bf" stroke="none" points="243,-114 243,-142.5 296.25,-142.5 296.25,-114 243,-114"/>
+<text xml:space="preserve" text-anchor="start" x="198.38" y="-124.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">8.71ns</text>
+<polygon fill="#eac17d" stroke="none" points="243,-114 243,-142.5 296.25,-142.5 296.25,-114 243,-114"/>
 <polygon fill="none" stroke="#e4d8c2" points="243,-114 243,-142.5 296.25,-142.5 296.25,-114 243,-114"/>
-<text xml:space="preserve" text-anchor="start" x="252" y="-124.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">25.1ns</text>
-<polygon fill="#d9874a" stroke="none" points="296.25,-114 296.25,-142.5 360,-142.5 360,-114 296.25,-114"/>
+<text xml:space="preserve" text-anchor="start" x="252" y="-124.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">13.3ns</text>
+<polygon fill="#ddeed9" stroke="none" points="296.25,-114 296.25,-142.5 360,-142.5 360,-114 296.25,-114"/>
 <polygon fill="none" stroke="#e4d8c2" points="296.25,-114 296.25,-142.5 360,-142.5 360,-114 296.25,-114"/>
-<text xml:space="preserve" text-anchor="start" x="310.5" y="-124.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">39.0ns</text>
-<polygon fill="#f4e7bf" stroke="none" points="360,-114 360,-142.5 412.5,-142.5 412.5,-114 360,-114"/>
+<text xml:space="preserve" text-anchor="start" x="310.5" y="-124.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">9.36ns</text>
+<polygon fill="#ddeed9" stroke="none" points="360,-114 360,-142.5 412.5,-142.5 412.5,-114 360,-114"/>
 <polygon fill="none" stroke="#e4d8c2" points="360,-114 360,-142.5 412.5,-142.5 412.5,-114 360,-114"/>
-<text xml:space="preserve" text-anchor="start" x="368.62" y="-124.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">22.1ns</text>
-<polygon fill="#f4e7bf" stroke="none" points="412.5,-114 412.5,-142.5 459.75,-142.5 459.75,-114 412.5,-114"/>
+<text xml:space="preserve" text-anchor="start" x="368.62" y="-124.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">9.36ns</text>
+<polygon fill="#d9874a" stroke="none" points="412.5,-114 412.5,-142.5 459.75,-142.5 459.75,-114 412.5,-114"/>
 <polygon fill="none" stroke="#e4d8c2" points="412.5,-114 412.5,-142.5 459.75,-142.5 459.75,-114 412.5,-114"/>
-<text xml:space="preserve" text-anchor="start" x="418.5" y="-124.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">28.1ns</text>
+<text xml:space="preserve" text-anchor="start" x="418.5" y="-124.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">24.2ns</text>
 <polygon fill="#fff8e8" stroke="none" points="0,-85.5 0,-114 189,-114 189,-85.5 0,-85.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="0,-85.5 0,-114 189,-114 189,-85.5 0,-85.5"/>
-<text xml:space="preserve" text-anchor="start" x="6" y="-96" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">Docker / x86</text>
+<text xml:space="preserve" text-anchor="start" x="6" y="-96" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">AWS m7i metal / x86_64</text>
 <polygon fill="#075a4a" stroke="none" points="189,-85.5 189,-114 243,-114 243,-85.5 189,-85.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="189,-85.5 189,-114 243,-114 243,-85.5 189,-85.5"/>
-<text xml:space="preserve" text-anchor="start" x="198.38" y="-96" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">25.8ns</text>
-<polygon fill="#8f2e2e" stroke="none" points="243,-85.5 243,-114 296.25,-114 296.25,-85.5 243,-85.5"/>
+<text xml:space="preserve" text-anchor="start" x="198.38" y="-96" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">6.84ns</text>
+<polygon fill="#ddeed9" stroke="none" points="243,-85.5 243,-114 296.25,-114 296.25,-85.5 243,-85.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="243,-85.5 243,-114 296.25,-114 296.25,-85.5 243,-85.5"/>
-<text xml:space="preserve" text-anchor="start" x="253.5" y="-96" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">254ns</text>
-<polygon fill="#8f2e2e" stroke="none" points="296.25,-85.5 296.25,-114 360,-114 360,-85.5 296.25,-85.5"/>
+<text xml:space="preserve" text-anchor="start" x="252" y="-96" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">7.13ns</text>
+<polygon fill="#ddeed9" stroke="none" points="296.25,-85.5 296.25,-114 360,-114 360,-85.5 296.25,-85.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="296.25,-85.5 296.25,-114 360,-114 360,-85.5 296.25,-85.5"/>
-<text xml:space="preserve" text-anchor="start" x="312" y="-96" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">323ns</text>
-<polygon fill="#8f2e2e" stroke="none" points="360,-85.5 360,-114 412.5,-114 412.5,-85.5 360,-85.5"/>
+<text xml:space="preserve" text-anchor="start" x="310.5" y="-96" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">6.84ns</text>
+<polygon fill="#ddeed9" stroke="none" points="360,-85.5 360,-114 412.5,-114 412.5,-85.5 360,-85.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="360,-85.5 360,-114 412.5,-114 412.5,-85.5 360,-85.5"/>
-<text xml:space="preserve" text-anchor="start" x="370.12" y="-96" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">324ns</text>
-<polygon fill="#8f2e2e" stroke="none" points="412.5,-85.5 412.5,-114 459.75,-114 459.75,-85.5 412.5,-85.5"/>
+<text xml:space="preserve" text-anchor="start" x="368.62" y="-96" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">6.84ns</text>
+<polygon fill="#d9874a" stroke="none" points="412.5,-85.5 412.5,-114 459.75,-114 459.75,-85.5 412.5,-85.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="412.5,-85.5 412.5,-114 459.75,-114 459.75,-85.5 412.5,-85.5"/>
-<text xml:space="preserve" text-anchor="start" x="420" y="-96" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">223ns</text>
+<text xml:space="preserve" text-anchor="start" x="418.5" y="-96" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">14.7ns</text>
 <polygon fill="#fff8e8" stroke="none" points="0,-57 0,-85.5 189,-85.5 189,-57 0,-57"/>
 <polygon fill="none" stroke="#e4d8c2" points="0,-57 0,-85.5 189,-85.5 189,-57 0,-57"/>
-<text xml:space="preserve" text-anchor="start" x="6" y="-67.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">Docker / aarch64</text>
+<text xml:space="preserve" text-anchor="start" x="6" y="-67.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">AWS t3 Nitro / x86</text>
 <polygon fill="#075a4a" stroke="none" points="189,-57 189,-85.5 243,-85.5 243,-57 189,-57"/>
 <polygon fill="none" stroke="#e4d8c2" points="189,-57 189,-85.5 243,-85.5 243,-57 189,-57"/>
-<text xml:space="preserve" text-anchor="start" x="195" y="-67.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">0.330ns</text>
+<text xml:space="preserve" text-anchor="start" x="198.38" y="-67.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">13.6ns</text>
 <polygon fill="#8f2e2e" stroke="none" points="243,-57 243,-85.5 296.25,-85.5 296.25,-57 243,-57"/>
 <polygon fill="none" stroke="#e4d8c2" points="243,-57 243,-85.5 296.25,-85.5 296.25,-57 243,-57"/>
-<text xml:space="preserve" text-anchor="start" x="252" y="-67.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">4.47ns</text>
-<polygon fill="#8f2e2e" stroke="none" points="296.25,-57 296.25,-85.5 360,-85.5 360,-57 296.25,-57"/>
+<text xml:space="preserve" text-anchor="start" x="252" y="-67.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">69.3ns</text>
+<polygon fill="#ddeed9" stroke="none" points="296.25,-57 296.25,-85.5 360,-85.5 360,-57 296.25,-57"/>
 <polygon fill="none" stroke="#e4d8c2" points="296.25,-57 296.25,-85.5 360,-85.5 360,-57 296.25,-57"/>
-<text xml:space="preserve" text-anchor="start" x="310.5" y="-67.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">27.2ns</text>
-<polygon fill="#8f2e2e" stroke="none" points="360,-57 360,-85.5 412.5,-85.5 412.5,-57 360,-57"/>
+<text xml:space="preserve" text-anchor="start" x="310.5" y="-67.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">14.4ns</text>
+<polygon fill="#ddeed9" stroke="none" points="360,-57 360,-85.5 412.5,-85.5 412.5,-57 360,-57"/>
 <polygon fill="none" stroke="#e4d8c2" points="360,-57 360,-85.5 412.5,-85.5 412.5,-57 360,-57"/>
-<text xml:space="preserve" text-anchor="start" x="368.62" y="-67.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">27.3ns</text>
+<text xml:space="preserve" text-anchor="start" x="368.62" y="-67.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">14.2ns</text>
 <polygon fill="#8f2e2e" stroke="none" points="412.5,-57 412.5,-85.5 459.75,-85.5 459.75,-57 412.5,-57"/>
 <polygon fill="none" stroke="#e4d8c2" points="412.5,-57 412.5,-85.5 459.75,-85.5 459.75,-57 412.5,-57"/>
-<text xml:space="preserve" text-anchor="start" x="418.5" y="-67.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">20.2ns</text>
+<text xml:space="preserve" text-anchor="start" x="418.5" y="-67.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">66.5ns</text>
 <polygon fill="#fff8e8" stroke="none" points="0,-28.5 0,-57 189,-57 189,-28.5 0,-28.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="0,-28.5 0,-57 189,-57 189,-28.5 0,-28.5"/>
-<text xml:space="preserve" text-anchor="start" x="6" y="-39" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">Docker / riscv64</text>
+<text xml:space="preserve" text-anchor="start" x="6" y="-39" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">AWS m7i metal / x86</text>
 <polygon fill="#075a4a" stroke="none" points="189,-28.5 189,-57 243,-57 243,-28.5 189,-28.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="189,-28.5 189,-57 243,-57 243,-28.5 189,-28.5"/>
-<text xml:space="preserve" text-anchor="start" x="198.38" y="-39" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">59.6ns</text>
+<text xml:space="preserve" text-anchor="start" x="198.38" y="-39" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">6.84ns</text>
 <polygon fill="#d9874a" stroke="none" points="243,-28.5 243,-57 296.25,-57 296.25,-28.5 243,-28.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="243,-28.5 243,-57 296.25,-57 296.25,-28.5 243,-28.5"/>
-<text xml:space="preserve" text-anchor="start" x="253.5" y="-39" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">215ns</text>
-<polygon fill="#8f2e2e" stroke="none" points="296.25,-28.5 296.25,-57 360,-57 360,-28.5 296.25,-28.5"/>
+<text xml:space="preserve" text-anchor="start" x="252" y="-39" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">23.1ns</text>
+<polygon fill="#ddeed9" stroke="none" points="296.25,-28.5 296.25,-57 360,-57 360,-28.5 296.25,-28.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="296.25,-28.5 296.25,-57 360,-57 360,-28.5 296.25,-28.5"/>
-<text xml:space="preserve" text-anchor="start" x="312" y="-39" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">271ns</text>
-<polygon fill="#8f2e2e" stroke="none" points="360,-28.5 360,-57 412.5,-57 412.5,-28.5 360,-28.5"/>
+<text xml:space="preserve" text-anchor="start" x="310.5" y="-39" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">6.84ns</text>
+<polygon fill="#ddeed9" stroke="none" points="360,-28.5 360,-57 412.5,-57 412.5,-28.5 360,-28.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="360,-28.5 360,-57 412.5,-57 412.5,-28.5 360,-28.5"/>
-<text xml:space="preserve" text-anchor="start" x="370.12" y="-39" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">271ns</text>
+<text xml:space="preserve" text-anchor="start" x="368.62" y="-39" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">6.84ns</text>
 <polygon fill="#d9874a" stroke="none" points="412.5,-28.5 412.5,-57 459.75,-57 459.75,-28.5 412.5,-28.5"/>
 <polygon fill="none" stroke="#e4d8c2" points="412.5,-28.5 412.5,-57 459.75,-57 459.75,-28.5 412.5,-28.5"/>
-<text xml:space="preserve" text-anchor="start" x="420" y="-39" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">185ns</text>
+<text xml:space="preserve" text-anchor="start" x="418.5" y="-39" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">22.7ns</text>
 <polygon fill="#fff8e8" stroke="none" points="0,0 0,-28.5 189,-28.5 189,0 0,0"/>
 <polygon fill="none" stroke="#e4d8c2" points="0,0 0,-28.5 189,-28.5 189,0 0,0"/>
-<text xml:space="preserve" text-anchor="start" x="6" y="-10.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">macOS / aarch64</text>
+<text xml:space="preserve" text-anchor="start" x="6" y="-10.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">AWS Windows c5.large / x86_64</text>
 <polygon fill="#075a4a" stroke="none" points="189,0 189,-28.5 243,-28.5 243,0 189,0"/>
 <polygon fill="none" stroke="#e4d8c2" points="189,0 189,-28.5 243,-28.5 243,0 189,0"/>
-<text xml:space="preserve" text-anchor="start" x="195" y="-10.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">0.330ns</text>
-<polygon fill="#8f2e2e" stroke="none" points="243,0 243,-28.5 296.25,-28.5 296.25,0 243,0"/>
+<text xml:space="preserve" text-anchor="start" x="198.38" y="-10.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">8.24ns</text>
+<polygon fill="#eac17d" stroke="none" points="243,0 243,-28.5 296.25,-28.5 296.25,0 243,0"/>
 <polygon fill="none" stroke="#e4d8c2" points="243,0 243,-28.5 296.25,-28.5 296.25,0 243,0"/>
-<text xml:space="preserve" text-anchor="start" x="252" y="-10.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">4.62ns</text>
+<text xml:space="preserve" text-anchor="start" x="252" y="-10.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">12.4ns</text>
 <polygon fill="#8f2e2e" stroke="none" points="296.25,0 296.25,-28.5 360,-28.5 360,0 296.25,0"/>
 <polygon fill="none" stroke="#e4d8c2" points="296.25,0 296.25,-28.5 360,-28.5 360,0 296.25,0"/>
-<text xml:space="preserve" text-anchor="start" x="310.5" y="-10.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">25.7ns</text>
+<text xml:space="preserve" text-anchor="start" x="310.5" y="-10.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">36.8ns</text>
 <polygon fill="#8f2e2e" stroke="none" points="360,0 360,-28.5 412.5,-28.5 412.5,0 360,0"/>
 <polygon fill="none" stroke="#e4d8c2" points="360,0 360,-28.5 412.5,-28.5 412.5,0 360,0"/>
-<text xml:space="preserve" text-anchor="start" x="368.62" y="-10.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">25.7ns</text>
-<polygon fill="#8f2e2e" stroke="none" points="412.5,0 412.5,-28.5 459.75,-28.5 459.75,0 412.5,0"/>
+<text xml:space="preserve" text-anchor="start" x="368.62" y="-10.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">35.5ns</text>
+<polygon fill="#fff8e8" stroke="none" points="412.5,0 412.5,-28.5 459.75,-28.5 459.75,0 412.5,0"/>
 <polygon fill="none" stroke="#e4d8c2" points="412.5,0 412.5,-28.5 459.75,-28.5 459.75,0 412.5,0"/>
-<text xml:space="preserve" text-anchor="start" x="418.5" y="-10.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00" fill="#fbf6ec">18.4ns</text>
+<text xml:space="preserve" text-anchor="start" x="432.38" y="-10.5" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12.00">—</text>
 </g>
 </g>
 </svg>
