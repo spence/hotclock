@@ -9,7 +9,26 @@ in a container, a VM or on bare metal, it automatically selects the fastest mach
 
 ![Benchmark comparison](benches/assets/benchmark.png)
 
-Full target/environment results: [inline selected-clock benchmark](benches/inline-selection-benchmark-2026-05-08.md).
+Full target/environment results: [runtime selection validation](benches/runtime-selection-validation-2026-05-08.md).
+
+Runtime selection is the point. The same `x86_64-linux-musl` binary selected
+`RDTSC` for `Cycles` inside an AWS t3 KVM VM and `perf-RDPMC` on AWS m7i bare
+metal, then patched warmed call sites to the selected clock.
+
+Fresh validation runs below were produced with
+`tools/selection-validation-runner` on May 8, 2026. `ok` means the selected
+`Instant` and `Cycles` clocks matched the expected fastest valid clocks for that
+target/environment.
+
+| Environment        | Target              | Instant clock | Cycles clock     | Instant | Cycles | quanta | minstant | fastant | std    | ok |
+|--------------------|---------------------|---------------|------------------|--------:|-------:|-------:|---------:|--------:|-------:|----|
+| AWS t3 KVM         | x86_64-linux-musl   | x86_64-rdtsc  | x86_64-rdtsc     | 12.296ns | 12.354ns | 27.088ns | 14.126ns | 14.577ns | 24.098ns | ✅ |
+| AWS m7i metal      | x86_64-linux-musl   | x86_64-rdtsc  | x86_64-perf-rdpmc | 6.841ns | 4.999ns | 7.353ns | 6.841ns | 6.841ns | 14.735ns | ✅ |
+| AWS t3 KVM         | x86-linux-musl      | x86-rdtsc     | x86-rdtsc        | 13.002ns | 13.187ns | 75.085ns | 13.931ns | 15.827ns | 75.004ns | ✅ |
+| Docker amd64       | x86_64-linux-gnu    | x86_64-rdtsc  | x86_64-rdtsc     | 15.394ns | 15.222ns | 25.079ns | 39.050ns | 22.066ns | 28.070ns | ✅ |
+| Docker 386         | x86-linux-gnu       | x86-rdtsc     | x86-rdtsc        | 25.789ns | 25.780ns | 253.702ns | 323.398ns | 324.264ns | 222.623ns | ✅ |
+| Docker arm64       | aarch64-linux-gnu   | aarch64-cntvct | aarch64-cntvct  | 0.330ns | 0.330ns | 4.466ns | 27.203ns | 27.275ns | 20.222ns | ✅ |
+| Docker riscv64     | riscv64-linux-gnu   | riscv64-rdtime | riscv64-rdcycle | 59.584ns | 58.656ns | 215.296ns | 271.262ns | 271.241ns | 185.151ns | ✅ |
 
 ## feature comparison
 
@@ -59,19 +78,24 @@ crate-owned patchpoints rewrite warmed `Instant` and `Cycles` call sites to the
 chosen counter or fallback trampoline, so later reads do not keep selected-index
 dispatch on the hot path.
 
-| Platform               | Hardware counter | OS fallback | CI tests |
-|------------------------|------------------|-------------|----------|
-| macOS (x86/x86_64)     | ✅ RDTSC         | ✅          | ✅       |
-| macOS (aarch64)        | ✅ CNTVCT_EL0    | n/a         | ✅       |
-| Windows (x86/x86_64)   | ✅ RDTSC         | ✅          | ✅       |
-| Windows (aarch64)      | ✅ CNTVCT_EL0    | ✅          | ✅       |
-| Linux (x86/x86_64)     | ✅ RDTSC         | ✅          | ✅       |
-| Linux (aarch64)        | ✅ CNTVCT_EL0    | ✅          | ✅       |
-| Linux (s390x)          | ❌              | ✅          | ✅       |
-| Linux (loongarch64)    | ✅ rdtime.d      | ✅          | ✅       |
-| Unix/other (riscv64)   | ✅ rdtime        | ✅          | ✅       |
-| Unix/other (powerpc64) | ❌               | ✅          | ✅       |
-| other                  | ❌               | ✅          | ✅       |
+Rows with multiple clocks are runtime-selected. Rows with one clock compile to
+that direct clock or direct fallback.
+
+| Platform / target       | `Instant` clocks          | `Cycles` clocks                         | Selection |
+|-------------------------|---------------------------|-----------------------------------------|-----------|
+| macOS (aarch64)         | CNTVCT_EL0                | CNTVCT_EL0                              | direct |
+| macOS (x86/x86_64)      | RDTSC, mach               | RDTSC, mach                             | runtime |
+| Windows (x86/x86_64)    | RDTSC, std                | RDTSC, std                              | runtime |
+| Windows (aarch64)       | CNTVCT_EL0, std           | CNTVCT_EL0, std                         | runtime |
+| Linux (x86_64)          | RDTSC, clock_gettime      | RDPMC, perf-RDPMC, RDTSC, clock_gettime | runtime + patch |
+| Linux (x86)             | RDTSC, clock_gettime      | RDPMC, perf-RDPMC, RDTSC, clock_gettime | runtime + patch |
+| Linux (aarch64)         | CNTVCT_EL0, clock_gettime | PMCCNTR_EL0, CNTVCT_EL0, clock_gettime  | runtime + patch |
+| Unix/other (aarch64)    | CNTVCT_EL0, clock_gettime | CNTVCT_EL0, clock_gettime               | runtime + patch |
+| Unix/other (riscv64)    | rdtime, clock_gettime     | rdcycle, rdtime, clock_gettime          | runtime + patch |
+| Linux (loongarch64)     | rdtime.d, clock_gettime   | rdtime.d, clock_gettime                 | runtime + patch |
+| Linux (s390x)           | clock_gettime             | clock_gettime                           | direct fallback |
+| Unix/other (powerpc64)  | OS timer                  | OS timer                                | direct fallback |
+| other                   | OS timer                  | OS timer                                | direct fallback |
 
 ## changelog
 

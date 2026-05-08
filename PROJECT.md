@@ -6,6 +6,8 @@ hotclock provides a zero-dependency Rust API for reading fast CPU or platform ti
 
 ## Cross-architecture inline selected clocks
 
+- [ ] Stabilize i686 bare-metal RDTSC validation false negatives
+- [x] README shows fresh runtime-selection benchmarks across selected targets
 - [x] Stable fallback-only targets skip selected patch trampolines
 - [x] Native ppc64 stable Rust builds without unstable inline asm
 - [x] Runtime-selected `Instant` and `Cycles` clocks patch warmed call sites across supported targets
