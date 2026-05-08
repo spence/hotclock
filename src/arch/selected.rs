@@ -780,100 +780,110 @@ pub fn cycle_ticks() -> u64 {
 #[inline(always)]
 #[allow(clippy::inline_always)]
 pub fn ticks() -> u64 {
-  x86_64_self_patching_ticks(
-    instant_select_and_patch_current,
-    instant_direct_fallback,
-    instant_direct_hardware,
-  )
+  x86_64_instant_self_patching_ticks()
 }
 
 #[cfg(all(target_arch = "x86_64", any(target_os = "macos", windows)))]
 #[inline(always)]
 #[allow(clippy::inline_always)]
 pub fn cycle_ticks() -> u64 {
-  x86_64_self_patching_ticks(
-    cycle_select_and_patch_current,
-    cycle_direct_fallback,
-    cycle_direct_hardware,
-  )
+  x86_64_cycle_self_patching_ticks()
 }
 
 #[cfg(all(target_arch = "x86_64", any(target_os = "macos", windows)))]
-#[inline(always)]
-#[allow(clippy::inline_always)]
-fn x86_64_self_patching_ticks(
-  select: extern "C" fn(usize, usize, usize, usize) -> u64,
-  fallback: extern "C" fn() -> u64,
-  hardware: extern "C" fn() -> u64,
-) -> u64 {
-  let out: u64;
+macro_rules! x86_64_self_patching_ticks_fn {
+  ($name:ident, $select:ident, $fallback:ident, $hardware:ident $(,)?) => {
+    #[inline(always)]
+    #[allow(clippy::inline_always)]
+    fn $name() -> u64 {
+      let out: u64;
 
-  // SAFETY: Mach-O and COFF keep trampolines in the same text section to avoid unsupported
-  // cross-section branch relocations. Patch failure falls back to selected dispatch.
-  unsafe {
-    asm!(
-      ".p2align 3",
-      "2:",
-      ".byte 0xE9",
-      ".long 4f - . - 4",
-      ".rept 4",
-      "nop",
-      ".endr",
-      "jmp 3f",
-      ".p2align 4",
-      "4:",
-      #[cfg(target_os = "macos")]
-      "lea rdi, [rip + 2b]",
-      #[cfg(target_os = "macos")]
-      "lea rsi, [rip + 4b]",
-      #[cfg(target_os = "macos")]
-      "lea rdx, [rip + 5f]",
-      #[cfg(target_os = "macos")]
-      "lea rcx, [rip + 6f]",
-      #[cfg(windows)]
-      "lea rcx, [rip + 2b]",
-      #[cfg(windows)]
-      "lea rdx, [rip + 4b]",
-      #[cfg(windows)]
-      "lea r8, [rip + 5f]",
-      #[cfg(windows)]
-      "lea r9, [rip + 6f]",
-      "mov r11, rsp",
-      "and rsp, -16",
-      "sub rsp, 48",
-      "mov qword ptr [rsp + 32], r11",
-      "call {select}",
-      "mov rsp, qword ptr [rsp + 32]",
-      "jmp 3f",
-      ".p2align 4",
-      "5:",
-      "mov r11, rsp",
-      "and rsp, -16",
-      "sub rsp, 48",
-      "mov qword ptr [rsp + 32], r11",
-      "call {fallback}",
-      "mov rsp, qword ptr [rsp + 32]",
-      "jmp 3f",
-      ".p2align 4",
-      "6:",
-      "mov r11, rsp",
-      "and rsp, -16",
-      "sub rsp, 48",
-      "mov qword ptr [rsp + 32], r11",
-      "call {hardware}",
-      "mov rsp, qword ptr [rsp + 32]",
-      "jmp 3f",
-      "3:",
-      select = in(reg) select,
-      fallback = in(reg) fallback,
-      hardware = in(reg) hardware,
-      lateout("rax") out,
-      clobber_abi("C"),
-    );
-  }
+      // SAFETY: Mach-O and COFF keep trampolines in the same text section to avoid unsupported
+      // cross-section branch relocations. Patch failure falls back to selected dispatch. The
+      // call targets are direct symbols so the ABI argument setup cannot clobber an input
+      // register that still holds a function pointer.
+      unsafe {
+        asm!(
+          ".p2align 3",
+          "2:",
+          ".byte 0xE9",
+          ".long 4f - . - 4",
+          ".rept 4",
+          "nop",
+          ".endr",
+          "jmp 3f",
+          ".p2align 4",
+          "4:",
+          #[cfg(target_os = "macos")]
+          "lea rdi, [rip + 2b]",
+          #[cfg(target_os = "macos")]
+          "lea rsi, [rip + 4b]",
+          #[cfg(target_os = "macos")]
+          "lea rdx, [rip + 5f]",
+          #[cfg(target_os = "macos")]
+          "lea rcx, [rip + 6f]",
+          #[cfg(windows)]
+          "lea rcx, [rip + 2b]",
+          #[cfg(windows)]
+          "lea rdx, [rip + 4b]",
+          #[cfg(windows)]
+          "lea r8, [rip + 5f]",
+          #[cfg(windows)]
+          "lea r9, [rip + 6f]",
+          "mov r11, rsp",
+          "and rsp, -16",
+          "sub rsp, 48",
+          "mov qword ptr [rsp + 32], r11",
+          "call {select}",
+          "mov rsp, qword ptr [rsp + 32]",
+          "jmp 3f",
+          ".p2align 4",
+          "5:",
+          "mov r11, rsp",
+          "and rsp, -16",
+          "sub rsp, 48",
+          "mov qword ptr [rsp + 32], r11",
+          "call {fallback}",
+          "mov rsp, qword ptr [rsp + 32]",
+          "jmp 3f",
+          ".p2align 4",
+          "6:",
+          "mov r11, rsp",
+          "and rsp, -16",
+          "sub rsp, 48",
+          "mov qword ptr [rsp + 32], r11",
+          "call {hardware}",
+          "mov rsp, qword ptr [rsp + 32]",
+          "jmp 3f",
+          "3:",
+          select = sym $select,
+          fallback = sym $fallback,
+          hardware = sym $hardware,
+          lateout("rax") out,
+          clobber_abi("C"),
+        );
+      }
 
-  out
+      out
+    }
+  };
 }
+
+#[cfg(all(target_arch = "x86_64", any(target_os = "macos", windows)))]
+x86_64_self_patching_ticks_fn!(
+  x86_64_instant_self_patching_ticks,
+  instant_select_and_patch_current,
+  instant_direct_fallback,
+  instant_direct_hardware,
+);
+
+#[cfg(all(target_arch = "x86_64", any(target_os = "macos", windows)))]
+x86_64_self_patching_ticks_fn!(
+  x86_64_cycle_self_patching_ticks,
+  cycle_select_and_patch_current,
+  cycle_direct_fallback,
+  cycle_direct_hardware,
+);
 
 #[cfg(all(target_arch = "x86", not(any(target_os = "macos", windows))))]
 #[inline(always)]
@@ -995,75 +1005,84 @@ fn x86_cycle_ticks_elf() -> u64 {
 #[inline(always)]
 #[allow(clippy::inline_always)]
 pub fn ticks() -> u64 {
-  x86_self_patching_ticks(
-    instant_select_and_patch_current,
-    instant_direct_fallback,
-    instant_direct_hardware,
-  )
+  x86_instant_self_patching_ticks()
 }
 
 #[cfg(all(target_arch = "x86", any(target_os = "macos", windows)))]
 #[inline(always)]
 #[allow(clippy::inline_always)]
 pub fn cycle_ticks() -> u64 {
-  x86_self_patching_ticks(
-    cycle_select_and_patch_current,
-    cycle_direct_fallback,
-    cycle_direct_hardware,
-  )
+  x86_cycle_self_patching_ticks()
 }
 
 #[cfg(all(target_arch = "x86", any(target_os = "macos", windows)))]
-#[inline(always)]
-#[allow(clippy::inline_always)]
-fn x86_self_patching_ticks(
-  select: extern "C" fn(usize, usize, usize, usize) -> u64,
-  fallback: extern "C" fn() -> u64,
-  hardware: extern "C" fn() -> u64,
-) -> u64 {
-  let low: u32;
-  let high: u32;
+macro_rules! x86_self_patching_ticks_fn {
+  ($name:ident, $select:ident, $fallback:ident, $hardware:ident $(,)?) => {
+    #[inline(always)]
+    #[allow(clippy::inline_always)]
+    fn $name() -> u64 {
+      let low: u32;
+      let high: u32;
 
-  // SAFETY: COFF/Mach-O self-patches the current callsite and falls back on patch failure.
-  unsafe {
-    asm!(
-      ".p2align 3",
-      "2:",
-      ".byte 0xE9",
-      ".long 4f - . - 4",
-      ".rept 3",
-      "nop",
-      ".endr",
-      "jmp 3f",
-      ".p2align 4",
-      "4:",
-      "push 6f",
-      "push 5f",
-      "push 4b",
-      "push 2b",
-      "call {select}",
-      "add esp, 16",
-      "jmp 3f",
-      ".p2align 4",
-      "5:",
-      "call {fallback}",
-      "jmp 3f",
-      ".p2align 4",
-      "6:",
-      "call {hardware}",
-      "jmp 3f",
-      "3:",
-      select = in(reg) select,
-      fallback = in(reg) fallback,
-      hardware = in(reg) hardware,
-      lateout("eax") low,
-      lateout("edx") high,
-      clobber_abi("C"),
-    );
-  }
+      // SAFETY: COFF/Mach-O self-patches the current callsite and falls back on patch failure.
+      // Direct symbol calls avoid register-allocation conflicts with the pushed ABI arguments.
+      unsafe {
+        asm!(
+          ".p2align 3",
+          "2:",
+          ".byte 0xE9",
+          ".long 4f - . - 4",
+          ".rept 3",
+          "nop",
+          ".endr",
+          "jmp 3f",
+          ".p2align 4",
+          "4:",
+          "push 6f",
+          "push 5f",
+          "push 4b",
+          "push 2b",
+          "call {select}",
+          "add esp, 16",
+          "jmp 3f",
+          ".p2align 4",
+          "5:",
+          "call {fallback}",
+          "jmp 3f",
+          ".p2align 4",
+          "6:",
+          "call {hardware}",
+          "jmp 3f",
+          "3:",
+          select = sym $select,
+          fallback = sym $fallback,
+          hardware = sym $hardware,
+          lateout("eax") low,
+          lateout("edx") high,
+          clobber_abi("C"),
+        );
+      }
 
-  (u64::from(high) << 32) | u64::from(low)
+      (u64::from(high) << 32) | u64::from(low)
+    }
+  };
 }
+
+#[cfg(all(target_arch = "x86", any(target_os = "macos", windows)))]
+x86_self_patching_ticks_fn!(
+  x86_instant_self_patching_ticks,
+  instant_select_and_patch_current,
+  instant_direct_fallback,
+  instant_direct_hardware,
+);
+
+#[cfg(all(target_arch = "x86", any(target_os = "macos", windows)))]
+x86_self_patching_ticks_fn!(
+  x86_cycle_self_patching_ticks,
+  cycle_select_and_patch_current,
+  cycle_direct_fallback,
+  cycle_direct_hardware,
+);
 
 #[cfg(all(target_arch = "aarch64", not(windows)))]
 #[inline(always)]
@@ -1147,64 +1166,73 @@ aarch64_ticks_elf_fn!(
 #[inline(always)]
 #[allow(clippy::inline_always)]
 pub fn ticks() -> u64 {
-  aarch64_windows_ticks(
-    instant_select_and_patch_current,
-    instant_direct_fallback,
-    instant_direct_hardware,
-  )
+  aarch64_windows_instant_ticks()
 }
 
 #[cfg(all(target_arch = "aarch64", windows))]
 #[inline(always)]
 #[allow(clippy::inline_always)]
 pub fn cycle_ticks() -> u64 {
-  aarch64_windows_ticks(
-    cycle_select_and_patch_current,
-    cycle_direct_fallback,
-    cycle_direct_hardware,
-  )
+  aarch64_windows_cycle_ticks()
 }
 
 #[cfg(all(target_arch = "aarch64", windows))]
-#[inline(always)]
-#[allow(clippy::inline_always)]
-fn aarch64_windows_ticks(
-  select: extern "C" fn(usize, usize, usize, usize) -> u64,
-  fallback: extern "C" fn() -> u64,
-  hardware: extern "C" fn() -> u64,
-) -> u64 {
-  let out: u64;
+macro_rules! aarch64_windows_ticks_fn {
+  ($name:ident, $select:ident, $fallback:ident, $hardware:ident $(,)?) => {
+    #[inline(always)]
+    #[allow(clippy::inline_always)]
+    fn $name() -> u64 {
+      let out: u64;
 
-  // SAFETY: COFF keeps trampolines in the same text section.
-  unsafe {
-    asm!(
-      "2:",
-      "b 4f",
-      "b 3f",
-      "4:",
-      "adr x0, 2b",
-      "adr x1, 4b",
-      "adr x2, 5f",
-      "adr x3, 6f",
-      "blr {select}",
-      "b 3f",
-      "5:",
-      "blr {fallback}",
-      "b 3f",
-      "6:",
-      "blr {hardware}",
-      "b 3f",
-      "3:",
-      select = in(reg) select,
-      fallback = in(reg) fallback,
-      hardware = in(reg) hardware,
-      lateout("x0") out,
-      clobber_abi("C"),
-    );
-  }
+      // SAFETY: COFF keeps trampolines in the same text section. Direct symbol calls avoid
+      // register-allocation conflicts with the x0-x3 ABI argument setup.
+      unsafe {
+        asm!(
+          "2:",
+          "b 4f",
+          "b 3f",
+          "4:",
+          "adr x0, 2b",
+          "adr x1, 4b",
+          "adr x2, 5f",
+          "adr x3, 6f",
+          "bl {select}",
+          "b 3f",
+          "5:",
+          "bl {fallback}",
+          "b 3f",
+          "6:",
+          "bl {hardware}",
+          "b 3f",
+          "3:",
+          select = sym $select,
+          fallback = sym $fallback,
+          hardware = sym $hardware,
+          lateout("x0") out,
+          clobber_abi("C"),
+        );
+      }
 
-  out
+      out
+    }
+  };
 }
+
+#[cfg(all(target_arch = "aarch64", windows))]
+aarch64_windows_ticks_fn!(
+  aarch64_windows_instant_ticks,
+  instant_select_and_patch_current,
+  instant_direct_fallback,
+  instant_direct_hardware,
+);
+
+#[cfg(all(target_arch = "aarch64", windows))]
+aarch64_windows_ticks_fn!(
+  aarch64_windows_cycle_ticks,
+  cycle_select_and_patch_current,
+  cycle_direct_fallback,
+  cycle_direct_hardware,
+);
 
 #[cfg(target_arch = "riscv64")]
 #[inline(always)]
