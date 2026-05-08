@@ -18,11 +18,11 @@ GROUP_BACKGROUND = "#FFF8E8"
 FONT = "Avenir Next, Helvetica, Arial, sans-serif"
 
 CRATES = [
-  ("tach@0.2.0", "#075A4A"),
-  ("quanta@0.12.6", "#D48A22"),
-  ("minstant@0.1.7", "#8F2E2E"),
-  ("fastant@0.1.11", "#4B6F78"),
-  ("std@1.91", "#B95032"),
+  ("tach@0.2.0", "#0067FF"),
+  ("quanta@0.12.6", "#6B7280"),
+  ("minstant@0.1.7", "#8B7B6B"),
+  ("fastant@0.1.11", "#4F5D5F"),
+  ("std@1.91", "#A0907F"),
 ]
 
 GROUPS = [
