@@ -4,6 +4,10 @@ hotclock provides a zero-dependency Rust API for reading fast CPU or platform ti
 
 # Milestones
 
+## Cross-environment benchmark validation
+
+- [o] Clock validation benchmark proves cold warmup and warmed selected-clock cost against direct selected-clock baselines across native CI environments
+
 ## All-architecture warmed zero-dispatch clock access
 
 - [x] Runtime-selected architectures patch warmed hardware-counter winners or fallback winners to zero selected-index dispatch

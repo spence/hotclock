@@ -62,6 +62,9 @@ jobs:
       - name: Run basic example
         run: cargo run --example basic --release
 
+      - name: Validate selected-clock benchmark
+        run: cargo bench --bench clock_validation
+
   benchmark-check:
     name: benchmark check
     runs-on: macos-15

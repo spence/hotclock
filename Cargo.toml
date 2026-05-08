@@ -35,6 +35,10 @@ harness = false
 name = "selection_dispatch"
 harness = false
 
+[[bench]]
+name = "clock_validation"
+harness = false
+
 [[example]]
 name = "basic"
 
