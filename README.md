@@ -37,9 +37,12 @@ For common modern systems, hotclock uses a direct counter where the target has
 one clear path and uses runtime selection when the hardware counter can vary
 by machine, kernel, or hypervisor.
 
-On Linux x86_64, runtime selection is thread-safe on the first racing call and
-warmed RDTSC selections patch crate-owned call sites to direct clock bytes, so
-later hardware-counter reads do not keep selected-index dispatch on the hot
+Runtime selection is thread-safe on the first racing call. ELF targets patch all
+registered crate-owned call sites before publishing the selected clock.
+Mach-O/COFF targets patch each call site the first time that site observes the
+selected clock. Hardware-counter winners patch to direct counter instructions
+where the architecture supports it, and OS fallback winners patch to a direct
+fallback trampoline. Warmed calls do not keep selected-index dispatch on the hot
 path.
 
 | Platform               | Hardware counter | OS fallback | CI tests |
@@ -60,9 +63,9 @@ path.
 
 ### 0.2.0
 
-- `Instant` API compatability
+- `Instant` API compatibility
 - skip selection for known fast hardware counters
-- thread-safe timer selection, including patched warmed RDTSC call sites on Linux x86_64
+- thread-safe timer selection with warmed zero-dispatch call sites on runtime-selected targets
 - overflow-safe unit conversions
 
 ### 0.1.0

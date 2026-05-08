@@ -7,9 +7,11 @@
 //! A Rust port of [libcpucycles](https://cpucycles.cr.yp.to/) that provides sub-nanosecond
 //! timing by directly reading hardware counters (RDTSC, CNTVCT\_EL0, etc.). Deterministic
 //! targets use a compiled-in counter path; targets with meaningful runtime variation select the
-//! best available counter lazily on first use and cache it for the lifetime of the process. On
-//! Linux x86_64, hardware-counter selections also patch crate-owned call sites so warmed RDTSC
-//! reads do not keep selected-index dispatch on the hot path.
+//! best available counter lazily on first use and cache it for the lifetime of the process.
+//! Runtime-selected targets patch crate-owned call sites before publishing the selected clock:
+//! hardware-counter winners patch to direct counter instructions where the architecture supports
+//! it, and fallback winners patch to direct fallback trampolines. Warmed calls do not keep
+//! selected-index dispatch on the hot path.
 //!
 //! Roughly **~30x faster** than [`std::time::Instant`] on typical hardware.
 //!
@@ -119,12 +121,14 @@ mod tests {
   #[test]
   fn test_instant_elapsed() {
     let start = Instant::now();
-    let mut sum = 0u64;
-    for i in 0..1000 {
-      sum = sum.wrapping_add(i);
+    let mut elapsed = Duration::ZERO;
+    for _ in 0..10_000 {
+      elapsed = start.elapsed();
+      if elapsed > Duration::ZERO {
+        break;
+      }
+      std::hint::spin_loop();
     }
-    let _ = std::hint::black_box(sum);
-    let elapsed = start.elapsed();
     assert!(elapsed > Duration::ZERO);
   }
 

@@ -31,11 +31,12 @@ pub mod indices {
 #[derive(Clone, Copy)]
 struct CallsiteRecord {
   patch_address: usize,
+  fallback_address: usize,
 }
 
 #[used]
 #[unsafe(link_section = "hotclock_x86_64_callsite")]
-static CALLSITE_SENTINEL: CallsiteRecord = CallsiteRecord { patch_address: 0 };
+static CALLSITE_SENTINEL: CallsiteRecord = CallsiteRecord { patch_address: 0, fallback_address: 0 };
 
 unsafe extern "C" {
   #[link_name = "__start_hotclock_x86_64_callsite"]
@@ -63,8 +64,65 @@ pub fn ticks() -> u64 {
       ".pushsection hotclock_x86_64_callsite,\"awR\",@progbits",
       ".balign 8",
       ".quad 2f",
+      ".quad 5f",
       ".popsection",
       ".pushsection .text.hotclock_x86_64_cold,\"ax\",@progbits",
+      ".p2align 4",
+      "5:",
+      "push rcx",
+      "push rsi",
+      "push rdi",
+      "push r8",
+      "push r9",
+      "push r10",
+      "push r11",
+      "mov r11, rsp",
+      "and rsp, -16",
+      "sub rsp, 272",
+      "mov qword ptr [rsp + 256], r11",
+      "movdqu xmmword ptr [rsp + 0], xmm0",
+      "movdqu xmmword ptr [rsp + 16], xmm1",
+      "movdqu xmmword ptr [rsp + 32], xmm2",
+      "movdqu xmmword ptr [rsp + 48], xmm3",
+      "movdqu xmmword ptr [rsp + 64], xmm4",
+      "movdqu xmmword ptr [rsp + 80], xmm5",
+      "movdqu xmmword ptr [rsp + 96], xmm6",
+      "movdqu xmmword ptr [rsp + 112], xmm7",
+      "movdqu xmmword ptr [rsp + 128], xmm8",
+      "movdqu xmmword ptr [rsp + 144], xmm9",
+      "movdqu xmmword ptr [rsp + 160], xmm10",
+      "movdqu xmmword ptr [rsp + 176], xmm11",
+      "movdqu xmmword ptr [rsp + 192], xmm12",
+      "movdqu xmmword ptr [rsp + 208], xmm13",
+      "movdqu xmmword ptr [rsp + 224], xmm14",
+      "movdqu xmmword ptr [rsp + 240], xmm15",
+      "call {direct_fallback}",
+      "movdqu xmm0, xmmword ptr [rsp + 0]",
+      "movdqu xmm1, xmmword ptr [rsp + 16]",
+      "movdqu xmm2, xmmword ptr [rsp + 32]",
+      "movdqu xmm3, xmmword ptr [rsp + 48]",
+      "movdqu xmm4, xmmword ptr [rsp + 64]",
+      "movdqu xmm5, xmmword ptr [rsp + 80]",
+      "movdqu xmm6, xmmword ptr [rsp + 96]",
+      "movdqu xmm7, xmmword ptr [rsp + 112]",
+      "movdqu xmm8, xmmword ptr [rsp + 128]",
+      "movdqu xmm9, xmmword ptr [rsp + 144]",
+      "movdqu xmm10, xmmword ptr [rsp + 160]",
+      "movdqu xmm11, xmmword ptr [rsp + 176]",
+      "movdqu xmm12, xmmword ptr [rsp + 192]",
+      "movdqu xmm13, xmmword ptr [rsp + 208]",
+      "movdqu xmm14, xmmword ptr [rsp + 224]",
+      "movdqu xmm15, xmmword ptr [rsp + 240]",
+      "mov r11, qword ptr [rsp + 256]",
+      "mov rsp, r11",
+      "pop r11",
+      "pop r10",
+      "pop r9",
+      "pop r8",
+      "pop rdi",
+      "pop rsi",
+      "pop rcx",
+      "jmp 3f",
       ".p2align 4",
       "4:",
       "push rcx",
@@ -130,6 +188,7 @@ pub fn ticks() -> u64 {
       ".endr",
       "3:",
       fallback = sym select_fallback,
+      direct_fallback = sym direct_fallback,
       lateout("rax") out,
       lateout("rdx") _,
     );
@@ -153,6 +212,10 @@ extern "C" fn select_fallback() -> u64 {
   }
 }
 
+extern "C" fn direct_fallback() -> u64 {
+  super::fallback::clock_monotonic()
+}
+
 fn ensure_selected() -> u8 {
   loop {
     match SELECTED.load(Ordering::Acquire) {
@@ -163,9 +226,7 @@ fn ensure_selected() -> u8 {
         {
           let (idx, name) = crate::selection::select_best();
           let _ = SELECTED_NAME.set(name);
-          if idx == indices::RDTSC {
-            let _ = patch_rdtsc_callsites();
-          }
+          let _ = patch_callsites(idx);
           SELECTED.store(idx, Ordering::Release);
           return idx;
         }
@@ -184,7 +245,7 @@ struct PatchStats {
   failed: usize,
 }
 
-fn patch_rdtsc_callsites() -> PatchStats {
+fn patch_callsites(selected: u8) -> PatchStats {
   let mut stats = PatchStats::default();
 
   for record in callsite_records() {
@@ -192,7 +253,7 @@ fn patch_rdtsc_callsites() -> PatchStats {
       continue;
     };
     stats.registered += 1;
-    match patch_rdtsc_callsite(patch_address) {
+    match patch_callsite(patch_address, record.fallback_address, selected) {
       PatchOutcome::Patched => stats.patched += 1,
       PatchOutcome::AlreadyPatched => stats.already_patched += 1,
       PatchOutcome::Failed => stats.failed += 1,
@@ -205,6 +266,18 @@ fn patch_rdtsc_callsites() -> PatchStats {
   LAST_PATCH_FAILED.store(stats.failed, Ordering::Relaxed);
 
   stats
+}
+
+fn patch_callsite(
+  patch_address: NonNull<u8>,
+  fallback_address: usize,
+  selected: u8,
+) -> PatchOutcome {
+  match selected {
+    indices::RDTSC => patch_rdtsc_callsite(patch_address),
+    indices::CLOCK_MONOTONIC => patch_branch_callsite(patch_address, fallback_address),
+    _ => PatchOutcome::Failed,
+  }
 }
 
 fn callsite_records() -> &'static [CallsiteRecord] {
@@ -269,6 +342,51 @@ fn patch_rdtsc_callsite(patch_address: NonNull<u8>) -> PatchOutcome {
   flush_instruction_cache();
   let _ = guard.restore();
   PatchOutcome::Patched
+}
+
+fn patch_branch_callsite(patch_address: NonNull<u8>, target_address: usize) -> PatchOutcome {
+  let ptr = patch_address.as_ptr();
+  let address = ptr as usize;
+  if address % COMMIT_LEN != 0 {
+    return PatchOutcome::Failed;
+  }
+
+  let Some(bytes) = branch_bytes(address, target_address) else {
+    return PatchOutcome::Failed;
+  };
+
+  let current = read_patch_bytes(ptr);
+  if current == bytes {
+    return PatchOutcome::AlreadyPatched;
+  }
+  if !is_unselected_gate(&current) {
+    return PatchOutcome::Failed;
+  }
+
+  let Ok(guard) = PageWriteGuard::enable(ptr, PATCH_LEN) else {
+    return PatchOutcome::Failed;
+  };
+
+  // SAFETY: The page guard made the crate-owned call-site bytes writable. Tail bytes are
+  // written before the aligned atomic commit of the first eight bytes.
+  unsafe {
+    ptr.add(COMMIT_LEN).write(bytes[COMMIT_LEN]);
+    compiler_fence(Ordering::SeqCst);
+    AtomicU64::from_ptr(ptr.cast::<u64>())
+      .store(u64::from_le_bytes(bytes[..COMMIT_LEN].try_into().unwrap()), Ordering::SeqCst);
+  }
+
+  flush_instruction_cache();
+  let _ = guard.restore();
+  PatchOutcome::Patched
+}
+
+fn branch_bytes(from: usize, to: usize) -> Option<[u8; PATCH_LEN]> {
+  let rel = super::patch::branch_i32(from, to, 5)?;
+  let mut bytes = [0x90; PATCH_LEN];
+  bytes[0] = 0xE9;
+  bytes[1..5].copy_from_slice(&rel.to_le_bytes());
+  Some(bytes)
 }
 
 #[cfg(test)]
@@ -361,7 +479,8 @@ mod tests {
   #[test]
   fn rdtsc_selection_patches_registered_callsites_when_selected() {
     let _ = super::ticks();
-    if super::implementation() != "x86_64-rdtsc" {
+    let implementation = super::implementation();
+    if implementation != "x86_64-rdtsc" {
       return;
     }
 
@@ -382,5 +501,12 @@ mod tests {
   #[test]
   fn rdtsc_patch_bytes_fill_the_entire_hot_region() {
     assert_eq!(RDTSC_BYTES.len(), PATCH_LEN);
+  }
+
+  #[test]
+  fn fallback_branch_bytes_fill_the_entire_hot_region() {
+    let bytes = super::branch_bytes(0x1000, 0x1040).expect("branch encodes");
+    assert_eq!(bytes.len(), PATCH_LEN);
+    assert_eq!(bytes[0], 0xE9);
   }
 }

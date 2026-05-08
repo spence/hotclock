@@ -4,6 +4,11 @@ hotclock provides a zero-dependency Rust API for reading fast CPU or platform ti
 
 # Milestones
 
+## All-architecture warmed zero-dispatch clock access
+
+- [x] Runtime-selected architectures patch warmed hardware-counter winners or fallback winners to zero selected-index dispatch
+- [x] CI and native validation prove the warmed zero-dispatch contract on supported architecture families
+
 ## Linux x86_64 patchpoint proof and hardening
 
 - [x] Linux x86_64 patchpoint validation proves warmed RDTSC call sites patch completely and benchmark against raw and dispatch baselines

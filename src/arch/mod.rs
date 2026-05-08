@@ -5,6 +5,8 @@ pub mod aarch64;
 pub mod fallback;
 #[cfg(target_arch = "loongarch64")]
 pub mod loongarch64;
+#[allow(dead_code)]
+mod patch;
 #[cfg(target_arch = "powerpc64")]
 pub mod powerpc64;
 #[cfg(target_arch = "riscv64")]
@@ -56,9 +58,9 @@ mod direct;
 pub use direct::{implementation, ticks};
 
 // Runtime-selected targets keep the fallback path because the fastest compiled counter can
-// fail the monotonicity contract on some CPUs, kernels, or hypervisors. Linux x86_64 uses a
-// private call-site patchpoint instead so warmed RDTSC selections do not keep selected-index
-// dispatch on the hot path.
+// fail the monotonicity contract on some CPUs, kernels, or hypervisors. Warmed call sites patch
+// to the selected hardware counter or fallback trampoline so the hot path does not keep
+// selected-index dispatch.
 #[cfg(not(any(
   all(target_arch = "x86_64", target_os = "linux"),
   all(target_arch = "aarch64", target_os = "macos"),

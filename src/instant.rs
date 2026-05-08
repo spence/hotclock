@@ -31,9 +31,9 @@ pub struct Instant(u64);
 impl Instant {
   /// Reads the current value of the process-wide tick counter.
   ///
-  /// Direct targets compile to a single counter read. Linux x86_64 lazily selects the best
-  /// counter and patches warmed RDTSC call sites to direct clock bytes. Other runtime-selected
-  /// targets add a cached selected-index load and dispatch before the selected counter read.
+  /// Direct targets compile to a single counter read. Runtime-selected targets lazily select
+  /// the best counter and patch warmed call sites before publishing the selected clock, so
+  /// subsequent calls do not keep selected-index dispatch on the hot path.
   ///
   /// # Example
   ///
