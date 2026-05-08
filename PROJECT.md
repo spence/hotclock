@@ -6,6 +6,7 @@ tach provides a zero-dependency Rust API for reading fast CPU or platform tick c
 
 ## Cross-architecture inline selected clocks
 
+- [x] Add fastest measured clock bar to benchmark chart
 - [x] Remove Windows x86_64 patchpoint save/restore overhead
 - [x] Add full clock-and-crate benchmark standard
 - [x] Fix macOS x86_64 self-patching call-target corruption
