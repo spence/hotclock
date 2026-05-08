@@ -62,9 +62,9 @@ mod direct;
 pub use direct::{cycle_implementation, cycle_ticks, implementation, ticks};
 
 // Runtime-selected targets keep the fallback path because the fastest compiled counter can
-// fail the monotonicity contract on some CPUs, kernels, or hypervisors. Linux x86_64 uses a
-// private call-site patchpoint instead so warmed RDTSC selections do not keep selected-index
-// dispatch on the hot path.
+// fail the monotonicity contract on some CPUs, kernels, or hypervisors. Selected x86_64
+// targets patch warmed RDTSC callsites to raw counter bytes, so selected-index dispatch leaves
+// the hot path after the first call.
 #[cfg(not(any(
   all(target_arch = "x86_64", target_os = "linux"),
   all(target_arch = "aarch64", target_os = "macos"),

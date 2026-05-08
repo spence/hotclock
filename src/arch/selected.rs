@@ -790,7 +790,7 @@ pub fn cycle_ticks() -> u64 {
   x86_64_cycle_self_patching_ticks()
 }
 
-#[cfg(all(target_arch = "x86_64", any(target_os = "macos", windows)))]
+#[cfg(all(target_arch = "x86_64", target_os = "macos"))]
 macro_rules! x86_64_self_patching_ticks_fn {
   ($name:ident, $select:ident, $fallback:ident, $hardware:ident $(,)?) => {
     #[inline(always)]
@@ -798,10 +798,9 @@ macro_rules! x86_64_self_patching_ticks_fn {
     fn $name() -> u64 {
       let out: u64;
 
-      // SAFETY: Mach-O and COFF keep trampolines in the same text section to avoid unsupported
-      // cross-section branch relocations. Patch failure falls back to selected dispatch. The
-      // call targets are direct symbols so the ABI argument setup cannot clobber an input
-      // register that still holds a function pointer.
+      // SAFETY: Mach-O keeps trampolines in the same text section to avoid unsupported
+      // cross-section branch relocations. Patch failure falls back to selected dispatch.
+      // Direct symbol calls avoid register-allocation conflicts with ABI argument setup.
       unsafe {
         asm!(
           ".p2align 3",
@@ -814,22 +813,10 @@ macro_rules! x86_64_self_patching_ticks_fn {
           "jmp 3f",
           ".p2align 4",
           "4:",
-          #[cfg(target_os = "macos")]
           "lea rdi, [rip + 2b]",
-          #[cfg(target_os = "macos")]
           "lea rsi, [rip + 4b]",
-          #[cfg(target_os = "macos")]
           "lea rdx, [rip + 5f]",
-          #[cfg(target_os = "macos")]
           "lea rcx, [rip + 6f]",
-          #[cfg(windows)]
-          "lea rcx, [rip + 2b]",
-          #[cfg(windows)]
-          "lea rdx, [rip + 4b]",
-          #[cfg(windows)]
-          "lea r8, [rip + 5f]",
-          #[cfg(windows)]
-          "lea r9, [rip + 6f]",
           "mov r11, rsp",
           "and rsp, -16",
           "sub rsp, 48",
@@ -860,7 +847,109 @@ macro_rules! x86_64_self_patching_ticks_fn {
           fallback = sym $fallback,
           hardware = sym $hardware,
           lateout("rax") out,
-          clobber_abi("C"),
+          lateout("rcx") _,
+          lateout("rdx") _,
+          lateout("rdi") _,
+          lateout("rsi") _,
+          lateout("r8") _,
+          lateout("r9") _,
+          lateout("r10") _,
+          lateout("r11") _,
+          lateout("xmm0") _,
+          lateout("xmm1") _,
+          lateout("xmm2") _,
+          lateout("xmm3") _,
+          lateout("xmm4") _,
+          lateout("xmm5") _,
+          lateout("xmm6") _,
+          lateout("xmm7") _,
+          lateout("xmm8") _,
+          lateout("xmm9") _,
+          lateout("xmm10") _,
+          lateout("xmm11") _,
+          lateout("xmm12") _,
+          lateout("xmm13") _,
+          lateout("xmm14") _,
+          lateout("xmm15") _,
+        );
+      }
+
+      out
+    }
+  };
+}
+
+#[cfg(all(target_arch = "x86_64", windows))]
+macro_rules! x86_64_self_patching_ticks_fn {
+  ($name:ident, $select:ident, $fallback:ident, $hardware:ident $(,)?) => {
+    #[inline(always)]
+    #[allow(clippy::inline_always)]
+    fn $name() -> u64 {
+      let out: u64;
+
+      // SAFETY: The Win64 cold trampolines live in a separate COFF text section so patched
+      // RDTSC gates fall through as raw counter bytes. The cold path calls C ABI Rust functions,
+      // so the asm declares only Win64 volatile registers instead of the broad `clobber_abi("C")`
+      // set that forces nonvolatile SIMD save/restore on the hot path.
+      unsafe {
+        asm!(
+          ".p2align 3",
+          "2:",
+          ".byte 0xE9",
+          ".long 4f - . - 4",
+          ".rept 4",
+          "nop",
+          ".endr",
+          "3:",
+          ".pushsection .text.tach_x86_64_cold,\"xr\"",
+          ".p2align 4",
+          "4:",
+          "lea rcx, [rip + 2b]",
+          "lea rdx, [rip + 4b]",
+          "lea r8, [rip + 5f]",
+          "lea r9, [rip + 6f]",
+          "mov r11, rsp",
+          "and rsp, -16",
+          "sub rsp, 48",
+          "mov qword ptr [rsp + 32], r11",
+          "call {select}",
+          "mov rsp, qword ptr [rsp + 32]",
+          "jmp 3b",
+          ".p2align 4",
+          "5:",
+          "mov r11, rsp",
+          "and rsp, -16",
+          "sub rsp, 48",
+          "mov qword ptr [rsp + 32], r11",
+          "call {fallback}",
+          "mov rsp, qword ptr [rsp + 32]",
+          "jmp 3b",
+          ".p2align 4",
+          "6:",
+          "mov r11, rsp",
+          "and rsp, -16",
+          "sub rsp, 48",
+          "mov qword ptr [rsp + 32], r11",
+          "call {hardware}",
+          "mov rsp, qword ptr [rsp + 32]",
+          "jmp 3b",
+          ".popsection",
+          select = sym $select,
+          fallback = sym $fallback,
+          hardware = sym $hardware,
+          lateout("rax") out,
+          lateout("rcx") _,
+          lateout("rdx") _,
+          lateout("r8") _,
+          lateout("r9") _,
+          lateout("r10") _,
+          lateout("r11") _,
+          lateout("xmm0") _,
+          lateout("xmm1") _,
+          lateout("xmm2") _,
+          lateout("xmm3") _,
+          lateout("xmm4") _,
+          lateout("xmm5") _,
         );
       }
 
