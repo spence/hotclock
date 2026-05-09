@@ -15,8 +15,9 @@ Full target/environment results: [runtime selection validation](benches/runtime-
 Pinned m7i GNU rerun: [high-confidence benchmark](benches/m7i-gnu-high-confidence-2026-05-08.md).
 
 The primary benchmark is `Instant::now()` read cost across target/environment
-pairs, with the fastest measured clock shown as its own bar. Bars use one shared
-broken scale; squiggles mark the compressed upper range for Docker outliers.
+pairs. The fastest measured `Instant`-compatible clock is the first bar, and
+its name appears in parentheses under each target. Bars use one shared broken
+scale; squiggles mark the compressed upper range for Docker outliers.
 
 Fresh validation runs below were produced with
 `tools/selection-validation-runner` on May 8, 2026. Each row was enforced
@@ -24,12 +25,14 @@ against the expected fastest valid clocks for that target/environment.
 
 | Environment    | Target              | Instant clock  | Cycles clock      | Instant  | Cycles   | quanta    | minstant  | fastant   | std       |
 |----------------|---------------------|----------------|-------------------|----------|----------|-----------|-----------|-----------|-----------|
-| AWS t3 Nitro   | x86_64-linux-musl   | x86_64-rdtsc   | x86_64-rdtsc      | 8.711ns  | 8.066ns  | 13.254ns  | 9.356ns   | 9.356ns   | 24.249ns  |
+| AWS t3 Nitro   | x86_64-linux-musl   | x86_64-rdtsc   | x86_64-rdtsc      | 9.722ns  | 9.722ns  | 13.954ns  | 10.222ns  | 10.052ns  | 25.300ns  |
+| AWS Lambda     | x86_64-linux-musl   | x86_64-rdtsc   | x86_64-rdtsc      | 17.825ns | 17.801ns | 22.172ns  | 75.637ns  | 18.160ns  | 53.764ns  |
 | AWS m7i metal  | x86_64-linux-musl   | x86_64-rdtsc   | x86_64-perf-rdpmc | 6.841ns  | 5.262ns  | 7.130ns   | 6.841ns   | 6.841ns   | 14.734ns  |
 | AWS m7i metal  | x86_64-linux-gnu    | x86_64-rdtsc   | x86_64-perf-rdpmc | 6.842ns  | 5.526ns  | 7.395ns   | 6.842ns   | 6.842ns   | 14.812ns  |
-| AWS Windows    | x86_64-windows-msvc | x86_64-rdtsc   | x86_64-rdtsc      | 8.417ns  | 8.351ns  | 14.367ns  | 34.247ns  | 34.286ns  | 41.391ns  |
-| AWS t3 Nitro   | x86-linux-musl      | x86-rdtsc      | x86-rdtsc         | 13.552ns | 13.551ns | 69.312ns  | 14.363ns  | 14.154ns  | 66.458ns  |
+| AWS Nitro Windows | x86_64-windows-msvc | x86_64-rdtsc   | x86_64-rdtsc      | 6.957ns  | 6.967ns  | 11.719ns  | 33.650ns  | 33.656ns  | 39.224ns  |
+| AWS t3 Nitro   | x86-linux-musl      | x86-rdtsc      | x86-rdtsc         | 10.054ns | 10.051ns | 42.391ns  | 10.706ns  | 10.697ns  | 44.581ns  |
 | AWS m7i metal  | x86-linux-musl      | x86-rdtsc      | x86-rdtsc         | 6.841ns  | 6.841ns  | 23.066ns  | 6.841ns   | 6.841ns   | 22.743ns  |
+| AWS Lambda     | aarch64-linux-gnu   | aarch64-cntvct | aarch64-cntvct    | 17.325ns | 17.306ns | 21.970ns  | 72.252ns  | 74.114ns  | 54.165ns  |
 | Docker amd64   | x86_64-linux-gnu    | x86_64-rdtsc   | x86_64-rdtsc      | 15.394ns | 15.222ns | 25.079ns  | 39.050ns  | 22.066ns  | 28.070ns  |
 | Docker 386     | x86-linux-gnu       | x86-rdtsc      | x86-rdtsc         | 25.789ns | 25.780ns | 253.702ns | 323.398ns | 324.264ns | 222.623ns |
 | Docker arm64   | aarch64-linux-gnu   | aarch64-cntvct | aarch64-cntvct    | 0.330ns  | 0.330ns  | 4.466ns   | 27.203ns  | 27.275ns  | 20.222ns  |

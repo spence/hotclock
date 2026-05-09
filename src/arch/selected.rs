@@ -21,7 +21,7 @@ const GATE_LEN: usize = 8;
 ))]
 const GATE_LEN: usize = 4;
 
-#[cfg(any(target_arch = "x86", target_arch = "x86_64", target_arch = "s390x"))]
+#[cfg(any(target_arch = "x86", target_arch = "s390x", all(target_arch = "x86_64", not(windows))))]
 const COMMIT_LEN: usize = 8;
 
 static SELECTED: AtomicU8 = AtomicU8::new(UNSELECTED);
@@ -887,13 +887,11 @@ macro_rules! x86_64_self_patching_ticks_fn {
     fn $name() -> u64 {
       let out: u64;
 
-      // SAFETY: The Win64 cold trampolines live in a separate COFF text section so patched
-      // RDTSC gates fall through as raw counter bytes. The cold path calls C ABI Rust functions,
-      // so the asm declares only Win64 volatile registers instead of the broad `clobber_abi("C")`
-      // set that forces nonvolatile SIMD save/restore on the hot path.
+      // SAFETY: The Win64 cold trampolines preserve every volatile register they use except
+      // `rax`/`rdx`, which match the patched `RDTSC` gate's output/clobber shape. That keeps the
+      // warmed path as raw counter bytes without forcing LLVM to compile around cold-call clobbers.
       unsafe {
         asm!(
-          ".p2align 3",
           "2:",
           ".byte 0xE9",
           ".long 4f - . - 4",
@@ -904,33 +902,99 @@ macro_rules! x86_64_self_patching_ticks_fn {
           ".pushsection .text.tach_x86_64_cold,\"xr\"",
           ".p2align 4",
           "4:",
+          "mov rax, rsp",
+          "and rsp, -16",
+          "sub rsp, 176",
+          "mov qword ptr [rsp + 32], rax",
+          "mov qword ptr [rsp + 40], rcx",
+          "mov qword ptr [rsp + 48], r8",
+          "mov qword ptr [rsp + 56], r9",
+          "mov qword ptr [rsp + 64], r10",
+          "mov qword ptr [rsp + 72], r11",
+          "movdqu xmmword ptr [rsp + 80], xmm0",
+          "movdqu xmmword ptr [rsp + 96], xmm1",
+          "movdqu xmmword ptr [rsp + 112], xmm2",
+          "movdqu xmmword ptr [rsp + 128], xmm3",
+          "movdqu xmmword ptr [rsp + 144], xmm4",
+          "movdqu xmmword ptr [rsp + 160], xmm5",
           "lea rcx, [rip + 2b]",
           "lea rdx, [rip + 4b]",
           "lea r8, [rip + 5f]",
           "lea r9, [rip + 6f]",
-          "mov r11, rsp",
-          "and rsp, -16",
-          "sub rsp, 48",
-          "mov qword ptr [rsp + 32], r11",
           "call {select}",
+          "mov rcx, qword ptr [rsp + 40]",
+          "mov r8, qword ptr [rsp + 48]",
+          "mov r9, qword ptr [rsp + 56]",
+          "mov r10, qword ptr [rsp + 64]",
+          "mov r11, qword ptr [rsp + 72]",
+          "movdqu xmm0, xmmword ptr [rsp + 80]",
+          "movdqu xmm1, xmmword ptr [rsp + 96]",
+          "movdqu xmm2, xmmword ptr [rsp + 112]",
+          "movdqu xmm3, xmmword ptr [rsp + 128]",
+          "movdqu xmm4, xmmword ptr [rsp + 144]",
+          "movdqu xmm5, xmmword ptr [rsp + 160]",
           "mov rsp, qword ptr [rsp + 32]",
           "jmp 3b",
           ".p2align 4",
           "5:",
-          "mov r11, rsp",
+          "mov rax, rsp",
           "and rsp, -16",
-          "sub rsp, 48",
-          "mov qword ptr [rsp + 32], r11",
+          "sub rsp, 176",
+          "mov qword ptr [rsp + 32], rax",
+          "mov qword ptr [rsp + 40], rcx",
+          "mov qword ptr [rsp + 48], r8",
+          "mov qword ptr [rsp + 56], r9",
+          "mov qword ptr [rsp + 64], r10",
+          "mov qword ptr [rsp + 72], r11",
+          "movdqu xmmword ptr [rsp + 80], xmm0",
+          "movdqu xmmword ptr [rsp + 96], xmm1",
+          "movdqu xmmword ptr [rsp + 112], xmm2",
+          "movdqu xmmword ptr [rsp + 128], xmm3",
+          "movdqu xmmword ptr [rsp + 144], xmm4",
+          "movdqu xmmword ptr [rsp + 160], xmm5",
           "call {fallback}",
+          "mov rcx, qword ptr [rsp + 40]",
+          "mov r8, qword ptr [rsp + 48]",
+          "mov r9, qword ptr [rsp + 56]",
+          "mov r10, qword ptr [rsp + 64]",
+          "mov r11, qword ptr [rsp + 72]",
+          "movdqu xmm0, xmmword ptr [rsp + 80]",
+          "movdqu xmm1, xmmword ptr [rsp + 96]",
+          "movdqu xmm2, xmmword ptr [rsp + 112]",
+          "movdqu xmm3, xmmword ptr [rsp + 128]",
+          "movdqu xmm4, xmmword ptr [rsp + 144]",
+          "movdqu xmm5, xmmword ptr [rsp + 160]",
           "mov rsp, qword ptr [rsp + 32]",
           "jmp 3b",
           ".p2align 4",
           "6:",
-          "mov r11, rsp",
+          "mov rax, rsp",
           "and rsp, -16",
-          "sub rsp, 48",
-          "mov qword ptr [rsp + 32], r11",
+          "sub rsp, 176",
+          "mov qword ptr [rsp + 32], rax",
+          "mov qword ptr [rsp + 40], rcx",
+          "mov qword ptr [rsp + 48], r8",
+          "mov qword ptr [rsp + 56], r9",
+          "mov qword ptr [rsp + 64], r10",
+          "mov qword ptr [rsp + 72], r11",
+          "movdqu xmmword ptr [rsp + 80], xmm0",
+          "movdqu xmmword ptr [rsp + 96], xmm1",
+          "movdqu xmmword ptr [rsp + 112], xmm2",
+          "movdqu xmmword ptr [rsp + 128], xmm3",
+          "movdqu xmmword ptr [rsp + 144], xmm4",
+          "movdqu xmmword ptr [rsp + 160], xmm5",
           "call {hardware}",
+          "mov rcx, qword ptr [rsp + 40]",
+          "mov r8, qword ptr [rsp + 48]",
+          "mov r9, qword ptr [rsp + 56]",
+          "mov r10, qword ptr [rsp + 64]",
+          "mov r11, qword ptr [rsp + 72]",
+          "movdqu xmm0, xmmword ptr [rsp + 80]",
+          "movdqu xmm1, xmmword ptr [rsp + 96]",
+          "movdqu xmm2, xmmword ptr [rsp + 112]",
+          "movdqu xmm3, xmmword ptr [rsp + 128]",
+          "movdqu xmm4, xmmword ptr [rsp + 144]",
+          "movdqu xmm5, xmmword ptr [rsp + 160]",
           "mov rsp, qword ptr [rsp + 32]",
           "jmp 3b",
           ".popsection",
@@ -938,18 +1002,7 @@ macro_rules! x86_64_self_patching_ticks_fn {
           fallback = sym $fallback,
           hardware = sym $hardware,
           lateout("rax") out,
-          lateout("rcx") _,
           lateout("rdx") _,
-          lateout("r8") _,
-          lateout("r9") _,
-          lateout("r10") _,
-          lateout("r11") _,
-          lateout("xmm0") _,
-          lateout("xmm1") _,
-          lateout("xmm2") _,
-          lateout("xmm3") _,
-          lateout("xmm4") _,
-          lateout("xmm5") _,
         );
       }
 
@@ -1688,7 +1741,14 @@ fn patch_callsite(
   ))]
   let ok = patch::patch_u32(ptr, u32::from_ne_bytes(selected_bytes));
 
-  #[cfg(any(target_arch = "x86", target_arch = "x86_64", target_arch = "s390x"))]
+  #[cfg(all(target_arch = "x86_64", windows))]
+  let ok = patch::patch_bytes_with_breakpoint_commit(ptr, &selected_bytes);
+
+  #[cfg(any(
+    target_arch = "x86",
+    target_arch = "s390x",
+    all(target_arch = "x86_64", not(windows)),
+  ))]
   let ok = patch::patch_bytes_with_u64_commit(ptr, &selected_bytes, COMMIT_LEN);
 
   if ok { PatchOutcome::Patched } else { PatchOutcome::Failed }

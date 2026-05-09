@@ -1,4 +1,6 @@
 use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering, compiler_fence};
+#[cfg(all(windows, target_arch = "x86_64"))]
+use std::sync::atomic::{AtomicPtr, AtomicU8, AtomicUsize};
 
 static PATCH_LOCKED: AtomicBool = AtomicBool::new(false);
 
@@ -225,9 +227,17 @@ mod platform {
   use core::ffi::c_void;
   use std::ptr::null_mut;
 
+  pub(super) const EXCEPTION_BREAKPOINT: u32 = 0x8000_0003;
+  pub(super) const EXCEPTION_CONTINUE_EXECUTION: i32 = -1;
+  pub(super) const EXCEPTION_CONTINUE_SEARCH: i32 = 0;
+
   const PAGE_EXECUTE_READWRITE: u32 = 0x40;
 
   unsafe extern "system" {
+    pub(super) fn AddVectoredExceptionHandler(
+      first: u32,
+      handler: VectoredExceptionHandler,
+    ) -> *mut c_void;
     fn GetCurrentProcess() -> *mut c_void;
     fn FlushInstructionCache(process: *mut c_void, base: *const c_void, size: usize) -> i32;
     fn VirtualProtect(
@@ -236,6 +246,67 @@ mod platform {
       new_protect: u32,
       old_protect: *mut u32,
     ) -> i32;
+  }
+
+  pub(super) type VectoredExceptionHandler =
+    Option<unsafe extern "system" fn(*mut ExceptionPointers) -> i32>;
+
+  #[repr(C)]
+  pub(super) struct ExceptionPointers {
+    pub(super) exception_record: *mut ExceptionRecord,
+    pub(super) context_record: *mut Context,
+  }
+
+  #[repr(C)]
+  pub(super) struct ExceptionRecord {
+    pub(super) exception_code: u32,
+    pub(super) exception_flags: u32,
+    pub(super) exception_record: *mut ExceptionRecord,
+    pub(super) exception_address: *mut c_void,
+    pub(super) number_parameters: u32,
+    pub(super) exception_information: [usize; 15],
+  }
+
+  #[repr(C, align(16))]
+  pub(super) struct Context {
+    pub(super) p1_home: u64,
+    pub(super) p2_home: u64,
+    pub(super) p3_home: u64,
+    pub(super) p4_home: u64,
+    pub(super) p5_home: u64,
+    pub(super) p6_home: u64,
+    pub(super) context_flags: u32,
+    pub(super) mx_csr: u32,
+    pub(super) seg_cs: u16,
+    pub(super) seg_ds: u16,
+    pub(super) seg_es: u16,
+    pub(super) seg_fs: u16,
+    pub(super) seg_gs: u16,
+    pub(super) seg_ss: u16,
+    pub(super) eflags: u32,
+    pub(super) dr0: u64,
+    pub(super) dr1: u64,
+    pub(super) dr2: u64,
+    pub(super) dr3: u64,
+    pub(super) dr6: u64,
+    pub(super) dr7: u64,
+    pub(super) rax: u64,
+    pub(super) rcx: u64,
+    pub(super) rdx: u64,
+    pub(super) rbx: u64,
+    pub(super) rsp: u64,
+    pub(super) rbp: u64,
+    pub(super) rsi: u64,
+    pub(super) rdi: u64,
+    pub(super) r8: u64,
+    pub(super) r9: u64,
+    pub(super) r10: u64,
+    pub(super) r11: u64,
+    pub(super) r12: u64,
+    pub(super) r13: u64,
+    pub(super) r14: u64,
+    pub(super) r15: u64,
+    pub(super) rip: u64,
   }
 
   pub(crate) struct PageWriteGuard {
@@ -292,6 +363,30 @@ mod platform {
 
 pub(crate) use platform::{PageWriteGuard, flush_instruction_cache};
 
+#[cfg(all(windows, target_arch = "x86_64"))]
+const INT3: u8 = 0xCC;
+#[cfg(all(windows, target_arch = "x86_64"))]
+const VEH_UNINSTALLED: u8 = 0;
+#[cfg(all(windows, target_arch = "x86_64"))]
+const VEH_INSTALLING: u8 = 1;
+#[cfg(all(windows, target_arch = "x86_64"))]
+const VEH_INSTALLED: u8 = 2;
+#[cfg(all(windows, target_arch = "x86_64"))]
+const VEH_FAILED: u8 = 3;
+
+#[cfg(all(windows, target_arch = "x86_64"))]
+static VEH_STATE: AtomicU8 = AtomicU8::new(VEH_UNINSTALLED);
+#[cfg(all(windows, target_arch = "x86_64"))]
+static PATCHPOINTS: AtomicPtr<BreakpointPatchpoint> = AtomicPtr::new(core::ptr::null_mut());
+#[cfg(all(windows, target_arch = "x86_64"))]
+static ACTIVE_PATCHPOINT: AtomicUsize = AtomicUsize::new(0);
+
+#[cfg(all(windows, target_arch = "x86_64"))]
+struct BreakpointPatchpoint {
+  address: usize,
+  next: *mut BreakpointPatchpoint,
+}
+
 #[allow(clippy::manual_is_multiple_of)]
 #[allow(dead_code)]
 pub(crate) fn patch_bytes_with_u64_commit(ptr: *mut u8, bytes: &[u8], commit_len: usize) -> bool {
@@ -318,6 +413,158 @@ pub(crate) fn patch_bytes_with_u64_commit(ptr: *mut u8, bytes: &[u8], commit_len
   flush_instruction_cache(ptr, bytes.len());
   let _ = guard.restore();
   true
+}
+
+#[cfg(all(windows, target_arch = "x86_64"))]
+#[allow(dead_code)]
+pub(crate) fn patch_bytes_with_breakpoint_commit(ptr: *mut u8, bytes: &[u8]) -> bool {
+  if bytes.is_empty() || !ensure_breakpoint_handler() {
+    return false;
+  }
+
+  let _lock = PatchLock::acquire();
+  register_breakpoint_patchpoint(ptr as usize);
+  ACTIVE_PATCHPOINT.store(ptr as usize, Ordering::Release);
+
+  let Ok(guard) = PageWriteGuard::enable(ptr, bytes.len()) else {
+    ACTIVE_PATCHPOINT.store(0, Ordering::Release);
+    return false;
+  };
+
+  // SAFETY: The page guard made this crate-owned gate writable. The first byte is changed to
+  // `INT3`, which routes racing executions to the vectored handler while the tail is rewritten.
+  unsafe {
+    AtomicU8::from_ptr(ptr).store(INT3, Ordering::SeqCst);
+  }
+  flush_instruction_cache(ptr, 1);
+
+  // SAFETY: Threads can no longer execute these tail bytes without first trapping on byte zero.
+  unsafe {
+    for (offset, byte) in bytes.iter().enumerate().skip(1) {
+      ptr.add(offset).write(*byte);
+    }
+    compiler_fence(Ordering::SeqCst);
+    AtomicU8::from_ptr(ptr).store(bytes[0], Ordering::SeqCst);
+  }
+
+  flush_instruction_cache(ptr, bytes.len());
+  ACTIVE_PATCHPOINT.store(0, Ordering::Release);
+  let _ = guard.restore();
+  true
+}
+
+#[cfg(all(windows, target_arch = "x86_64"))]
+fn ensure_breakpoint_handler() -> bool {
+  loop {
+    match VEH_STATE.load(Ordering::Acquire) {
+      VEH_INSTALLED => return true,
+      VEH_FAILED => return false,
+      VEH_UNINSTALLED => {
+        if VEH_STATE
+          .compare_exchange(VEH_UNINSTALLED, VEH_INSTALLING, Ordering::AcqRel, Ordering::Acquire)
+          .is_ok()
+        {
+          // SAFETY: Installs a process-wide handler that claims only registered tach patchpoints.
+          let handle =
+            unsafe { platform::AddVectoredExceptionHandler(1, Some(breakpoint_handler)) };
+          let state = if handle.is_null() { VEH_FAILED } else { VEH_INSTALLED };
+          VEH_STATE.store(state, Ordering::Release);
+          return state == VEH_INSTALLED;
+        }
+      }
+      VEH_INSTALLING => std::hint::spin_loop(),
+      _ => return false,
+    }
+  }
+}
+
+#[cfg(all(windows, target_arch = "x86_64"))]
+fn register_breakpoint_patchpoint(address: usize) {
+  if registered_patchpoint(address, address).is_some() {
+    return;
+  }
+
+  let node = Box::into_raw(Box::new(BreakpointPatchpoint { address, next: core::ptr::null_mut() }));
+
+  loop {
+    let head = PATCHPOINTS.load(Ordering::Acquire);
+    // SAFETY: `node` is exclusively owned until it is published by the successful CAS.
+    unsafe {
+      (*node).next = head;
+    }
+    if PATCHPOINTS
+      .compare_exchange(head, node, Ordering::AcqRel, Ordering::Acquire)
+      .is_ok()
+    {
+      break;
+    }
+  }
+}
+
+#[cfg(all(windows, target_arch = "x86_64"))]
+unsafe extern "system" fn breakpoint_handler(info: *mut platform::ExceptionPointers) -> i32 {
+  if info.is_null() {
+    return platform::EXCEPTION_CONTINUE_SEARCH;
+  }
+
+  // SAFETY: Windows calls the handler with a valid `EXCEPTION_POINTERS` for the current fault.
+  let pointers = unsafe { &mut *info };
+  if pointers.exception_record.is_null() || pointers.context_record.is_null() {
+    return platform::EXCEPTION_CONTINUE_SEARCH;
+  }
+
+  // SAFETY: Both pointers were checked above and are owned by the OS during handler execution.
+  let record = unsafe { &*pointers.exception_record };
+  if record.exception_code != platform::EXCEPTION_BREAKPOINT {
+    return platform::EXCEPTION_CONTINUE_SEARCH;
+  }
+
+  // SAFETY: The context pointer was checked above and is writable for continue-execution edits.
+  let context = unsafe { &mut *pointers.context_record };
+  let exception_address = record.exception_address as usize;
+  let rip = usize::try_from(context.rip).unwrap_or(0);
+  let Some(patchpoint) = registered_patchpoint(exception_address, rip) else {
+    return platform::EXCEPTION_CONTINUE_SEARCH;
+  };
+
+  wait_for_breakpoint_patch(patchpoint);
+  context.rip = patchpoint as u64;
+  platform::EXCEPTION_CONTINUE_EXECUTION
+}
+
+#[cfg(all(windows, target_arch = "x86_64"))]
+fn registered_patchpoint(exception_address: usize, rip: usize) -> Option<usize> {
+  let mut node = PATCHPOINTS.load(Ordering::Acquire);
+  while !node.is_null() {
+    // SAFETY: Patchpoint nodes are leaked after publication, so published links remain valid.
+    let entry = unsafe { &*node };
+    if exception_address == entry.address
+      || exception_address == entry.address + 1
+      || rip == entry.address
+      || rip == entry.address + 1
+    {
+      return Some(entry.address);
+    }
+    node = entry.next;
+  }
+  None
+}
+
+#[cfg(all(windows, target_arch = "x86_64"))]
+fn wait_for_breakpoint_patch(patchpoint: usize) {
+  loop {
+    if ACTIVE_PATCHPOINT.load(Ordering::Acquire) != patchpoint {
+      return;
+    }
+
+    // SAFETY: `patchpoint` is a registered executable address that remains readable.
+    let first = unsafe { (patchpoint as *const u8).read_volatile() };
+    if first != INT3 {
+      return;
+    }
+
+    std::hint::spin_loop();
+  }
 }
 
 #[allow(clippy::manual_is_multiple_of)]

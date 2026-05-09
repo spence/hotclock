@@ -6,6 +6,8 @@ tach provides a zero-dependency Rust API for reading fast CPU or platform tick c
 
 ## Cross-architecture inline selected clocks
 
+- [x] Make Windows x86_64 warmed `Instant` match raw-counter performance
+- [o] Refresh AWS T3 and Lambda benchmark data with raw clock baselines
 - [x] Add fastest measured clock bar to benchmark chart
 - [x] Remove Windows x86_64 patchpoint save/restore overhead
 - [x] Add full clock-and-crate benchmark standard
@@ -68,6 +70,9 @@ tach provides a zero-dependency Rust API for reading fast CPU or platform tick c
 - [x] Add spacing between benchmark bars and metrics
 - [x] Compact benchmark image layout
 - [x] Remove rendered benchmark title
+- [x] Center benchmark target labels and Instant clock callouts
+- [x] Split AWS benchmark labels into provider, instance, and clock rows
+- [x] Keep benchmark clock bars scoped to `Instant`-compatible clocks
 - [x] Scale README benchmark bars by slowdown
 - [x] Render README benchmark as a PNG image
 - [x] Separate README benchmark image from feature comparison

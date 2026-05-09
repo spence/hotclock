@@ -3,7 +3,11 @@
 use std::hint::black_box;
 use std::io::{Read, Write};
 use std::net::TcpStream;
+use std::sync::Arc;
+use std::sync::Barrier;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Instant as StdInstant;
+use std::{process, thread};
 
 use tach::{Cycles, Instant};
 
@@ -65,6 +69,10 @@ fn main() {
 }
 
 fn run_report() -> (String, bool) {
+  if std::env::var("TACH_VALIDATION_RACE_STRESS").as_deref() == Ok("1") {
+    run_race_stress();
+  }
+
   let expected_instant = std::env::var("TACH_EXPECT_INSTANT").unwrap_or_else(|_| "unset".into());
   let expected_cycles = std::env::var("TACH_EXPECT_CYCLES").unwrap_or_else(|_| "unset".into());
   let expected_set = expected_instant != "unset" && expected_cycles != "unset";
@@ -123,7 +131,18 @@ struct Measurements {
 
 struct BenchCase {
   index: usize,
-  run: fn(),
+  kind: BenchKind,
+}
+
+#[derive(Clone, Copy)]
+enum BenchKind {
+  TachInstant,
+  TachCycles,
+  RawCounter,
+  Quanta,
+  Minstant,
+  Fastant,
+  StdInstant,
 }
 
 fn measure_interleaved() -> Measurements {
@@ -133,9 +152,7 @@ fn measure_interleaved() -> Measurements {
 
   let cases = bench_cases();
   for case in &cases {
-    for _ in 0..warmup_iters {
-      (case.run)();
-    }
+    run_bench_case(case.kind, warmup_iters);
   }
 
   let mut timings: Vec<Vec<f64>> = (0..BENCH_COUNT).map(|_| Vec::with_capacity(samples)).collect();
@@ -144,9 +161,7 @@ fn measure_interleaved() -> Measurements {
     for step in 0..cases.len() {
       let case = &cases[(offset + step) % cases.len()];
       let start = StdInstant::now();
-      for _ in 0..measure_iters {
-        (case.run)();
-      }
+      run_bench_case(case.kind, measure_iters);
       timings[case.index].push(start.elapsed().as_nanos() as f64 / measure_iters as f64);
     }
   }
@@ -190,51 +205,68 @@ const BENCH_COUNT: usize = 7;
 
 fn bench_cases() -> Vec<BenchCase> {
   let mut cases = vec![
-    BenchCase { index: TACH_INSTANT, run: bench_tach_instant },
-    BenchCase { index: TACH_CYCLES, run: bench_tach_cycles },
-    BenchCase { index: QUANTA, run: bench_quanta },
-    BenchCase { index: MINSTANT, run: bench_minstant },
-    BenchCase { index: FASTANT, run: bench_fastant },
-    BenchCase { index: STD_INSTANT, run: bench_std_instant },
+    BenchCase { index: TACH_INSTANT, kind: BenchKind::TachInstant },
+    BenchCase { index: TACH_CYCLES, kind: BenchKind::TachCycles },
+    BenchCase { index: QUANTA, kind: BenchKind::Quanta },
+    BenchCase { index: MINSTANT, kind: BenchKind::Minstant },
+    BenchCase { index: FASTANT, kind: BenchKind::Fastant },
+    BenchCase { index: STD_INSTANT, kind: BenchKind::StdInstant },
   ];
 
   if raw_counter_supported() {
-    cases.insert(2, BenchCase { index: RAW_COUNTER, run: bench_raw_counter });
+    cases.insert(2, BenchCase { index: RAW_COUNTER, kind: BenchKind::RawCounter });
   }
 
   cases
 }
 
-fn bench_tach_instant() {
-  let _ = black_box(Instant::now());
+#[inline(never)]
+fn run_bench_case(kind: BenchKind, iterations: usize) {
+  match kind {
+    BenchKind::TachInstant => {
+      for _ in 0..iterations {
+        let _ = black_box(Instant::now());
+      }
+    }
+    BenchKind::TachCycles => {
+      for _ in 0..iterations {
+        let _ = black_box(Cycles::now());
+      }
+    }
+    BenchKind::RawCounter => {
+      for _ in 0..iterations {
+        bench_raw_counter();
+      }
+    }
+    BenchKind::Quanta => {
+      for _ in 0..iterations {
+        let _ = black_box(quanta::Instant::now());
+      }
+    }
+    BenchKind::Minstant => {
+      for _ in 0..iterations {
+        let _ = black_box(minstant::Instant::now());
+      }
+    }
+    BenchKind::Fastant => {
+      for _ in 0..iterations {
+        let _ = black_box(fastant::Instant::now());
+      }
+    }
+    BenchKind::StdInstant => {
+      for _ in 0..iterations {
+        let _ = black_box(StdInstant::now());
+      }
+    }
+  }
 }
 
-fn bench_tach_cycles() {
-  let _ = black_box(Cycles::now());
-}
-
-fn bench_quanta() {
-  let _ = black_box(quanta::Instant::now());
-}
-
-fn bench_minstant() {
-  let _ = black_box(minstant::Instant::now());
-}
-
-fn bench_fastant() {
-  let _ = black_box(fastant::Instant::now());
-}
-
-fn bench_std_instant() {
-  let _ = black_box(StdInstant::now());
-}
-
-#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[cfg(any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64"))]
 fn raw_counter_supported() -> bool {
   true
 }
 
-#[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
+#[cfg(not(any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64")))]
 fn raw_counter_supported() -> bool {
   false
 }
@@ -251,7 +283,21 @@ fn bench_raw_counter() {
   let _ = black_box(unsafe { core::arch::x86::_rdtsc() });
 }
 
-#[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
+#[cfg(target_arch = "aarch64")]
+fn bench_raw_counter() {
+  let value: u64;
+  // SAFETY: `mrs cntvct_el0` reads the architectural virtual counter register.
+  unsafe {
+    core::arch::asm!(
+      "mrs {value}, cntvct_el0",
+      value = out(reg) value,
+      options(nomem, nostack, preserves_flags)
+    );
+  }
+  let _ = black_box(value);
+}
+
+#[cfg(not(any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64")))]
 fn bench_raw_counter() {}
 
 fn render_row(row: &Row) -> String {
@@ -341,6 +387,41 @@ fn yes_no(value: bool) -> &'static str {
 
 fn env_usize(name: &str, default: usize) -> usize {
   std::env::var(name).ok().and_then(|value| value.parse().ok()).unwrap_or(default)
+}
+
+fn run_race_stress() {
+  let threads = env_usize("TACH_VALIDATION_RACE_THREADS", 32);
+  let iterations = env_usize("TACH_VALIDATION_RACE_ITERS", 20_000);
+  let barrier = Arc::new(Barrier::new(threads));
+  let failed = Arc::new(AtomicBool::new(false));
+  let mut handles = Vec::with_capacity(threads);
+
+  for _ in 0..threads {
+    let barrier = Arc::clone(&barrier);
+    let failed = Arc::clone(&failed);
+    handles.push(thread::spawn(move || {
+      barrier.wait();
+      for _ in 0..iterations {
+        let start = Instant::now();
+        let end = Instant::now();
+        if end.checked_duration_since(start).is_none() {
+          failed.store(true, Ordering::Relaxed);
+        }
+        let _ = black_box(Cycles::now());
+      }
+    }));
+  }
+
+  for handle in handles {
+    if handle.join().is_err() {
+      failed.store(true, Ordering::Relaxed);
+    }
+  }
+
+  if failed.load(Ordering::Relaxed) {
+    eprintln!("race stress failed");
+    process::exit(3);
+  }
 }
 
 fn target_label() -> String {

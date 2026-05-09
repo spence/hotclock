@@ -18,8 +18,8 @@ GROUP_BACKGROUND = "#FFF8E8"
 FONT = "Avenir Next, Helvetica, Arial, sans-serif"
 
 CRATES = [
+  ("clock", "#1B1A17"),
   ("tach@0.2.0", "#D72D24"),
-  ("clock@fastest", "#1B1A17"),
   ("quanta@0.12.6", "#5B6472"),
   ("minstant@0.1.7", "#8B5E3C"),
   ("fastant@0.1.11", "#4F6F6A"),
@@ -27,16 +27,18 @@ CRATES = [
 ]
 
 GROUPS = [
-  (("macOS", "aarch64"), [0.330, 0.330, 4.620, 25.700, 25.700, 18.400]),
-  (("Docker", "x86_64"), [15.394, 15.222, 25.079, 39.050, 22.066, 28.070]),
-  (("Docker", "x86"), [25.789, 25.780, 253.702, 323.398, 324.264, 222.623]),
-  (("Docker", "aarch64"), [0.330, 0.330, 4.466, 27.203, 27.275, 20.222]),
-  (("Docker", "riscv64"), [59.584, 58.656, 215.296, 271.262, 271.241, 185.151]),
-  (("AWS t3 Nitro", "x86_64"), [8.711, 8.066, 13.254, 9.356, 9.356, 24.249]),
-  (("AWS m7i metal", "x86_64"), [6.841, 5.262, 7.130, 6.841, 6.841, 14.734]),
-  (("AWS t3 Nitro", "x86"), [13.552, 13.551, 69.312, 14.363, 14.154, 66.458]),
-  (("AWS m7i metal", "x86"), [6.841, 6.841, 23.066, 6.841, 6.841, 22.743]),
-  (("AWS Windows", "c5.large", "x86_64"), [8.417, 8.178, 14.367, 34.247, 34.286, 41.391]),
+  (("macOS aarch64", "(cntvct)"), [0.330, 0.330, 4.620, 25.700, 25.700, 18.400]),
+  (("Docker x86_64", "(rdtsc)"), [15.222, 15.394, 25.079, 39.050, 22.066, 28.070]),
+  (("Docker x86", "(rdtsc)"), [25.780, 25.789, 253.702, 323.398, 324.264, 222.623]),
+  (("Docker aarch64", "(cntvct)"), [0.330, 0.330, 4.466, 27.203, 27.275, 20.222]),
+  (("Docker riscv64", "(rdtime)"), [59.584, 59.584, 215.296, 271.262, 271.241, 185.151]),
+  (("AWS Nitro x86_64", "t3.micro", "(rdtsc)"), [9.399, 9.722, 13.954, 10.222, 10.052, 25.300]),
+  (("AWS Lambda x86_64", "provided.al2023", "(rdtsc)"), [17.516, 17.825, 22.172, 75.637, 18.160, 53.764]),
+  (("AWS Metal x86_64", "m7i.metal", "(rdtsc)"), [6.841, 6.841, 7.130, 6.841, 6.841, 14.734]),
+  (("AWS Nitro x86", "t3.micro", "(rdtsc)"), [10.050, 10.054, 42.391, 10.706, 10.697, 44.581]),
+  (("AWS Metal x86", "m7i.metal", "(rdtsc)"), [6.841, 6.841, 23.066, 6.841, 6.841, 22.743]),
+  (("AWS Lambda aarch64", "provided.al2023", "(cntvct)"), [17.328, 17.325, 21.970, 72.252, 74.114, 54.165]),
+  (("AWS Nitro x86_64", "Windows c5.large", "(rdtsc)"), [6.957, 6.957, 11.719, 33.650, 33.656, 39.224]),
 ]
 
 BAR_WIDTH = 8
@@ -44,7 +46,7 @@ BAR_GAP = 4
 GROUP_WIDTH = 89
 GROUP_GAP = 20
 LEFT = 6
-HEIGHT = 436
+HEIGHT = 448
 LEGEND_Y = 15
 LEGEND_GAP = 18
 LEGEND_SQUARE = 6
@@ -57,8 +59,10 @@ LOWER_BAR_HEIGHT = 160
 UPPER_BAR_HEIGHT = 110
 MAX_BAR_HEIGHT = LOWER_BAR_HEIGHT + UPPER_BAR_HEIGHT
 VALUE_FONT_SIZE = 7
-LABEL_FONT_SIZE = 12
-LEGEND_FONT_SIZE = LABEL_FONT_SIZE
+LABEL_FONT_SIZE = 11
+LABEL_LINE_GAP = 13
+LABEL_TOP = BAR_BOTTOM + 21
+LEGEND_FONT_SIZE = 12
 GLOBAL_MAX = max(value for _, values in GROUPS for value in values if value is not None)
 
 
@@ -172,9 +176,9 @@ def render_svg() -> str:
       parts.append(text(label_x, label_y, label, VALUE_FONT_SIZE))
 
     center = group_x + GROUP_WIDTH / 2
-    label_start = 419 - (len(labels) - 1) * 14
+    label_start = LABEL_TOP
     for line, label in enumerate(labels):
-      parts.append(text(center, label_start + line * 14, label, LABEL_FONT_SIZE))
+      parts.append(text(center, label_start + line * LABEL_LINE_GAP, label, LABEL_FONT_SIZE))
 
   parts.append("</g>")
   parts.append("</svg>")
