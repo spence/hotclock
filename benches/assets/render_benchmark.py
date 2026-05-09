@@ -12,8 +12,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 SVG_PATH = ROOT / "benchmark.svg"
 PNG_PATH = ROOT / "benchmark.png"
-X86_64_SVG_PATH = ROOT / "benchmark-x86_64.svg"
-X86_64_PNG_PATH = ROOT / "benchmark-x86_64.png"
+SIMPLE_SVG_PATH = ROOT / "benchmark-simple.svg"
+SIMPLE_PNG_PATH = ROOT / "benchmark-simple.png"
 
 BACKGROUND = "#FBF6EC"
 GROUP_BACKGROUND = "#FFF8E8"
@@ -42,7 +42,12 @@ GROUPS = [
   (("AWS Lambda aarch64", "provided.al2023", "aarch64-unknown-linux-gnu", "(cntvct)"), [17.328, 17.325, 21.970, 72.252, 74.114, 54.165]),
   (("AWS Nitro x86_64", "Windows c5.large", "x86_64-pc-windows-msvc", "(rdtsc)"), [6.957, 6.957, 11.719, 33.650, 33.656, 39.224]),
 ]
-X86_64_GROUPS = [group for group in GROUPS if any("x86_64" in label for label in group[0])]
+SIMPLE_GROUPS = [
+  (labels[:2], values[1:])
+  for labels, values in GROUPS
+  if labels[0] == "macOS aarch64" or any("x86_64" in label for label in labels)
+]
+SIMPLE_CRATES = CRATES[1:]
 
 BAR_WIDTH = 8
 BAR_GAP = 4
@@ -114,14 +119,14 @@ def bar_break(x: float) -> list[str]:
   ]
 
 
-def render_svg(groups: list[tuple[tuple[str, ...], list[float]]]) -> str:
+def render_svg(groups: list[tuple[tuple[str, ...], list[float]]], crates: list[tuple[str, str]]) -> str:
   group_area_width = len(groups) * GROUP_WIDTH + (len(groups) - 1) * GROUP_GAP
-  legend_width = sum(LEGEND_SQUARE + 4 + text_width(name, LEGEND_FONT_SIZE) for name, _ in CRATES)
-  legend_width += LEGEND_GAP * (len(CRATES) - 1)
+  legend_width = sum(LEGEND_SQUARE + 4 + text_width(name, LEGEND_FONT_SIZE) for name, _ in crates)
+  legend_width += LEGEND_GAP * (len(crates) - 1)
   width = max(LEFT * 2 + group_area_width, LEFT * 2 + legend_width)
   group_left = (width - group_area_width) / 2
   group_xs = [group_left + i * (GROUP_WIDTH + GROUP_GAP) for i in range(len(groups))]
-  bars_width = len(CRATES) * BAR_WIDTH + (len(CRATES) - 1) * BAR_GAP
+  bars_width = len(crates) * BAR_WIDTH + (len(crates) - 1) * BAR_GAP
   global_max = max(value for _, values in groups for value in values if value is not None)
 
   parts = [
@@ -136,7 +141,7 @@ def render_svg(groups: list[tuple[tuple[str, ...], list[float]]]) -> str:
 
   legend_items = []
   legend_x = (width - legend_width) / 2
-  for name, color in CRATES:
+  for name, color in crates:
     legend_items.append((legend_x, name, color))
     legend_x += LEGEND_SQUARE + 4 + text_width(name, LEGEND_FONT_SIZE) + LEGEND_GAP
   for x, name, color in legend_items:
@@ -167,7 +172,7 @@ def render_svg(groups: list[tuple[tuple[str, ...], list[float]]]) -> str:
       height = bar_height(value, global_max)
       x = bar_x + i * (BAR_WIDTH + BAR_GAP)
       y = BAR_BOTTOM - height
-      color = CRATES[i][1]
+      color = crates[i][1]
       label = value_label(value)
       label_x = x + BAR_WIDTH / 2
       label_y = y - 4
@@ -196,13 +201,13 @@ def render_svg(groups: list[tuple[tuple[str, ...], list[float]]]) -> str:
 
 
 def main() -> None:
-  SVG_PATH.write_text(render_svg(GROUPS))
-  X86_64_SVG_PATH.write_text(render_svg(X86_64_GROUPS))
+  SVG_PATH.write_text(render_svg(GROUPS, CRATES))
+  SIMPLE_SVG_PATH.write_text(render_svg(SIMPLE_GROUPS, SIMPLE_CRATES))
   rsvg_convert = shutil.which("rsvg-convert")
   if rsvg_convert is None:
     raise SystemExit("rsvg-convert is required to render benchmark.png")
   subprocess.run([rsvg_convert, "-o", str(PNG_PATH), str(SVG_PATH)], check=True)
-  subprocess.run([rsvg_convert, "-o", str(X86_64_PNG_PATH), str(X86_64_SVG_PATH)], check=True)
+  subprocess.run([rsvg_convert, "-o", str(SIMPLE_PNG_PATH), str(SIMPLE_SVG_PATH)], check=True)
 
 
 if __name__ == "__main__":

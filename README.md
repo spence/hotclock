@@ -9,7 +9,7 @@ in a container, a VM or on bare metal, it automatically selects the fastest mach
 
 ![Cross-target Instant benchmark bar chart](benches/assets/benchmark.png)
 
-![x86_64 Instant benchmark bar chart](benches/assets/benchmark-x86_64.png)
+![Simple Instant benchmark bar chart](benches/assets/benchmark-simple.png)
 
 ![Cross-target Instant benchmark heatmap](benches/assets/benchmark-heatmap.png)
 
