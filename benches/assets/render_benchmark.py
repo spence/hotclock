@@ -12,6 +12,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 SVG_PATH = ROOT / "benchmark.svg"
 PNG_PATH = ROOT / "benchmark.png"
+X86_64_SVG_PATH = ROOT / "benchmark-x86_64.svg"
+X86_64_PNG_PATH = ROOT / "benchmark-x86_64.png"
 
 BACKGROUND = "#FBF6EC"
 GROUP_BACKGROUND = "#FFF8E8"
@@ -40,6 +42,7 @@ GROUPS = [
   (("AWS Lambda aarch64", "provided.al2023", "aarch64-unknown-linux-gnu", "(cntvct)"), [17.328, 17.325, 21.970, 72.252, 74.114, 54.165]),
   (("AWS Nitro x86_64", "Windows c5.large", "x86_64-pc-windows-msvc", "(rdtsc)"), [6.957, 6.957, 11.719, 33.650, 33.656, 39.224]),
 ]
+X86_64_GROUPS = [group for group in GROUPS if any("x86_64" in label for label in group[0])]
 
 BAR_WIDTH = 8
 BAR_GAP = 4
@@ -64,7 +67,6 @@ LABEL_LINE_GAP = 13
 LABEL_TOP = BAR_BOTTOM + 21
 TARGET_LABEL_FONT_SIZE = 7
 LEGEND_FONT_SIZE = 12
-GLOBAL_MAX = max(value for _, values in GROUPS for value in values if value is not None)
 
 
 def value_label(value: float) -> str:
@@ -90,10 +92,10 @@ def text_width(value: str, size: int) -> float:
   return len(value) * size * 0.56
 
 
-def bar_height(value: float) -> int:
+def bar_height(value: float, global_max: float) -> int:
   if value <= BREAK_VALUE:
     return max(2, round(value / BREAK_VALUE * LOWER_BAR_HEIGHT))
-  upper = (value - BREAK_VALUE) / (GLOBAL_MAX - BREAK_VALUE) * UPPER_BAR_HEIGHT
+  upper = (value - BREAK_VALUE) / (global_max - BREAK_VALUE) * UPPER_BAR_HEIGHT
   return round(LOWER_BAR_HEIGHT + upper)
 
 
@@ -112,10 +114,15 @@ def bar_break(x: float) -> list[str]:
   ]
 
 
-def render_svg() -> str:
-  width = LEFT * 2 + len(GROUPS) * GROUP_WIDTH + (len(GROUPS) - 1) * GROUP_GAP
-  group_xs = [LEFT + i * (GROUP_WIDTH + GROUP_GAP) for i in range(len(GROUPS))]
+def render_svg(groups: list[tuple[tuple[str, ...], list[float]]]) -> str:
+  group_area_width = len(groups) * GROUP_WIDTH + (len(groups) - 1) * GROUP_GAP
+  legend_width = sum(LEGEND_SQUARE + 4 + text_width(name, LEGEND_FONT_SIZE) for name, _ in CRATES)
+  legend_width += LEGEND_GAP * (len(CRATES) - 1)
+  width = max(LEFT * 2 + group_area_width, LEFT * 2 + legend_width)
+  group_left = (width - group_area_width) / 2
+  group_xs = [group_left + i * (GROUP_WIDTH + GROUP_GAP) for i in range(len(groups))]
   bars_width = len(CRATES) * BAR_WIDTH + (len(CRATES) - 1) * BAR_GAP
+  global_max = max(value for _, values in groups for value in values if value is not None)
 
   parts = [
     '<?xml version="1.0" encoding="UTF-8"?>',
@@ -128,8 +135,6 @@ def render_svg() -> str:
   ]
 
   legend_items = []
-  legend_width = sum(LEGEND_SQUARE + 4 + text_width(name, LEGEND_FONT_SIZE) for name, _ in CRATES)
-  legend_width += LEGEND_GAP * (len(CRATES) - 1)
   legend_x = (width - legend_width) / 2
   for name, color in CRATES:
     legend_items.append((legend_x, name, color))
@@ -143,11 +148,14 @@ def render_svg() -> str:
       f'<text x="{x + LEGEND_SQUARE + 4:g}" y="{LEGEND_Y:g}" text-anchor="start" '
       f'font-family="{FONT}" font-size="{LEGEND_FONT_SIZE}" fill="#2E231B">{esc(name)}</text>'
     )
-  parts.append(text(width / 2, NOTE_Y, "All measurements are nanoseconds; squiggle marks compressed upper range.", 9))
+  note = "All measurements are nanoseconds."
+  if global_max > BREAK_VALUE:
+    note = "All measurements are nanoseconds; squiggle marks compressed upper range."
+  parts.append(text(width / 2, NOTE_Y, note, 9))
 
-  for group_x, (labels, values) in zip(group_xs, GROUPS):
+  for group_x, (labels, values) in zip(group_xs, groups):
     parts.append(
-      f'<rect x="{group_x}" y="{GROUP_TOP}" width="{GROUP_WIDTH}" '
+      f'<rect x="{group_x:g}" y="{GROUP_TOP}" width="{GROUP_WIDTH}" '
       f'height="{GROUP_HEIGHT}" fill="{GROUP_BACKGROUND}"/>'
     )
 
@@ -156,7 +164,7 @@ def render_svg() -> str:
     for i, value in enumerate(values):
       if value is None:
         continue
-      height = bar_height(value)
+      height = bar_height(value, global_max)
       x = bar_x + i * (BAR_WIDTH + BAR_GAP)
       y = BAR_BOTTOM - height
       color = CRATES[i][1]
@@ -188,11 +196,13 @@ def render_svg() -> str:
 
 
 def main() -> None:
-  SVG_PATH.write_text(render_svg())
+  SVG_PATH.write_text(render_svg(GROUPS))
+  X86_64_SVG_PATH.write_text(render_svg(X86_64_GROUPS))
   rsvg_convert = shutil.which("rsvg-convert")
   if rsvg_convert is None:
     raise SystemExit("rsvg-convert is required to render benchmark.png")
   subprocess.run([rsvg_convert, "-o", str(PNG_PATH), str(SVG_PATH)], check=True)
+  subprocess.run([rsvg_convert, "-o", str(X86_64_PNG_PATH), str(X86_64_SVG_PATH)], check=True)
 
 
 if __name__ == "__main__":
