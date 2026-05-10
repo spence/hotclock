@@ -1,0 +1,19 @@
+┌────────────────────────────────┬────────────────────────────────────────┐
+│ Field                          │ Value                                  │
+├────────────────────────────────┼────────────────────────────────────────┤
+│ target                         │ x86_64-linux-gnu-64bit                 │
+│ environment                    │ Virtual Machine                        │
+│ fastest-known-instant-clock    │ unset                                  │
+│ fastest-known-cycles-clock     │ unset                                  │
+│ selected-instant-clock         │ x86_64-rdtsc                           │
+│ selected-cycles-clock          │ x86_64-rdtsc                           │
+│ tach-instant-bench             │ 12.351 ns/op                           │
+│ tach-cycles-bench              │ 12.321 ns/op                           │
+│ raw-counter-bench              │ 12.309 ns/op                           │
+│ quanta-bench                   │ 12.347 ns/op                           │
+│ minstant-bench                 │ 12.308 ns/op                           │
+│ fastant-bench                  │ 12.305 ns/op                           │
+│ std-instant-bench              │ 29.940 ns/op                           │
+│ fastest-instant-api            │ no                                     │
+│ matches-expected               │ unchecked                              │
+└────────────────────────────────┴────────────────────────────────────────┘

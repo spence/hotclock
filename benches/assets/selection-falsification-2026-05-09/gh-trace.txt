@@ -1,0 +1,16 @@
+bench / linux-aarch64	UNKNOWN STEP	2026-05-10T01:08:51.8345708Z tach selector class=instant candidate=aarch64-cntvct prepared=true attempts=1 valid=true failed_stage=none latency=1334809 ns selected=false
+bench / linux-aarch64	UNKNOWN STEP	2026-05-10T01:08:51.8691917Z tach selector class=instant candidate=unix-monotonic prepared=true attempts=1 valid=true failed_stage=none latency=3070192 ns selected=false
+bench / linux-aarch64	UNKNOWN STEP	2026-05-10T01:08:51.8693314Z tach selector class=instant candidate=aarch64-cntvct prepared=true attempts=1 valid=true failed_stage=none latency=1334809 ns selected=true
+bench / linux-aarch64	UNKNOWN STEP	2026-05-10T01:08:51.8694500Z tach selector class=cycles candidate=aarch64-pmccntr prepared=false attempts=0 valid=false failed_stage=prepare latency=none selected=false
+bench / linux-aarch64	UNKNOWN STEP	2026-05-10T01:08:51.8695737Z tach selector class=cycles candidate=aarch64-perf-pmccntr prepared=false attempts=0 valid=false failed_stage=prepare latency=none selected=false
+bench / linux-aarch64	UNKNOWN STEP	2026-05-10T01:08:51.8840616Z tach selector class=cycles candidate=aarch64-cntvct prepared=true attempts=1 valid=true failed_stage=none latency=1334992 ns selected=false
+bench / linux-aarch64	UNKNOWN STEP	2026-05-10T01:08:51.9181826Z tach selector class=cycles candidate=unix-monotonic prepared=true attempts=1 valid=true failed_stage=none latency=3068304 ns selected=false
+bench / linux-aarch64	UNKNOWN STEP	2026-05-10T01:08:51.9182797Z tach selector class=cycles candidate=aarch64-cntvct prepared=true attempts=1 valid=true failed_stage=none latency=1334992 ns selected=true
+bench / linux-x86_64	UNKNOWN STEP	2026-05-10T01:08:51.7733125Z tach selector class=instant candidate=x86_64-rdtsc prepared=true attempts=1 valid=true failed_stage=none latency=1227519 ns selected=false
+bench / linux-x86_64	UNKNOWN STEP	2026-05-10T01:08:51.8078480Z tach selector class=instant candidate=unix-monotonic prepared=true attempts=1 valid=true failed_stage=none latency=3088883 ns selected=false
+bench / linux-x86_64	UNKNOWN STEP	2026-05-10T01:08:51.8079747Z tach selector class=instant candidate=x86_64-rdtsc prepared=true attempts=1 valid=true failed_stage=none latency=1227519 ns selected=true
+bench / linux-x86_64	UNKNOWN STEP	2026-05-10T01:08:51.8081674Z tach selector class=cycles candidate=x86_64-direct-rdpmc prepared=false attempts=0 valid=false failed_stage=prepare latency=none selected=false
+bench / linux-x86_64	UNKNOWN STEP	2026-05-10T01:08:51.8082928Z tach selector class=cycles candidate=x86_64-perf-rdpmc prepared=false attempts=0 valid=false failed_stage=prepare latency=none selected=false
+bench / linux-x86_64	UNKNOWN STEP	2026-05-10T01:08:51.8217671Z tach selector class=cycles candidate=x86_64-rdtsc prepared=true attempts=1 valid=true failed_stage=none latency=1228181 ns selected=false
+bench / linux-x86_64	UNKNOWN STEP	2026-05-10T01:08:51.8560025Z tach selector class=cycles candidate=unix-monotonic prepared=true attempts=1 valid=true failed_stage=none latency=3088352 ns selected=false
+bench / linux-x86_64	UNKNOWN STEP	2026-05-10T01:08:51.8560990Z tach selector class=cycles candidate=x86_64-rdtsc prepared=true attempts=1 valid=true failed_stage=none latency=1228181 ns selected=true

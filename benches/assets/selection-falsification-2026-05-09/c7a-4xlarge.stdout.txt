@@ -1,0 +1,81 @@
+=== METADATA ===
+Linux ip-172-31-45-87.us-east-2.compute.internal 6.12.83-113.160.amzn2023.x86_64 #1 SMP PREEMPT_DYNAMIC Fri May  8 17:56:26 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+NAME="Amazon Linux"
+VERSION="2023"
+ID="amzn"
+ID_LIKE="fedora"
+VERSION_ID="2023"
+--- CPU ---
+vendor_id	: AuthenticAMD
+--- PMU policy ---
+rdpmc:
+not present
+perf_user_access:
+not present
+perf_event_paranoid:
+2
+rustc 1.95.0 (59807616e 2026-04-14)
+=== BUILD ===
+   Compiling once_cell v1.21.4
+   Compiling small_ctor v0.1.2
+   Compiling tach v0.2.0 (/home/ec2-user/tach)
+   Compiling raw-cpuid v11.6.0
+   Compiling fastant v0.1.11
+   Compiling quanta v0.12.6
+   Compiling ctor v0.1.26
+   Compiling minstant v0.1.7
+   Compiling tach-selection-validation-runner v0.1.0 (/home/ec2-user/tach/tools/selection-validation-runner)
+    Finished `release` profile [optimized] target(s) in 2.73s
+-rwxrwxr-x. 2 ec2-user ec2-user 666160 May 10 01:11 /home/ec2-user/tach/tools/selection-validation-runner/target/release/tach-selection-validation-runner
+
+=== PHASE A (trace) ===
+tach selector class=instant candidate=x86_64-rdtsc prepared=true attempts=3 valid=false failed_stage=cross-thread-ordering latency=none selected=false
+tach selector class=instant candidate=unix-monotonic prepared=true attempts=1 valid=true failed_stage=none latency=2378421 ns selected=false
+tach selector class=instant candidate=unix-monotonic prepared=true attempts=1 valid=true failed_stage=none latency=2378421 ns selected=true
+tach selector class=cycles candidate=x86_64-direct-rdpmc prepared=false attempts=0 valid=false failed_stage=prepare latency=none selected=false
+tach selector class=cycles candidate=x86_64-perf-rdpmc prepared=true attempts=1 valid=true failed_stage=none latency=97793193 ns selected=false
+tach selector class=cycles candidate=x86_64-rdtsc prepared=true attempts=1 valid=true failed_stage=none latency=945974 ns selected=false
+tach selector class=cycles candidate=unix-monotonic prepared=true attempts=1 valid=true failed_stage=none latency=2378422 ns selected=false
+tach selector class=cycles candidate=x86_64-rdtsc prepared=true attempts=1 valid=true failed_stage=none latency=945974 ns selected=true
+┌────────────────────────────────┬────────────────────────────────────────┐
+│ Field                          │ Value                                  │
+├────────────────────────────────┼────────────────────────────────────────┤
+│ target                         │ x86_64-linux-gnu-64bit                 │
+│ environment                    │ c7a.4xlarge                            │
+│ fastest-known-instant-clock    │ unset                                  │
+│ fastest-known-cycles-clock     │ unset                                  │
+│ selected-instant-clock         │ unix-monotonic                         │
+│ selected-cycles-clock          │ x86_64-rdtsc                           │
+│ tach-instant-bench             │ 24.386 ns/op                           │
+│ tach-cycles-bench              │ 9.461 ns/op                            │
+│ raw-counter-bench              │ 9.460 ns/op                            │
+│ quanta-bench                   │ 9.463 ns/op                            │
+│ minstant-bench                 │ 9.460 ns/op                            │
+│ fastant-bench                  │ 9.460 ns/op                            │
+│ std-instant-bench              │ 23.012 ns/op                           │
+│ fastest-instant-api            │ no                                     │
+│ matches-expected               │ unchecked                              │
+└────────────────────────────────┴────────────────────────────────────────┘
+
+=== PHASE B (high-confidence) ===
+┌────────────────────────────────┬────────────────────────────────────────┐
+│ Field                          │ Value                                  │
+├────────────────────────────────┼────────────────────────────────────────┤
+│ target                         │ x86_64-linux-gnu-64bit                 │
+│ environment                    │ c7a.4xlarge                            │
+│ fastest-known-instant-clock    │ unset                                  │
+│ fastest-known-cycles-clock     │ unset                                  │
+│ selected-instant-clock         │ x86_64-rdtsc                           │
+│ selected-cycles-clock          │ x86_64-rdtsc                           │
+│ tach-instant-bench             │ 9.486 ns/op                            │
+│ tach-cycles-bench              │ 9.486 ns/op                            │
+│ raw-counter-bench              │ 9.486 ns/op                            │
+│ quanta-bench                   │ 9.486 ns/op                            │
+│ minstant-bench                 │ 9.486 ns/op                            │
+│ fastant-bench                  │ 9.486 ns/op                            │
+│ std-instant-bench              │ 23.040 ns/op                           │
+│ fastest-instant-api            │ yes                                    │
+│ matches-expected               │ unchecked                              │
+└────────────────────────────────┴────────────────────────────────────────┘
+
+=== DONE ===
