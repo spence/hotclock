@@ -16,6 +16,8 @@ pub mod loongarch64;
   )),
 )))]
 mod patch;
+#[cfg(all(target_arch = "aarch64", target_os = "linux"))]
+pub mod perf_pmccntr_linux;
 #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_os = "linux"))]
 pub mod perf_rdpmc_linux;
 #[cfg(target_arch = "riscv64")]

@@ -10,6 +10,8 @@ use crate::arch::{self, fallback};
 use crate::arch::aarch64;
 #[cfg(target_arch = "loongarch64")]
 use crate::arch::loongarch64;
+#[cfg(all(target_arch = "aarch64", target_os = "linux"))]
+use crate::arch::perf_pmccntr_linux;
 #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_os = "linux"))]
 use crate::arch::perf_rdpmc_linux;
 #[cfg(target_arch = "powerpc64")]
@@ -142,6 +144,12 @@ fn cycle_candidates() -> &'static [Candidate] {
       arch::indices::PMCCNTR,
       aarch64_pmccntr_user_access_enabled,
       aarch64::pmccntr_el0,
+    ),
+    Candidate::prepared(
+      "aarch64-perf-pmccntr",
+      arch::indices::PERF_PMCCNTR,
+      perf_pmccntr_linux::perf_pmccntr_cpu_cycles_available,
+      perf_pmccntr_linux::perf_pmccntr_cpu_cycles_checked,
     ),
     Candidate::new("aarch64-cntvct", arch::indices::CNTVCT, aarch64::cntvct),
     Candidate::new("unix-monotonic", arch::indices::CLOCK_MONOTONIC, fallback::clock_monotonic),

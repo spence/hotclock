@@ -155,6 +155,7 @@ pub mod indices {
     pub const CNTVCT: u8 = 0;
     pub const CLOCK_MONOTONIC: u8 = 1;
     pub const PMCCNTR: u8 = 2;
+    pub const PERF_PMCCNTR: u8 = 3;
   }
 
   #[cfg(all(target_arch = "aarch64", not(any(target_os = "linux", target_os = "macos"))))]
@@ -347,6 +348,8 @@ fn read_cycle_selected(sel: u8) -> u64 {
   #[cfg(all(target_arch = "aarch64", target_os = "linux"))]
   return match sel {
     indices::PMCCNTR => super::aarch64::pmccntr_el0(),
+    indices::PERF_PMCCNTR => super::perf_pmccntr_linux::perf_pmccntr_cpu_cycles()
+      .unwrap_or_else(super::aarch64::cntvct),
     indices::CNTVCT => super::aarch64::cntvct(),
     indices::CLOCK_MONOTONIC => super::fallback::clock_monotonic(),
     _ => {
