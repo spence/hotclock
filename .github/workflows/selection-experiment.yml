@@ -1,0 +1,77 @@
+name: selection-experiment
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bench:
+    name: bench / ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-x86_64
+            runner: ubuntu-24.04
+          - name: linux-aarch64
+            runner: ubuntu-24.04-arm
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+
+      - name: System metadata
+        run: |
+          echo "=== uname ==="
+          uname -a
+          echo "=== os-release ==="
+          head -5 /etc/os-release
+          echo "=== /proc/cpuinfo (first model) ==="
+          grep -m1 "model name\|CPU implementer\|CPU part\|cpu MHz\|vendor_id" /proc/cpuinfo || true
+          echo "=== rdpmc ==="
+          cat /sys/bus/event_source/devices/cpu/rdpmc 2>/dev/null \
+            || cat /sys/devices/cpu/rdpmc 2>/dev/null \
+            || echo "not present"
+          echo "=== perf_user_access ==="
+          cat /proc/sys/kernel/perf_user_access 2>/dev/null || echo "not present"
+          echo "=== perf_event_paranoid ==="
+          cat /proc/sys/kernel/perf_event_paranoid 2>/dev/null || echo "not present"
+          rustc --version
+
+      - name: Build runner
+        working-directory: tools/selection-validation-runner
+        run: cargo build --release
+
+      - name: Phase A (per-candidate trace)
+        working-directory: tools/selection-validation-runner
+        env:
+          TACH_SELECTOR_TRACE: "1"
+        run: ./target/release/tach-selection-validation-runner | tee phase-a.log
+
+      - name: Phase B (high-confidence)
+        working-directory: tools/selection-validation-runner
+        env:
+          TACH_VALIDATION_MEASURE_ITERS: "5000000"
+          TACH_VALIDATION_SAMPLES: "101"
+        run: |
+          if command -v taskset >/dev/null; then
+            taskset -c 0 ./target/release/tach-selection-validation-runner | tee phase-b.log
+          else
+            ./target/release/tach-selection-validation-runner | tee phase-b.log
+          fi
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bench-${{ matrix.name }}
+          path: |
+            tools/selection-validation-runner/phase-a.log
+            tools/selection-validation-runner/phase-b.log
