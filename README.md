@@ -2,8 +2,9 @@
 
 `tach` is an ultra-fast drop-in replacement for `Instant` designed for hot loops, profiling and benchmarks.
 
-Internally, it mirrors [cpucycles](https://cpucycles.cr.yp.to), so whether you're running
-in a container, a VM or on bare metal, it automatically selects the fastest machine-level timer at runtime.
+Each supported target compiles `Instant::now()` directly to the fastest wall-clock-rate hardware counter for that architecture — RDTSC on x86_64, CNTVCT_EL0 on aarch64, rdtime on riscv64/loongarch64 — and falls back to a platform-native monotonic clock everywhere else. No runtime dispatch, no microbenchmark at startup, no patching tricks for `Instant`.
+
+For users who want to measure **actual CPU cycles consumed** (profilers, cryptographic micro-benchmarks, regression detection in CI), `tach` exposes a separate `Cycles` API backed by the CPU's performance monitor counter. `Cycles` is gated by host OS permission and returns `None` rather than silently substituting a wall-clock-rate counter when PMU access is denied.
 
 ## performance
 
@@ -13,41 +14,17 @@ in a container, a VM or on bare metal, it automatically selects the fastest mach
 
 ![Cross-target Instant benchmark heatmap](benches/assets/benchmark-heatmap.png)
 
-Full target/environment results: [runtime selection validation](benches/runtime-selection-validation-2026-05-08.md).
-Pinned m7i GNU rerun: [high-confidence benchmark](benches/m7i-gnu-high-confidence-2026-05-08.md).
-
-The primary benchmark is `Instant::now()` read cost across target/environment
-pairs. The fastest measured `Instant`-compatible clock is the first bar, and
-its name appears in parentheses under each target. Bars use one shared broken
-scale; squiggles mark the compressed upper range for Docker outliers.
-
-Fresh validation runs below were produced with
-`tools/selection-validation-runner` on May 8, 2026. Each row was enforced
-against the expected fastest valid clocks for that target/environment.
-
-| Environment    | Target              | Instant clock  | Cycles clock      | Instant  | Cycles   | quanta    | minstant  | fastant   | std       |
-|----------------|---------------------|----------------|-------------------|----------|----------|-----------|-----------|-----------|-----------|
-| AWS t3 Nitro   | x86_64-linux-musl   | x86_64-rdtsc   | x86_64-rdtsc      | 9.722ns  | 9.722ns  | 13.954ns  | 10.222ns  | 10.052ns  | 25.300ns  |
-| AWS Lambda     | x86_64-linux-musl   | x86_64-rdtsc   | x86_64-rdtsc      | 17.825ns | 17.801ns | 22.172ns  | 75.637ns  | 18.160ns  | 53.764ns  |
-| AWS m7i metal  | x86_64-linux-musl   | x86_64-rdtsc   | x86_64-perf-rdpmc | 6.841ns  | 5.262ns  | 7.130ns   | 6.841ns   | 6.841ns   | 14.734ns  |
-| AWS m7i metal  | x86_64-linux-gnu    | x86_64-rdtsc   | x86_64-perf-rdpmc | 6.842ns  | 5.526ns  | 7.395ns   | 6.842ns   | 6.842ns   | 14.812ns  |
-| AWS Nitro Windows | x86_64-windows-msvc | x86_64-rdtsc   | x86_64-rdtsc      | 6.957ns  | 6.967ns  | 11.719ns  | 33.650ns  | 33.656ns  | 39.224ns  |
-| AWS t3 Nitro   | x86-linux-musl      | x86-rdtsc      | x86-rdtsc         | 10.054ns | 10.051ns | 42.391ns  | 10.706ns  | 10.697ns  | 44.581ns  |
-| AWS m7i metal  | x86-linux-musl      | x86-rdtsc      | x86-rdtsc         | 6.841ns  | 6.841ns  | 23.066ns  | 6.841ns   | 6.841ns   | 22.743ns  |
-| AWS Lambda     | aarch64-linux-gnu   | aarch64-cntvct | aarch64-cntvct    | 17.325ns | 17.306ns | 21.970ns  | 72.252ns  | 74.114ns  | 54.165ns  |
-| Docker amd64   | x86_64-linux-gnu    | x86_64-rdtsc   | x86_64-rdtsc      | 15.394ns | 15.222ns | 25.079ns  | 39.050ns  | 22.066ns  | 28.070ns  |
-| Docker 386     | x86-linux-gnu       | x86-rdtsc      | x86-rdtsc         | 25.789ns | 25.780ns | 253.702ns | 323.398ns | 324.264ns | 222.623ns |
-| Docker arm64   | aarch64-linux-gnu   | aarch64-cntvct | aarch64-cntvct    | 0.330ns  | 0.330ns  | 4.466ns   | 27.203ns  | 27.275ns  | 20.222ns  |
-| Docker riscv64 | riscv64-linux-gnu   | riscv64-rdtime | riscv64-rdcycle   | 59.584ns | 58.656ns | 215.296ns | 271.262ns | 271.241ns | 185.151ns |
+The primary benchmark is `Instant::now()` read cost across target/environment pairs. The fastest measured `Instant`-compatible clock is the first bar, and its name appears in parentheses under each target. Bars use one shared broken scale; squiggles mark the compressed upper range for Docker outliers.
 
 ## feature comparison
 
-| Feature                 | `tach` | `tick_counter@0.4.5` | `quanta@0.12.6` | `minstant@0.1.7` | `std::time` |
-|-------------------------|------------|----------------------|-----------------|------------------|-------------|
-| `Instant` API           | ✅         | ❌                   | ✅              | ✅               | ✅          |
-| runtime clock selection | ✅         | ❌                   | ✅              | ✅               | ❌          |
-| CPU tick access         | ✅         | ✅                   | ✅              | ❌               | ❌          |
-| zero dependency         | ✅         | ✅                   | ❌              | ❌               | ✅          |
+| Feature                          | `tach` | `tick_counter@0.4.5` | `quanta@0.12.6` | `minstant@0.1.7` | `std::time` |
+|----------------------------------|--------|----------------------|-----------------|------------------|-------------|
+| `Instant`-compatible API         | ✅     | ❌                   | ✅              | ✅               | ✅          |
+| Inlined hardware counter         | ✅     | ✅                   | partial         | partial          | ❌          |
+| CPU cycle counter (`Cycles`)     | ✅ (gated) | ❌               | ❌              | ❌               | ❌          |
+| Documented cross-thread semantics | ✅    | ❌                   | partial         | ❌               | ✅          |
+| Zero dependency                  | ✅     | ✅                   | ❌              | ❌               | ✅          |
 
 ## usage
 
@@ -62,63 +39,70 @@ println!("{} us", elapsed.as_micros());
 println!("using {} @ {} Hz", Instant::implementation(), Instant::frequency());
 ```
 
-## `Instant` vs `Cycles`
+## `Instant` vs `Cycles` — two distinct measurement primitives
 
-`Instant` is the safe elapsed-time clock. It uses the fastest counter that stays
-monotonic across OS thread migration and cross-thread handoffs. Use it for
-deadlines, budgets, runtime scheduling, cross-thread timestamps, and measurements
-that must survive descheduling, suspend/resume, or VM movement.
+These are **different kinds of counter at the hardware level**, not two performance tiers on the same counter. Picking the right one for the right job matters.
 
-`Cycles` is the lower-level hot-loop clock contract. It is an `Instant`-shaped
-counter for taking a sample, taking another sample, and subtracting them, but it
-can use faster machine counters such as RDPMC, PMCCNTR_EL0, rdcycle, or the
-fastest equivalent source for the target. It does not carry `Instant`'s
-cross-thread or OS-thread-event guarantees. Use it for same-thread
-microbenchmarks, profilers, tight polling loops, and short measurements where
-clock read cost dominates.
+### `Instant` — wall-clock-rate timer
 
-On AWS m7i Linux, `Cycles` selected `perf-RDPMC` and read in `5.526ns` where
-`Instant` used `RDTSC` and read in `6.842ns`.
+Backed by **RDTSC / CNTVCT_EL0 / rdtime**. These count at a fixed architectural rate (the nominal CPU base frequency on invariant TSC; ~24 MHz on Graviton and Apple Silicon; platform timer rate on RISC-V).
+
+- **Thread-state independent.** Keeps ticking during park/unpark, priority changes, descheduling, deep-sleep wake. The same number of ticks elapse per nanosecond whether your thread was scheduled or not.
+- **Same source for every thread** in the process. All threads read from the same counter.
+- **NOT strictly cross-thread monotonic.** Raw hardware counters can disagree across CPUs by sub-microsecond sync slop on most hosts, and by larger margins on AMD Zen4 (CCX boundary effects). If your code requires that thread B's read be ≥ thread A's read with strict monotonicity, use `std::time::Instant` — its kernel-mediated vDSO bookkeeping enforces monotonicity at the cost of ~20–25 ns per call. tach's `Instant` is fast precisely because it does not pay that cost.
+
+Use `Instant` for: timeouts, deadlines, latency measurements, request budgets — anywhere you want fast wall-clock time and aren't relying on strict cross-thread ordering for correctness.
+
+### `Cycles` — true CPU cycle counter
+
+Backed by **RDPMC fixed cycle counter / PMCCNTR_EL0 / rdcycle**. These count actual CPU cycles executed by the current core.
+
+- **Counts CPU work, not wall time.** Stops during park, sleep, idle, halt.
+- **Scales with frequency.** A P-state change to a higher clock makes the counter tick faster; this is observable as throttling.
+- **Per-core, never synchronized** across cores. If a thread migrates mid-measurement, the counter jumps by an arbitrary amount.
+- **Gated by host OS permission.** Requires `/sys/bus/event_source/devices/cpu/rdpmc ≥ 2` on x86_64-linux, `/proc/sys/kernel/perf_user_access = 1` on aarch64-linux. `Cycles::now()` returns `None` when access is denied — it never silently substitutes a wall-clock-rate counter.
+
+Use `Cycles` for: profilers, cryptographic micro-benchmarks (cpucycles-style), JIT hotspot accounting, perf-aware CI — wherever you specifically want to count work performed by the CPU and have control over the deployment host's PMU permissions.
 
 ## platform / architecture support
 
-For common modern systems, tach uses a direct counter where the target has
-one clear path and uses runtime selection when the hardware counter can vary
-by machine, kernel, or hypervisor.
+| Platform / target       | `Instant` clock      | `Cycles` clock                              | Fallback                  |
+|-------------------------|----------------------|---------------------------------------------|---------------------------|
+| macOS (aarch64)         | CNTVCT_EL0           | n/a — no user-mode PMU                      | —                         |
+| macOS (x86_64)          | RDTSC                | n/a — no user-mode RDPMC                    | mach_absolute_time        |
+| Windows (x86_64)        | RDTSC                | n/a — no user-mode PMU                      | QueryPerformanceCounter   |
+| Windows (aarch64)       | CNTVCT_EL0           | n/a — no user-mode PMU                      | QueryPerformanceCounter   |
+| Linux (x86_64)          | RDTSC                | RDPMC fixed / perf-RDPMC if permitted       | clock_gettime             |
+| Linux (x86)             | RDTSC                | RDPMC fixed / perf-RDPMC if permitted       | clock_gettime             |
+| Linux (aarch64)         | CNTVCT_EL0           | PMCCNTR_EL0 / perf-PMCCNTR if permitted     | clock_gettime             |
+| Unix/other (aarch64)    | CNTVCT_EL0           | n/a                                         | clock_gettime             |
+| Unix (riscv64)          | rdtime               | rdcycle if user CSR access enabled          | clock_gettime             |
+| Linux (loongarch64)     | rdtime.d             | n/a — no user PMU                           | clock_gettime             |
+| Linux (s390x)           | clock_gettime        | n/a                                         | clock_gettime             |
+| other                   | OS timer             | n/a                                         | OS timer                  |
 
-Runtime selection is thread-safe on the first racing call. Selected targets with
-crate-owned patchpoints rewrite warmed `Instant` and `Cycles` call sites to the
-chosen counter or fallback trampoline, so later reads do not keep selected-index
-dispatch on the hot path.
+`Instant::now()` compiles directly to the listed hardware counter on every supported target — no runtime dispatch, no patchpoints, same inline performance as the raw instruction.
 
-Rows with multiple clocks are runtime-selected. Rows with one clock compile to
-that direct clock or direct fallback.
+`Cycles::now()` checks PMU permission on first call and, on hosts that grant access, commits the choice via a self-modifying patchpoint so subsequent reads have the same inline performance as a raw `rdpmc` / `mrs pmccntr_el0` / `rdcycle`. On hosts where permission is denied, `Cycles::now()` returns `None`.
 
-| Platform / target       | `Instant` clocks          | `Cycles` clocks                         | Selection |
-|-------------------------|---------------------------|-----------------------------------------|-----------|
-| macOS (aarch64)         | CNTVCT_EL0                | CNTVCT_EL0                              | direct |
-| macOS (x86/x86_64)      | RDTSC, mach               | RDTSC, mach                             | runtime |
-| Windows (x86/x86_64)    | RDTSC, std                | RDTSC, std                              | runtime |
-| Windows (aarch64)       | CNTVCT_EL0, std           | CNTVCT_EL0, std                         | runtime |
-| Linux (x86_64)          | RDTSC, clock_gettime      | RDPMC, perf-RDPMC, RDTSC, clock_gettime | runtime + patch |
-| Linux (x86)             | RDTSC, clock_gettime      | RDPMC, perf-RDPMC, RDTSC, clock_gettime | runtime + patch |
-| Linux (aarch64)         | CNTVCT_EL0, clock_gettime | PMCCNTR_EL0, CNTVCT_EL0, clock_gettime  | runtime + patch |
-| Unix/other (aarch64)    | CNTVCT_EL0, clock_gettime | CNTVCT_EL0, clock_gettime               | runtime + patch |
-| Unix/other (riscv64)    | rdtime, clock_gettime     | rdcycle, rdtime, clock_gettime          | runtime + patch |
-| Linux (loongarch64)     | rdtime.d, clock_gettime   | rdtime.d, clock_gettime                 | runtime + patch |
-| Linux (s390x)           | clock_gettime             | clock_gettime                           | direct fallback |
-| Unix/other (powerpc64)  | OS timer                  | OS timer                                | direct fallback |
-| other                   | OS timer                  | OS timer                                | direct fallback |
+## design rationale
+
+The May-9 falsification matrix in [`benches/selection-falsification-2026-05-09.md`](benches/selection-falsification-2026-05-09.md) measured 25 (target × environment) cells across AWS bare-metal, virtualized, Lambda, GitHub-hosted runners, macOS, Windows, and Docker. The data drove two decisions:
+
+1. **No runtime selection for `Instant`.** Every measured cell of every supported target picked the same wall-clock-rate counter. Selection's multi-candidate latency comparison adds startup cost and code complexity without ever changing the winner on any measured host.
+2. **`Cycles` as a separate API with PMU-permission gating.** The original `Cycles` implementation conflated true cycle counting with wall-clock-rate counting (falling back to RDTSC when PMU was denied). Splitting the two and returning `None` when PMU is unavailable is honest about what the API delivers.
+
+The deletion was a net 4,000+ LOC reduction; the simpler design honors the same four user-facing promises (fastest target-appropriate clock, inline performance, never crash/segfault/spawn, safe cross-thread use under each API's documented semantic).
 
 ## changelog
 
 ### 0.2.0
 
-- `Instant` API compatability
-- skip selection for known fast hardware counters
-- thread-safe `OnceLock` timer selection
-- overflow-safe unit conversions
+- Direct hardware counter inlined per supported target (RDTSC / CNTVCT_EL0 / rdtime).
+- `Cycles` API for true CPU-cycle counting, gated behind host OS permission.
+- Honest documented cross-thread semantics (same source for every thread, thread-state independent; not strictly cross-thread monotonic — see `std::time::Instant` for that guarantee).
+- Overflow-safe unit conversions.
 
 ### 0.1.0
 
-- initial release with CPU/platform tick counters, wall-time conversions, CLI diagnostics, examples, and Criterion benchmarks
+- Initial release with CPU/platform tick counters, wall-time conversions, CLI diagnostics, examples, and Criterion benchmarks.

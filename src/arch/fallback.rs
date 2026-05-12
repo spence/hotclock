@@ -1,9 +1,15 @@
+// These fallbacks are reachable from `direct.rs` only on targets without a canonical
+// architectural counter (powerpc64, s390x, etc.). On supported architectures the
+// canonical counter is used directly and these symbols are dead — hence `allow(dead_code)`.
+
 #[cfg(all(target_os = "macos", not(target_arch = "aarch64")))]
 mod mach {
   unsafe extern "C" {
+    #[allow(dead_code)]
     fn mach_absolute_time() -> u64;
   }
 
+  #[allow(dead_code)]
   #[inline(always)]
   pub fn mach_time() -> u64 {
     // SAFETY: `mach_absolute_time` takes no arguments, has no Rust-side aliasing
@@ -26,9 +32,11 @@ mod monotonic {
   const CLOCK_MONOTONIC: i32 = 1;
 
   unsafe extern "C" {
+    #[allow(dead_code)]
     fn clock_gettime(clk_id: i32, tp: *mut Timespec) -> i32;
   }
 
+  #[allow(dead_code)]
   #[inline(always)]
   pub fn clock_monotonic() -> u64 {
     let mut ts = Timespec { tv_sec: 0, tv_nsec: 0 };
@@ -40,6 +48,7 @@ mod monotonic {
 }
 
 #[cfg(all(unix, not(target_os = "macos")))]
+#[allow(unused_imports)]
 pub use monotonic::*;
 
 #[cfg(not(unix))]
@@ -49,6 +58,7 @@ mod instant {
 
   static START: OnceLock<Instant> = OnceLock::new();
 
+  #[allow(dead_code)]
   #[inline(always)]
   pub fn instant_elapsed() -> u64 {
     START.get_or_init(Instant::now).elapsed().as_nanos() as u64

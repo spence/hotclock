@@ -1,15 +1,19 @@
 #![warn(clippy::undocumented_unsafe_blocks)]
 #![warn(rustdoc::broken_intra_doc_links)]
 
-//! Cross-platform CPU cycle/tick counter with direct, runtime-selected, and patched-selected
-//! paths.
+//! Ultra-fast drop-in replacement for [`std::time::Instant`], plus a
+//! [`Cycles`] API for the fastest possible read on each target/env.
 //!
-//! A Rust port of [libcpucycles](https://cpucycles.cr.yp.to/) that provides sub-nanosecond
-//! timing by directly reading hardware counters (RDTSC, CNTVCT\_EL0, etc.). Deterministic
-//! targets use a compiled-in counter path; targets with meaningful runtime variation select the
-//! best available counter lazily on first use and cache it for the lifetime of the process.
-//! Runtime-selected targets patch crate-owned warmed call sites where supported so hot reads do
-//! not keep selected-index dispatch on the hot path.
+//! Each supported target compiles [`Instant::now()`] directly to the fastest
+//! wall-clock-rate hardware counter for that architecture — RDTSC on x86/x86_64,
+//! CNTVCT_EL0 on aarch64, rdtime on riscv64/loongarch64 — and falls back to a
+//! platform monotonic clock everywhere else. No runtime dispatch on the hot path.
+//!
+//! [`Cycles::now()`] returns the fastest counter available for this target/env.
+//! On Linux x86/x86_64, the first call detects PMU permission (RDPMC fixed,
+//! perf-RDPMC) and patches every callsite to inline the winning counter's
+//! bytes; on hosts without PMU access, Cycles uses the same wall-clock counter
+//! Instant uses, so `Cycles ≤ Instant` on read cost, always.
 //!
 //! Roughly **~30x faster** than [`std::time::Instant`] on typical hardware.
 //!
@@ -26,51 +30,39 @@
 //!
 //! # Platform support
 //!
-//! | Architecture        | Primary        | Fallback       |
-//! |---------------------|----------------|----------------|
-//! | aarch64 macOS       | CNTVCT\_EL0    | none           |
-//! | x86\_64             | RDTSC          | OS timer       |
-//! | x86                 | RDTSC          | OS timer       |
-//! | aarch64 non-macOS   | CNTVCT\_EL0    | OS timer       |
-//! | riscv64             | rdtime         | OS timer       |
-//! | powerpc64           | OS timer       | none           |
-//! | s390x               | OS timer       | none           |
-//! | loongarch64         | rdtime.d       | OS timer       |
-//! | other               | OS timer       | none           |
+//! | Architecture        | Instant clock  | Cycles selection | Fallback       |
+//! |---------------------|----------------|------------------|----------------|
+//! | x86_64 / x86 Linux  | RDTSC          | RDPMC variants   | clock_gettime  |
+//! | aarch64 macOS       | CNTVCT_EL0     | = Instant        | none           |
+//! | aarch64 Linux       | CNTVCT_EL0     | = Instant        | clock_gettime  |
+//! | aarch64 Windows     | CNTVCT_EL0     | = Instant        | QPC            |
+//! | x86_64 macOS        | RDTSC          | = Instant        | mach           |
+//! | x86_64 Windows      | RDTSC          | = Instant        | QPC            |
+//! | riscv64             | rdtime         | = Instant        | clock_gettime  |
+//! | loongarch64         | rdtime.d       | = Instant        | clock_gettime  |
+//! | other               | OS timer       | = Instant        | none           |
 //!
-//! OS timers: `mach_absolute_time` (macOS), `clock_gettime` (Unix), [`Instant`](std::time::Instant) (other).
+//! `Cycles selection = Instant` means the target has no faster cycle counter
+//! exposed to user mode, so `Cycles::now()` compile-time-resolves to the same
+//! tick reader as `Instant::now()`.
 //!
 //! # Timing contract
 //!
-//! `tach::Instant` is a `Copy + Send + Sync` opaque `u64` wrapper around a counter
-//! sample. Its raw value is not a civil-time or OS timestamp. Use it as a point in the
-//! process-wide counter timeline.
+//! `Instant` is wall-clock-rate: keeps ticking through park, suspension, and
+//! descheduling. Same source across every thread. **Not strictly cross-thread
+//! monotonic** — raw hardware counters can disagree across CPUs by sync slop on
+//! some hosts. For strict cross-thread monotonicity, use [`std::time::Instant`].
 //!
-//! [`Instant::now()`] reads the process-wide counter. Runtime-selected targets require the
-//! selected counter to be nondecreasing for repeated reads on one thread and for reads ordered
-//! across threads by a release/acquire handoff. Selection falls back to the OS timer when the
-//! preferred hardware counter does not satisfy that contract during validation.
-//!
-//! Standard `Instant` methods return [`std::time::Duration`] to match the familiar Rust timing
-//! API. `tach::Ticks` is the explicit raw counter-delta type for hot paths that want hardware
-//! tick units directly. Use [`Instant::elapsed_ticks()`] or [`Instant::ticks_since()`] when raw
-//! counter deltas are required.
-//!
-//! `Cycles` is the separate hot-loop clock contract: an Instant-shaped counter that can use
-//! faster PMU or core-cycle sources such as RDPMC, PMCCNTR\_EL0, or rdcycle. It is for
-//! same-thread microbenchmarks, profilers, and polling loops, not for cross-thread ordering or
-//! measurements that must survive OS thread migration, descheduling, suspend/resume, or
-//! hypervisor migration.
+//! `Cycles` is the fastest read available. When backed by a CPU cycle counter,
+//! it has cycle-counter semantics: per-core, stops during idle, not safe across
+//! thread migration. When backed by the wall-clock fallback (most targets), it
+//! has Instant's semantics. `Cycles::now()` always returns a value.
 //!
 //! # Frequency calibration
 //!
-//! [`Instant::frequency()`] is lazily calibrated on first call by measuring tick rate against
-//! the system clock. Calibration is thread-safe and the result is cached for the lifetime of
-//! the process. Calling it pre-warms calibration and, on runtime-selected targets, counter
-//! selection. Time-conversion methods ([`Ticks::as_nanos`], [`Ticks::as_duration`], etc.) call
-//! `frequency()` internally and therefore trigger calibration on first use. Wall-unit
-//! conversions return `u128`; [`Ticks::as_duration()`] saturates at [`std::time::Duration::MAX`],
-//! and [`Ticks::checked_duration()`] reports overflow with [`None`].
+//! [`Instant::frequency()`] and [`Cycles::frequency()`] are lazily calibrated
+//! on first call by measuring tick rate against the system clock. The result is
+//! cached for the lifetime of the process.
 
 mod arch;
 mod calibration;
@@ -78,16 +70,7 @@ mod convert;
 mod cycle_ticks;
 mod cycles;
 mod instant;
-#[cfg(not(any(
-  all(target_arch = "aarch64", target_os = "macos"),
-  not(any(
-    target_arch = "x86_64",
-    target_arch = "x86",
-    target_arch = "aarch64",
-    target_arch = "riscv64",
-    target_arch = "loongarch64",
-  )),
-)))]
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
 mod selection;
 mod ticks;
 
@@ -207,74 +190,6 @@ mod tests {
       );
       previous = current;
     }
-  }
-
-  #[test]
-  fn test_instant_cross_thread_ordering() {
-    use std::sync::Arc;
-    use std::sync::Barrier;
-    use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
-
-    const CALLS: usize = 1000;
-
-    let published = Arc::new(AtomicU64::new(0));
-    let sequence = Arc::new(AtomicUsize::new(0));
-    let acknowledged = Arc::new(AtomicUsize::new(0));
-    let failed = Arc::new(AtomicBool::new(false));
-    let start = Arc::new(Barrier::new(2));
-
-    let reader = {
-      let published = Arc::clone(&published);
-      let sequence = Arc::clone(&sequence);
-      let acknowledged = Arc::clone(&acknowledged);
-      let failed = Arc::clone(&failed);
-      let start = Arc::clone(&start);
-
-      std::thread::spawn(move || {
-        start.wait();
-
-        let mut seen = 0;
-        while seen < CALLS {
-          let next = sequence.load(Ordering::Acquire);
-          if next == seen {
-            std::hint::spin_loop();
-            continue;
-          }
-
-          let before = published.load(Ordering::Acquire);
-          let after = Instant::now().as_raw();
-          seen = next;
-          if after < before {
-            failed.store(true, Ordering::Relaxed);
-            acknowledged.store(seen, Ordering::Release);
-            break;
-          }
-
-          acknowledged.store(seen, Ordering::Release);
-        }
-      })
-    };
-
-    start.wait();
-
-    for i in 1..=CALLS {
-      if failed.load(Ordering::Relaxed) {
-        break;
-      }
-
-      published.store(Instant::now().as_raw(), Ordering::Release);
-      sequence.store(i, Ordering::Release);
-
-      while acknowledged.load(Ordering::Acquire) != i {
-        if failed.load(Ordering::Relaxed) {
-          break;
-        }
-        std::hint::spin_loop();
-      }
-    }
-
-    assert!(reader.join().is_ok());
-    assert!(!failed.load(Ordering::Relaxed));
   }
 
   #[test]

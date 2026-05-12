@@ -1,3 +1,15 @@
+//! Cycles patchpoint mechanism for Linux x86 / x86_64.
+//!
+//! Provides `cycle_ticks()` whose callsite is rewritten on first call to inline the
+//! winning Cycles candidate's bytes (RDTSC for the wall-clock fallback, or a `jmp`
+//! to a trampoline that calls into `perf_rdpmc_linux` for the direct-RDPMC and
+//! perf-RDPMC paths). After patching, subsequent reads have zero dispatch overhead
+//! — the call site IS the raw counter instruction.
+//!
+//! Instant does not use this mechanism. Instant compiles directly to `rdtsc()` via
+//! `super::direct::ticks()` — every benchmarked (target × env) cell picked RDTSC,
+//! so no runtime selection is needed for Instant.
+
 use core::arch::asm;
 use core::ptr::NonNull;
 use std::sync::OnceLock;
@@ -11,15 +23,9 @@ const UNSELECTED: u8 = u8::MAX;
 const SELECTING: u8 = u8::MAX - 1;
 const RDTSC_BYTES: [u8; 9] = [0x0F, 0x31, 0x48, 0xC1, 0xE2, 0x20, 0x48, 0x09, 0xD0];
 
-static SELECTED: AtomicU8 = AtomicU8::new(UNSELECTED);
-static SELECTED_NAME: OnceLock<&'static str> = OnceLock::new();
 static CYCLE_SELECTED: AtomicU8 = AtomicU8::new(UNSELECTED);
 static CYCLE_SELECTED_NAME: OnceLock<&'static str> = OnceLock::new();
 
-static INSTANT_PATCH_REGISTERED: AtomicUsize = AtomicUsize::new(0);
-static INSTANT_PATCH_PATCHED: AtomicUsize = AtomicUsize::new(0);
-static INSTANT_PATCH_ALREADY_PATCHED: AtomicUsize = AtomicUsize::new(0);
-static INSTANT_PATCH_FAILED: AtomicUsize = AtomicUsize::new(0);
 static CYCLE_PATCH_REGISTERED: AtomicUsize = AtomicUsize::new(0);
 static CYCLE_PATCH_PATCHED: AtomicUsize = AtomicUsize::new(0);
 static CYCLE_PATCH_ALREADY_PATCHED: AtomicUsize = AtomicUsize::new(0);
@@ -30,12 +36,6 @@ pub mod indices {
   pub const CLOCK_MONOTONIC: u8 = 1;
   pub const DIRECT_RDPMC: u8 = 2;
   pub const PERF_RDPMC: u8 = 3;
-}
-
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-enum ClockClass {
-  Instant,
-  Cycles,
 }
 
 #[repr(C)]
@@ -49,16 +49,6 @@ struct CallsiteRecord {
 }
 
 #[used]
-#[unsafe(link_section = "tach_x86_64_instant_callsite")]
-static INSTANT_CALLSITE_SENTINEL: CallsiteRecord = CallsiteRecord {
-  patch_address: 0,
-  cold_address: 0,
-  fallback_address: 0,
-  direct_rdpmc_address: 0,
-  perf_rdpmc_address: 0,
-};
-
-#[used]
 #[unsafe(link_section = "tach_x86_64_cycle_callsite")]
 static CYCLE_CALLSITE_SENTINEL: CallsiteRecord = CallsiteRecord {
   patch_address: 0,
@@ -69,12 +59,6 @@ static CYCLE_CALLSITE_SENTINEL: CallsiteRecord = CallsiteRecord {
 };
 
 unsafe extern "C" {
-  #[link_name = "__start_tach_x86_64_instant_callsite"]
-  static INSTANT_CALLSITE_START: CallsiteRecord;
-
-  #[link_name = "__stop_tach_x86_64_instant_callsite"]
-  static INSTANT_CALLSITE_STOP: CallsiteRecord;
-
   #[link_name = "__start_tach_x86_64_cycle_callsite"]
   static CYCLE_CALLSITE_START: CallsiteRecord;
 
@@ -90,81 +74,13 @@ macro_rules! callsite_record {
 
 #[inline(always)]
 #[allow(clippy::inline_always)]
-pub fn ticks() -> u64 {
-  let out: u64;
-
-  // SAFETY: This emits a crate-owned 9-byte gate plus cold and selected trampolines. The first
-  // call selects and patches all registered gates. Warmed RDTSC gates become raw RDTSC bytes;
-  // fallback gates become direct jumps to the monotonic trampoline.
-  unsafe {
-    asm!(
-      ".pushsection tach_x86_64_instant_callsite,\"awR\",@progbits",
-      callsite_record!(),
-      ".popsection",
-      ".pushsection .text.tach_x86_64_cold,\"ax\",@progbits",
-      ".p2align 4",
-      "4:",
-      "mov r11, rsp",
-      "and rsp, -16",
-      "sub rsp, 48",
-      "mov qword ptr [rsp + 32], r11",
-      "call {select}",
-      "mov rsp, qword ptr [rsp + 32]",
-      "jmp 3f",
-      ".p2align 4",
-      "5:",
-      "mov r11, rsp",
-      "and rsp, -16",
-      "sub rsp, 48",
-      "mov qword ptr [rsp + 32], r11",
-      "call {fallback}",
-      "mov rsp, qword ptr [rsp + 32]",
-      "jmp 3f",
-      ".p2align 4",
-      "6:",
-      "mov r11, rsp",
-      "and rsp, -16",
-      "sub rsp, 48",
-      "mov qword ptr [rsp + 32], r11",
-      "call {direct_rdpmc}",
-      "mov rsp, qword ptr [rsp + 32]",
-      "jmp 3f",
-      ".p2align 4",
-      "7:",
-      "mov r11, rsp",
-      "and rsp, -16",
-      "sub rsp, 48",
-      "mov qword ptr [rsp + 32], r11",
-      "call {perf_rdpmc}",
-      "mov rsp, qword ptr [rsp + 32]",
-      "jmp 3f",
-      ".popsection",
-      ".p2align 3",
-      "2:",
-      "jmp 4b",
-      ".rept 4",
-      "nop",
-      ".endr",
-      "3:",
-      select = sym instant_select_fallback,
-      fallback = sym direct_clock_monotonic,
-      direct_rdpmc = sym direct_rdpmc,
-      perf_rdpmc = sym perf_rdpmc,
-      lateout("rax") out,
-      clobber_abi("C"),
-    );
-  }
-
-  out
-}
-
-#[inline(always)]
-#[allow(clippy::inline_always)]
 pub fn cycle_ticks() -> u64 {
   let out: u64;
 
-  // SAFETY: Same patchpoint shape as `ticks`, with independent cycle selection and cycle
-  // trampolines for RDPMC-backed sources.
+  // SAFETY: Emits a crate-owned 9-byte gate plus cold and trampoline paths. The first call
+  // selects the fastest Cycles candidate and patches all registered gates. The selected
+  // gate is either raw RDTSC bytes (wall-clock fallback) or a `jmp` to one of the
+  // trampolines below; the RDPMC trampolines call into `perf_rdpmc_linux`.
   unsafe {
     asm!(
       ".pushsection tach_x86_64_cycle_callsite,\"awR\",@progbits",
@@ -229,20 +145,9 @@ pub fn cycle_ticks() -> u64 {
 
 #[inline(always)]
 #[allow(clippy::inline_always)]
-pub fn implementation() -> &'static str {
-  ensure_selected();
-  SELECTED_NAME.get().copied().unwrap_or("unknown")
-}
-
-#[inline(always)]
-#[allow(clippy::inline_always)]
 pub fn cycle_implementation() -> &'static str {
   ensure_cycle_selected();
   CYCLE_SELECTED_NAME.get().copied().unwrap_or("unknown")
-}
-
-extern "C" fn instant_select_fallback() -> u64 {
-  read_selected(ensure_selected())
 }
 
 extern "C" fn cycle_select_fallback() -> u64 {
@@ -262,15 +167,6 @@ extern "C" fn perf_rdpmc() -> u64 {
 }
 
 #[inline(always)]
-fn read_selected(sel: u8) -> u64 {
-  match sel {
-    indices::RDTSC => super::x86_64::rdtsc(),
-    indices::CLOCK_MONOTONIC => super::fallback::clock_monotonic(),
-    _ => unreachable!("invalid selected x86_64 Linux counter"),
-  }
-}
-
-#[inline(always)]
 fn read_cycle_selected(sel: u8) -> u64 {
   match sel {
     indices::DIRECT_RDPMC => super::perf_rdpmc_linux::direct_rdpmc_fixed_core_cycles(),
@@ -279,28 +175,7 @@ fn read_cycle_selected(sel: u8) -> u64 {
     }
     indices::RDTSC => super::x86_64::rdtsc(),
     indices::CLOCK_MONOTONIC => super::fallback::clock_monotonic(),
-    _ => unreachable!("invalid selected x86_64 Linux cycle counter"),
-  }
-}
-
-fn ensure_selected() -> u8 {
-  loop {
-    match SELECTED.load(Ordering::Acquire) {
-      UNSELECTED => {
-        if SELECTED
-          .compare_exchange(UNSELECTED, SELECTING, Ordering::AcqRel, Ordering::Acquire)
-          .is_ok()
-        {
-          let (idx, name) = crate::selection::select_best();
-          let _ = SELECTED_NAME.set(name);
-          store_patch_stats(ClockClass::Instant, patch_callsites(ClockClass::Instant, idx));
-          SELECTED.store(idx, Ordering::Release);
-          return idx;
-        }
-      }
-      SELECTING => std::hint::spin_loop(),
-      selected => return selected,
-    }
+    _ => unreachable!("invalid selected x86_64 Cycles counter"),
   }
 }
 
@@ -314,7 +189,7 @@ fn ensure_cycle_selected() -> u8 {
         {
           let (idx, name) = crate::selection::select_best_cycles();
           let _ = CYCLE_SELECTED_NAME.set(name);
-          store_patch_stats(ClockClass::Cycles, patch_callsites(ClockClass::Cycles, idx));
+          store_patch_stats(patch_callsites(idx));
           CYCLE_SELECTED.store(idx, Ordering::Release);
           return idx;
         }
@@ -332,15 +207,15 @@ enum PatchOutcome {
   Failed,
 }
 
-fn patch_callsites(class: ClockClass, selected: u8) -> patch::PatchStats {
+fn patch_callsites(selected: u8) -> patch::PatchStats {
   let mut stats = patch::PatchStats::default();
 
-  for record in callsite_records(class) {
+  for record in callsite_records() {
     let Some(patch_address) = NonNull::new(record.patch_address as *mut u8) else {
       continue;
     };
     stats.registered += 1;
-    match patch_callsite(class, patch_address, record, selected) {
+    match patch_callsite(patch_address, record, selected) {
       PatchOutcome::Patched => stats.patched += 1,
       PatchOutcome::AlreadyPatched => stats.already_patched += 1,
       PatchOutcome::Failed => stats.failed += 1,
@@ -351,13 +226,12 @@ fn patch_callsites(class: ClockClass, selected: u8) -> patch::PatchStats {
 }
 
 fn patch_callsite(
-  class: ClockClass,
   patch_address: NonNull<u8>,
   record: &CallsiteRecord,
   selected: u8,
 ) -> PatchOutcome {
   let ptr = patch_address.as_ptr();
-  let Some(selected_bytes) = selected_gate_bytes(class, record, selected) else {
+  let Some(selected_bytes) = selected_gate_bytes(record, selected) else {
     return PatchOutcome::Failed;
   };
   let Some(unselected_bytes) = branch_bytes(record.patch_address, record.cold_address) else {
@@ -379,24 +253,13 @@ fn patch_callsite(
   }
 }
 
-fn selected_gate_bytes(
-  class: ClockClass,
-  record: &CallsiteRecord,
-  selected: u8,
-) -> Option<[u8; PATCH_LEN]> {
-  match class {
-    ClockClass::Instant => match selected {
-      indices::RDTSC => Some(RDTSC_BYTES),
-      indices::CLOCK_MONOTONIC => branch_bytes(record.patch_address, record.fallback_address),
-      _ => None,
-    },
-    ClockClass::Cycles => match selected {
-      indices::RDTSC => Some(RDTSC_BYTES),
-      indices::CLOCK_MONOTONIC => branch_bytes(record.patch_address, record.fallback_address),
-      indices::DIRECT_RDPMC => branch_bytes(record.patch_address, record.direct_rdpmc_address),
-      indices::PERF_RDPMC => branch_bytes(record.patch_address, record.perf_rdpmc_address),
-      _ => None,
-    },
+fn selected_gate_bytes(record: &CallsiteRecord, selected: u8) -> Option<[u8; PATCH_LEN]> {
+  match selected {
+    indices::RDTSC => Some(RDTSC_BYTES),
+    indices::CLOCK_MONOTONIC => branch_bytes(record.patch_address, record.fallback_address),
+    indices::DIRECT_RDPMC => branch_bytes(record.patch_address, record.direct_rdpmc_address),
+    indices::PERF_RDPMC => branch_bytes(record.patch_address, record.perf_rdpmc_address),
+    _ => None,
   }
 }
 
@@ -408,17 +271,9 @@ fn branch_bytes(from: usize, to: usize) -> Option<[u8; PATCH_LEN]> {
   Some(bytes)
 }
 
-fn callsite_records(class: ClockClass) -> &'static [CallsiteRecord] {
-  let (start, stop) = match class {
-    ClockClass::Instant => (
-      core::ptr::addr_of!(INSTANT_CALLSITE_START) as usize,
-      core::ptr::addr_of!(INSTANT_CALLSITE_STOP) as usize,
-    ),
-    ClockClass::Cycles => (
-      core::ptr::addr_of!(CYCLE_CALLSITE_START) as usize,
-      core::ptr::addr_of!(CYCLE_CALLSITE_STOP) as usize,
-    ),
-  };
+fn callsite_records() -> &'static [CallsiteRecord] {
+  let start = core::ptr::addr_of!(CYCLE_CALLSITE_START) as usize;
+  let stop = core::ptr::addr_of!(CYCLE_CALLSITE_STOP) as usize;
 
   if stop < start {
     return &[];
@@ -449,87 +304,30 @@ fn read_patch_bytes(ptr: *mut u8) -> [u8; PATCH_LEN] {
   bytes
 }
 
-fn store_patch_stats(class: ClockClass, stats: patch::PatchStats) {
-  let (registered, patched, already_patched, failed) = match class {
-    ClockClass::Instant => (
-      &INSTANT_PATCH_REGISTERED,
-      &INSTANT_PATCH_PATCHED,
-      &INSTANT_PATCH_ALREADY_PATCHED,
-      &INSTANT_PATCH_FAILED,
-    ),
-    ClockClass::Cycles => (
-      &CYCLE_PATCH_REGISTERED,
-      &CYCLE_PATCH_PATCHED,
-      &CYCLE_PATCH_ALREADY_PATCHED,
-      &CYCLE_PATCH_FAILED,
-    ),
-  };
-
-  registered.store(stats.registered, Ordering::Relaxed);
-  patched.store(stats.patched, Ordering::Relaxed);
-  already_patched.store(stats.already_patched, Ordering::Relaxed);
-  failed.store(stats.failed, Ordering::Relaxed);
+fn store_patch_stats(stats: patch::PatchStats) {
+  CYCLE_PATCH_REGISTERED.store(stats.registered, Ordering::Relaxed);
+  CYCLE_PATCH_PATCHED.store(stats.patched, Ordering::Relaxed);
+  CYCLE_PATCH_ALREADY_PATCHED.store(stats.already_patched, Ordering::Relaxed);
+  CYCLE_PATCH_FAILED.store(stats.failed, Ordering::Relaxed);
 }
 
 #[cfg(test)]
-fn last_patch_stats(class: ClockClass) -> patch::PatchStats {
-  let (registered, patched, already_patched, failed) = match class {
-    ClockClass::Instant => (
-      &INSTANT_PATCH_REGISTERED,
-      &INSTANT_PATCH_PATCHED,
-      &INSTANT_PATCH_ALREADY_PATCHED,
-      &INSTANT_PATCH_FAILED,
-    ),
-    ClockClass::Cycles => (
-      &CYCLE_PATCH_REGISTERED,
-      &CYCLE_PATCH_PATCHED,
-      &CYCLE_PATCH_ALREADY_PATCHED,
-      &CYCLE_PATCH_FAILED,
-    ),
-  };
-
+fn last_patch_stats() -> patch::PatchStats {
   patch::PatchStats {
-    registered: registered.load(Ordering::Relaxed),
-    patched: patched.load(Ordering::Relaxed),
-    already_patched: already_patched.load(Ordering::Relaxed),
-    failed: failed.load(Ordering::Relaxed),
+    registered: CYCLE_PATCH_REGISTERED.load(Ordering::Relaxed),
+    patched: CYCLE_PATCH_PATCHED.load(Ordering::Relaxed),
+    already_patched: CYCLE_PATCH_ALREADY_PATCHED.load(Ordering::Relaxed),
+    failed: CYCLE_PATCH_FAILED.load(Ordering::Relaxed),
   }
 }
 
 #[cfg(test)]
 mod tests {
-  use super::{ClockClass, RDTSC_BYTES};
-
-  #[test]
-  fn rdtsc_selection_patches_registered_instant_callsites_when_selected() {
-    let _ = super::ticks();
-    if super::implementation() != "x86_64-rdtsc" {
-      return;
-    }
-
-    let callsites: Vec<_> = super::callsite_records(ClockClass::Instant)
-      .iter()
-      .filter_map(|record| core::ptr::NonNull::new(record.patch_address as *mut u8))
-      .map(|address| super::read_patch_bytes(address.as_ptr()))
-      .collect();
-    assert!(!callsites.is_empty());
-    assert!(callsites.iter().all(|bytes| bytes == &RDTSC_BYTES), "{callsites:02x?}");
-
-    let stats = super::last_patch_stats(ClockClass::Instant);
-    assert_eq!(stats.failed, 0, "{stats:?}");
-    assert_eq!(stats.patched + stats.already_patched, stats.registered, "{stats:?}");
-  }
-
   #[test]
   fn cycle_selection_patches_registered_callsites() {
     let _ = super::cycle_ticks();
-    let stats = super::last_patch_stats(ClockClass::Cycles);
+    let stats = super::last_patch_stats();
     assert_eq!(stats.failed, 0, "{stats:?}");
     assert_eq!(stats.patched + stats.already_patched, stats.registered, "{stats:?}");
-  }
-
-  #[test]
-  fn rdtsc_patch_bytes_fill_the_entire_hot_region() {
-    assert_eq!(RDTSC_BYTES.len(), super::PATCH_LEN);
   }
 }

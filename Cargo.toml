@@ -35,14 +35,6 @@ path = "src/bin/tach.rs"
 name = "instant"
 harness = false
 
-[[bench]]
-name = "selection_dispatch"
-harness = false
-
-[[bench]]
-name = "clock_validation"
-harness = false
-
 [[example]]
 name = "basic"
 

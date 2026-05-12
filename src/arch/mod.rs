@@ -5,19 +5,6 @@ pub mod aarch64;
 pub mod fallback;
 #[cfg(target_arch = "loongarch64")]
 pub mod loongarch64;
-#[cfg(not(any(
-  all(target_arch = "aarch64", target_os = "macos"),
-  not(any(
-    target_arch = "x86_64",
-    target_arch = "x86",
-    target_arch = "aarch64",
-    target_arch = "riscv64",
-    target_arch = "loongarch64",
-  )),
-)))]
-mod patch;
-#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_os = "linux"))]
-pub mod perf_rdpmc_linux;
 #[cfg(target_arch = "riscv64")]
 pub mod riscv64;
 #[cfg(target_arch = "x86")]
@@ -25,71 +12,50 @@ pub mod x86;
 #[cfg(target_arch = "x86_64")]
 pub mod x86_64;
 
+mod direct;
+pub use direct::{implementation, ticks};
+
+// Cycles patching infrastructure — only on the Linux targets where selection between
+// PMU candidates and the wall-clock fallback earns its keep. On every other target,
+// `Cycles::now()` compile-time-resolves to the Instant tick reader.
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+pub mod patch;
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+pub mod perf_rdpmc_linux;
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+pub mod x86_64_linux;
+
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+pub use x86_64_linux::indices;
+
 static FREQUENCY: OnceLock<u64> = OnceLock::new();
 static CYCLE_FREQUENCY: OnceLock<u64> = OnceLock::new();
 
-#[cfg(all(target_arch = "x86_64", target_os = "linux"))]
-mod x86_64_linux;
+/// Cycles read entry-point.
+///
+/// On Linux x86 / x86_64, routes through the Cycles patchpoint module — first call
+/// runs single-threaded selection between PMU candidates and the wall-clock fallback,
+/// then patches every callsite to inline the winner's bytes. On every other target,
+/// `Cycles::now()` reads the same wall-clock-rate counter `Instant::now()` reads.
+#[inline(always)]
+#[allow(clippy::inline_always)]
+pub fn cycle_ticks() -> u64 {
+  #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+  return x86_64_linux::cycle_ticks();
 
-#[cfg(all(target_arch = "x86_64", target_os = "linux"))]
-pub use x86_64_linux::{cycle_implementation, cycle_ticks, implementation, indices, ticks};
+  #[cfg(not(all(target_os = "linux", target_arch = "x86_64")))]
+  return ticks();
+}
 
-// These targets have one useful counter path: Apple Silicon uses CNTVCT_EL0, and
-// unsupported architectures have only the OS fallback. Runtime selection would only add
-// hot-path dispatch.
-#[cfg(any(
-  all(target_arch = "aarch64", target_os = "macos"),
-  not(any(
-    target_arch = "x86_64",
-    target_arch = "x86",
-    target_arch = "aarch64",
-    target_arch = "riscv64",
-    target_arch = "loongarch64",
-  )),
-))]
-mod direct;
+#[inline]
+#[must_use]
+pub fn cycle_implementation() -> &'static str {
+  #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+  return x86_64_linux::cycle_implementation();
 
-#[cfg(any(
-  all(target_arch = "aarch64", target_os = "macos"),
-  not(any(
-    target_arch = "x86_64",
-    target_arch = "x86",
-    target_arch = "aarch64",
-    target_arch = "riscv64",
-    target_arch = "loongarch64",
-  )),
-))]
-pub use direct::{cycle_implementation, cycle_ticks, implementation, ticks};
-
-// Runtime-selected targets keep the fallback path because the fastest compiled counter can
-// fail the monotonicity contract on some CPUs, kernels, or hypervisors. Selected x86_64
-// targets patch warmed RDTSC callsites to raw counter bytes, so selected-index dispatch leaves
-// the hot path after the first call.
-#[cfg(not(any(
-  all(target_arch = "x86_64", target_os = "linux"),
-  all(target_arch = "aarch64", target_os = "macos"),
-  not(any(
-    target_arch = "x86_64",
-    target_arch = "x86",
-    target_arch = "aarch64",
-    target_arch = "riscv64",
-    target_arch = "loongarch64",
-  )),
-)))]
-mod selected;
-
-#[cfg(not(any(
-  all(target_arch = "x86_64", target_os = "linux"),
-  all(target_arch = "aarch64", target_os = "macos"),
-  not(any(
-    target_arch = "x86_64",
-    target_arch = "x86",
-    target_arch = "aarch64",
-    target_arch = "riscv64",
-    target_arch = "loongarch64",
-  )),
-)))]
-pub use selected::{cycle_implementation, cycle_ticks, implementation, indices, ticks};
+  #[cfg(not(all(target_os = "linux", target_arch = "x86_64")))]
+  return implementation();
+}
 
 #[inline]
 #[must_use]
