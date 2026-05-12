@@ -3,3 +3,10 @@ target
 
 # misc
 .DS_Store
+
+# bench infrastructure (per-developer secrets and ephemeral state)
+benches/scripts/.bench-key.pem
+benches/scripts/.bench-sg.txt
+benches/scripts/.ami-*.txt
+benches/scripts/.tach-bench.tar.gz
+benches/results/

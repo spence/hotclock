@@ -321,6 +321,7 @@ fn render_row(row: &Row) -> String {
   push_field(&mut out, "fastant-bench", &format_ns(row.fastant));
   push_field(&mut out, "std-instant-bench", &format_ns(row.std_instant));
   push_field(&mut out, "fastest-instant-api", yes_no(row.fastest_instant_api));
+  push_field(&mut out, "cycles-le-instant", cycles_le_instant_status(row));
   push_field(&mut out, "matches-expected", expected_status(row));
   out.push_str("└────────────────────────────────┴────────────────────────────────────────┘\n");
 
@@ -378,6 +379,21 @@ fn expected_status(row: &Row) -> &'static str {
     "yes"
   } else {
     "no"
+  }
+}
+
+/// The Cycles ≤ Instant contract: Cycles selection always includes the Instant
+/// counter as a candidate, so the chosen Cycles read should never exceed the
+/// Instant read by more than measurement noise (0.5 ns is near the noise floor on
+/// modern hardware). A "fail" here indicates a selection or patching bug, not
+/// noise — sharpen the measurement (more samples, pinned core) rather than
+/// widening this tolerance.
+fn cycles_le_instant_status(row: &Row) -> &'static str {
+  const TOLERANCE_NS: f64 = 0.5;
+  if row.tach_cycles.ns_op() <= row.tach_instant.ns_op() + TOLERANCE_NS {
+    "pass"
+  } else {
+    "fail"
   }
 }
 
