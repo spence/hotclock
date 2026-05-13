@@ -67,6 +67,16 @@ jobs:
             ./target/release/tach-selection-validation-runner | tee phase-b.log
           fi
 
+      - name: Clock survey (all architecturally-applicable clocks)
+        working-directory: tools/clock-survey
+        run: |
+          cargo build --release
+          if command -v taskset >/dev/null; then
+            taskset -c 0 ./target/release/clock-survey | tee clock-survey.log
+          else
+            ./target/release/clock-survey | tee clock-survey.log
+          fi
+
       - name: Upload logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -75,3 +85,4 @@ jobs:
           path: |
             tools/selection-validation-runner/phase-a.log
             tools/selection-validation-runner/phase-b.log
+            tools/clock-survey/clock-survey.log
