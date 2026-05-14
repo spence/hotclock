@@ -1,12 +1,13 @@
 //! Single-threaded Cycles candidate selection.
 //!
 //! This module is only compiled on Linux targets where `Cycles` has more than one
-//! candidate counter (currently x86 / x86_64). On every other target,
+//! candidate counter (x86 / x86_64, aarch64). On every other target,
 //! `arch::cycle_ticks()` compile-time-equals `arch::ticks()` so no selection runs.
 //!
 //! The selector measures each available candidate in a single-threaded tight loop
-//! and picks the lowest measured latency. The wall-clock fallback (RDTSC on x86_64)
-//! is always one of the candidates, guaranteeing `Cycles ≤ Instant` on read cost.
+//! and picks the lowest measured latency. The wall-clock fallback (RDTSC on x86_64,
+//! CNTVCT_EL0 on aarch64) is always one of the candidates, guaranteeing
+//! `Cycles ≤ Instant` on read cost.
 //!
 //! No `thread::spawn`, no `Barrier`, no cross-thread validation — the cross-thread
 //! property is provided by the patchpoint mechanism committing one choice for every
@@ -15,7 +16,14 @@
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::time::Instant as StdInstant;
 
-use crate::arch::{self, perf_rdpmc_linux};
+use crate::arch::{self};
+#[cfg(target_arch = "aarch64")]
+use crate::arch::aarch64;
+#[cfg(target_arch = "aarch64")]
+use crate::arch::perf_pmccntr_linux;
+#[cfg(target_arch = "x86_64")]
+use crate::arch::perf_rdpmc_linux;
+#[cfg(target_arch = "x86_64")]
 use crate::arch::x86_64;
 
 const TRACE_SELECTION_ENV: &str = "TACH_SELECTOR_TRACE";
@@ -54,6 +62,7 @@ fn always() -> bool {
   true
 }
 
+#[cfg(target_arch = "x86_64")]
 fn cycle_candidates() -> &'static [Candidate] {
   candidates![
     Candidate::prepared(
@@ -69,6 +78,24 @@ fn cycle_candidates() -> &'static [Candidate] {
       perf_rdpmc_linux::perf_rdpmc_cpu_cycles_checked,
     ),
     Candidate::new("x86_64-rdtsc", arch::indices::RDTSC, x86_64::rdtsc),
+    Candidate::new(
+      "unix-monotonic",
+      arch::indices::CLOCK_MONOTONIC,
+      arch::fallback::clock_monotonic,
+    ),
+  ]
+}
+
+#[cfg(target_arch = "aarch64")]
+fn cycle_candidates() -> &'static [Candidate] {
+  candidates![
+    Candidate::prepared(
+      "aarch64-perf-pmccntr",
+      arch::indices::PERF_PMCCNTR,
+      perf_pmccntr_linux::perf_pmccntr_cpu_cycles_available,
+      perf_pmccntr_linux::perf_pmccntr_cpu_cycles_checked,
+    ),
+    Candidate::new("aarch64-cntvct", arch::indices::CNTVCT, aarch64::cntvct),
     Candidate::new(
       "unix-monotonic",
       arch::indices::CLOCK_MONOTONIC,
