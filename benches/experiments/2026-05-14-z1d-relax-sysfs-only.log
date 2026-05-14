@@ -1,0 +1,116 @@
+[host-relax-v2] Launching z1d.metal...
+[host-relax-v2] Launched i-05e01585ff3098541
+[host-relax-v2] Host: 3.138.197.167
+Warning: Permanently added '3.138.197.167' (ED25519) to the list of known hosts.
+Warning: Permanently added '3.138.197.167' (ED25519) to the list of known hosts.
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'SCHILY.fflags'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.FinderInfo'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+   Compiling minstant v0.1.7
+   Compiling tach-selection-validation-runner v0.1.0 (/home/ec2-user/tach/tools/selection-validation-runner)
+    Finished `release` profile [optimized] target(s) in 3.42s
+
+==========================================
+  STATE: DEFAULT permissions
+==========================================
+sysfs perms:   -rw-------. 1 root root 4096 May 14 23:09 /sys/bus/event_source/devices/cpu/rdpmc
+sysfs as user: cat: /sys/bus/event_source/devices/cpu/rdpmc: Permission denied
+sysfs as root: 1
+
+==========================================
+  STATE: RELAXED (rdpmc=2, sysfs readable, paranoid=0)
+==========================================
+sysfs perms:   -rw----r--. 1 root root 4096 May 14 23:09 /sys/bus/event_source/devices/cpu/rdpmc
+sysfs as user: 2
+paranoid:      0
+
+--- selector trace ---
+tach selector class=cycles candidate=x86_64-direct-rdpmc prepared=false valid=false latency=none selected=false
+tach selector class=cycles candidate=x86_64-perf-rdpmc prepared=true valid=true latency=1525051 ns selected=false
+tach selector class=cycles candidate=x86_64-rdtsc prepared=true valid=true latency=928169 ns selected=false
+tach selector class=cycles candidate=unix-monotonic prepared=true valid=true latency=1550055 ns selected=false
+tach selector class=cycles candidate=x86_64-rdtsc prepared=true valid=true latency=928169 ns selected=true
+┌────────────────────────────────┬────────────────────────────────────────┐
+│ Field                          │ Value                                  │
+├────────────────────────────────┼────────────────────────────────────────┤
+│ target                         │ x86_64-linux-gnu-64bit                 │
+│ environment                    │ z1d.metal                              │
+
+--- Phase B ---
+┌────────────────────────────────┬────────────────────────────────────────┐
+│ Field                          │ Value                                  │
+├────────────────────────────────┼────────────────────────────────────────┤
+│ target                         │ x86_64-linux-gnu-64bit                 │
+│ environment                    │ z1d.metal                              │
+│ fastest-known-instant-clock    │ unset                                  │
+│ fastest-known-cycles-clock     │ unset                                  │
+│ selected-instant-clock         │ x86_64-rdtsc                           │
+│ selected-cycles-clock          │ x86_64-rdtsc                           │
+│ tach-instant-bench             │ 6.336 ns/op                            │
+│ tach-cycles-bench              │ 6.343 ns/op                            │
+│ rdtsc-bench                    │ 6.252 ns/op                            │
+│ rdtscp-bench                   │ 9.002 ns/op                            │
+│ direct-rdpmc-bench             │ 5.752 ns/op                            │
+│ perf-rdpmc-bench               │ 8.752 ns/op                            │
+│ clock-monotonic-bench          │ 15.087 ns/op                           │
+│ clock-monotonic-raw-bench      │ 15.504 ns/op                           │
+│ clock-boottime-bench           │ 15.131 ns/op                           │
+│ quanta-bench                   │ 7.002 ns/op                            │
+│ minstant-bench                 │ 6.296 ns/op                            │
+│ fastant-bench                  │ 6.312 ns/op                            │
+│ std-instant-bench              │ 16.125 ns/op                           │
+│ fastest-instant-api            │ no                                     │
+│ cycles-le-instant              │ pass                                   │
+│ matches-expected               │ unchecked                              │
+└────────────────────────────────┴────────────────────────────────────────┘
+[host-relax-v2] Terminating i-05e01585ff3098541...
