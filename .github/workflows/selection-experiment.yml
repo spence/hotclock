@@ -10,14 +10,23 @@ jobs:
   bench:
     name: bench / ${{ matrix.name }}
     runs-on: ${{ matrix.runner }}
+    defaults:
+      run:
+        shell: bash
     strategy:
       fail-fast: false
       matrix:
         include:
-          - name: linux-x86_64
+          - name: github-ubuntu-x86_64
             runner: ubuntu-24.04
-          - name: linux-aarch64
+          - name: github-ubuntu-aarch64
             runner: ubuntu-24.04-arm
+          - name: github-windows-x86_64
+            runner: windows-2025
+          - name: github-windows-aarch64
+            runner: windows-11-arm
+          - name: github-macos-intel
+            runner: macos-15-intel
 
     steps:
       - uses: actions/checkout@v6
@@ -26,13 +35,15 @@ jobs:
         run: |
           rustup toolchain install stable --profile minimal
           rustup default stable
+          rustc --version
 
-      - name: System metadata
+      - name: System metadata (Linux)
+        if: runner.os == 'Linux'
         run: |
           echo "=== uname ==="
           uname -a
           echo "=== os-release ==="
-          head -5 /etc/os-release
+          head -5 /etc/os-release || true
           echo "=== /proc/cpuinfo (first model) ==="
           grep -m1 "model name\|CPU implementer\|CPU part\|cpu MHz\|vendor_id" /proc/cpuinfo || true
           echo "=== rdpmc ==="
@@ -43,17 +54,36 @@ jobs:
           cat /proc/sys/kernel/perf_user_access 2>/dev/null || echo "not present"
           echo "=== perf_event_paranoid ==="
           cat /proc/sys/kernel/perf_event_paranoid 2>/dev/null || echo "not present"
-          rustc --version
 
-      - name: Build runner
-        working-directory: tools/selection-validation-runner
-        run: cargo build --release
+      - name: System metadata (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          echo "=== uname ==="
+          uname -a
+          echo "=== sw_vers ==="
+          sw_vers
+          echo "=== sysctl cpu ==="
+          sysctl -n machdep.cpu.brand_string || true
+          sysctl -n hw.model || true
+          sysctl -n hw.ncpu || true
+
+      - name: System metadata (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          echo "=== uname ==="
+          uname -a || true
+          echo "=== systeminfo (truncated) ==="
+          systeminfo | head -25 || true
+          echo "=== wmic cpu ==="
+          wmic cpu get name,manufacturer,maxclockspeed /format:list 2>/dev/null | grep -v '^$' || true
 
       - name: Phase A (per-candidate trace)
         working-directory: tools/selection-validation-runner
         env:
           TACH_SELECTOR_TRACE: "1"
-        run: ./target/release/tach-selection-validation-runner | tee phase-a.log
+        run: |
+          cargo build --release
+          cargo run --release --quiet 2>&1 | tee phase-a.log
 
       - name: Phase B (high-confidence)
         working-directory: tools/selection-validation-runner
@@ -61,20 +91,20 @@ jobs:
           TACH_VALIDATION_MEASURE_ITERS: "5000000"
           TACH_VALIDATION_SAMPLES: "101"
         run: |
-          if command -v taskset >/dev/null; then
-            taskset -c 0 ./target/release/tach-selection-validation-runner | tee phase-b.log
+          if command -v taskset >/dev/null 2>&1; then
+            taskset -c 0 ./target/release/tach-selection-validation-runner 2>&1 | tee phase-b.log
           else
-            ./target/release/tach-selection-validation-runner | tee phase-b.log
+            cargo run --release --quiet 2>&1 | tee phase-b.log
           fi
 
       - name: Clock survey (all architecturally-applicable clocks)
         working-directory: tools/clock-survey
         run: |
           cargo build --release
-          if command -v taskset >/dev/null; then
-            taskset -c 0 ./target/release/clock-survey | tee clock-survey.log
+          if command -v taskset >/dev/null 2>&1; then
+            taskset -c 0 ./target/release/clock-survey 2>&1 | tee clock-survey.log
           else
-            ./target/release/clock-survey | tee clock-survey.log
+            cargo run --release --quiet 2>&1 | tee clock-survey.log
           fi
 
       - name: Upload logs
