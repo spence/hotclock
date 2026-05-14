@@ -77,31 +77,36 @@ docker run --rm --platform=$DOCKER_PLATFORM \
 cat > "$WORK/bootstrap" <<'BOOTSTRAP'
 #!/bin/bash
 set -e
-# Lambda runtime invocation loop. We only respond once then exit; that's fine
-# for a one-shot bench. Lambda will warm-start subsequent invocations, but we
-# always wait for an event and respond synchronously.
+# Lambda runtime loop. The event payload selects which binary to run; the
+# binary's stdout becomes the function response. Caller invokes twice per
+# function — once with {"mode":"phase-b"} and once with {"mode":"survey"} —
+# and saves the responses as phase-b.log and clock-survey.log respectively.
 while true; do
   HEADERS=$(mktemp)
   EVENT=$(curl -sS -D "$HEADERS" "http://${AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/next")
   REQ_ID=$(grep -i lambda-runtime-aws-request-id "$HEADERS" | awk '{print $2}' | tr -d '\r\n')
 
-  {
-    echo "=== METADATA ==="
-    uname -a
-    cat /etc/os-release | head -5
-    grep -m1 "model name\|CPU implementer\|CPU part\|vendor_id" /proc/cpuinfo || true
-    echo "=== PHASE A ==="
-    TACH_SELECTOR_TRACE=1 /var/task/tach-selection-validation-runner 2>&1
-    echo "=== PHASE B ==="
+  # Run binaries with AWS_LAMBDA_RUNTIME_API stripped. The
+  # tach-selection-validation-runner binary contains its own Lambda runtime
+  # loop that would otherwise race our bash bootstrap to POST /response and
+  # win, returning only its Phase-B box table with no survey data.
+  env -u AWS_LAMBDA_RUNTIME_API /var/task/clock-survey > /tmp/survey.out 2>&1
+  env -u AWS_LAMBDA_RUNTIME_API \
     TACH_VALIDATION_MEASURE_ITERS=5000000 TACH_VALIDATION_SAMPLES=101 \
-      /var/task/tach-selection-validation-runner 2>&1
-    echo "=== CLOCK SURVEY ==="
-    /var/task/clock-survey 2>&1
-  } > /tmp/output.log 2>&1
+    /var/task/tach-selection-validation-runner > /tmp/validator.out 2>&1
 
-  cat /tmp/output.log
+  RESPONSE=/tmp/response.txt
+  {
+    echo "===CLOCK-SURVEY-BEGIN==="
+    cat /tmp/survey.out
+    echo "===CLOCK-SURVEY-END==="
+    echo "===PHASE-B-BEGIN==="
+    cat /tmp/validator.out
+    echo "===PHASE-B-END==="
+  } > "$RESPONSE"
+
   curl -sS -X POST "http://${AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/$REQ_ID/response" \
-    -d "ok" >/dev/null
+    --data-binary "@$RESPONSE" >/dev/null
 done
 BOOTSTRAP
 chmod +x "$WORK/bootstrap"
@@ -131,28 +136,27 @@ else
   AWS_PROFILE=$PROFILE aws lambda wait function-active --region "$REGION" --function-name "$FN_NAME"
 fi
 
-# Invoke and capture output.
-echo "[$CELL] Invoking..."
-OUTFILE="$RESULT_DIR/lambda-response.json"
+# Two invocations per function: one for Phase B (validator), one for clock-survey.
+# Each binary's stdout becomes the function response body, written directly to
+# the corresponding per-cell log file.
+echo "[$CELL] Invoking (combined phase-b + survey, ~30s)..."
+COMBINED="$RESULT_DIR/lambda-combined.txt"
 AWS_PROFILE=$PROFILE aws lambda invoke --region "$REGION" \
+  --cli-read-timeout 600 --cli-connect-timeout 30 \
   --function-name "$FN_NAME" \
-  --log-type Tail \
-  --query 'LogResult' --output text \
-  "$OUTFILE" \
-  | base64 -d > "$RESULT_DIR/stdout.txt"
+  "$COMBINED" >/dev/null
 
-# Split the combined output into phase-a/phase-b/clock-survey by markers.
+# Split combined output by section markers.
 awk '
-  /^=== PHASE A ===$/  { out="/dev/stderr"; phase="A"; next }
-  /^=== PHASE B ===$/  { phase="B"; next }
-  /^=== CLOCK SURVEY ===$/ { phase="S"; next }
-  /^=== /              { phase=""; next }
-  phase=="A" { print > "'"$RESULT_DIR"'/phase-a.log" }
-  phase=="B" { print > "'"$RESULT_DIR"'/phase-b.log" }
-  phase=="S" { print > "'"$RESULT_DIR"'/clock-survey.log" }
-' "$RESULT_DIR/stdout.txt"
+  /^===CLOCK-SURVEY-BEGIN===$/ { section="S"; next }
+  /^===CLOCK-SURVEY-END===$/   { section="";  next }
+  /^===PHASE-B-BEGIN===$/      { section="B"; next }
+  /^===PHASE-B-END===$/        { section="";  next }
+  section=="S" { print > "'"$RESULT_DIR"'/clock-survey.log" }
+  section=="B" { print > "'"$RESULT_DIR"'/phase-b.log" }
+' "$COMBINED"
 
-if grep -q "cycles-le-instant.*fail" "$RESULT_DIR"/phase-*.log 2>/dev/null; then
+if grep -q "cycles-le-instant.*fail" "$RESULT_DIR"/phase-b.log 2>/dev/null; then
   echo "[$CELL] CONTRACT VIOLATION: cycles-le-instant=fail"
   exit 3
 fi
