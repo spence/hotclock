@@ -42,9 +42,13 @@ elif command -v apk >/dev/null 2>&1; then
   apk add --no-cache curl ca-certificates build-base bash linux-headers >/dev/null
 fi
 curl -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain stable >/dev/null
-source $HOME/.cargo/env
+. $HOME/.cargo/env
 mkdir -p /build
-cp -r /work/src /work/tools /work/examples /work/benches /work/Cargo.toml /work/Cargo.lock /build/
+# Copy the source tree but explicitly skip any host-built target/ dirs (host binaries
+# do not run in Linux). The repo is bind-mounted at /work read-only, so we cp into /build.
+cp -r /work/src /work/examples /work/benches /work/Cargo.toml /work/Cargo.lock /build/
+mkdir -p /build/tools/selection-validation-runner
+cp -r /work/tools/selection-validation-runner/src /work/tools/selection-validation-runner/Cargo.toml /build/tools/selection-validation-runner/
 cd /build/tools/selection-validation-runner
 echo === METADATA ===
 uname -a
