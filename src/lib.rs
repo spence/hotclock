@@ -64,7 +64,8 @@
 //! on first call by measuring tick rate against the system clock. The result is
 //! cached for the lifetime of the process.
 
-mod arch;
+#[doc(hidden)]
+pub mod arch;
 mod calibration;
 mod convert;
 mod cycle_ticks;
