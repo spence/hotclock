@@ -55,6 +55,11 @@ cleanup() {
   echo "[$CELL] Terminating $INSTANCE_ID..."
   AWS_PROFILE=$PROFILE aws ec2 terminate-instances --region "$REGION" \
     --instance-ids "$INSTANCE_ID" --output text > /dev/null 2>&1 || true
+  # Wait for full termination — shutting-down instances still consume vCPU quota,
+  # so the next sequential cell would hit VcpuLimitExceeded on metal-class cells.
+  echo "[$CELL] Waiting for instance-terminated (vCPU release)..."
+  AWS_PROFILE=$PROFILE aws ec2 wait instance-terminated --region "$REGION" \
+    --instance-ids "$INSTANCE_ID" 2>/dev/null || true
 }
 trap cleanup EXIT
 

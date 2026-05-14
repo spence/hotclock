@@ -65,13 +65,13 @@ sudo docker run --rm --platform=DOCKER_PLATFORM_PLACEHOLDER \
 
     echo === PHASE B ===
     TACH_VALIDATION_MEASURE_ITERS=5000000 TACH_VALIDATION_SAMPLES=101 \\
-      taskset -c "\$((\$(nproc) - 1))" \"\$BIN\" 2>&1 | tee /work/phase-b.log
+      \"\$BIN\" 2>&1 | tee /work/phase-b.log
 
     echo === CLOCK SURVEY ===
     cd /work/tools/clock-survey
     cargo build --release 2>&1 | tail -5
     SURVEY=\$(pwd)/target/release/clock-survey
-    taskset -c "\$((\$(nproc) - 1))" \"\$SURVEY\" 2>&1 | tee /work/clock-survey.log
+    \"\$SURVEY\" 2>&1 | tee /work/clock-survey.log
   "
 '
 REMOTE_SCRIPT="${REMOTE_SCRIPT//DOCKER_PLATFORM_PLACEHOLDER/$DOCKER_PLATFORM}"

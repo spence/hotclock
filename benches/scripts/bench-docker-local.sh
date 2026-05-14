@@ -81,7 +81,7 @@ fi
 docker run --rm --platform="$PLATFORM" \
   -v "$REPO_ROOT:/work:ro" \
   -v "$OUT_TMP:/out" \
-  "$BASE_IMAGE" bash -c "$REMOTE_SCRIPT" \
+  "$BASE_IMAGE" sh -c "$REMOTE_SCRIPT" \
   > "$RESULT_DIR/stdout.txt" 2> "$RESULT_DIR/stderr.txt" || {
     echo "[$CELL] DOCKER BENCH FAILED (exit $?)"
     tail -40 "$RESULT_DIR/stderr.txt"
