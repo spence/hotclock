@@ -53,12 +53,13 @@ if [ -z "$ROLE_ARN" ] || [ "$ROLE_ARN" = "None" ]; then
   ROLE_ARN=$(AWS_PROFILE=$PROFILE aws iam get-role --role-name "$ROLE_NAME" --query 'Role.Arn' --output text)
 fi
 
-# Build the two binaries inside the Lambda base image (so we get a binary
-# linked against the exact glibc the runtime ships).
-echo "[$CELL] Building tach binaries in lambda/provided:al2023 ($DOCKER_PLATFORM)..."
+# Build the two binaries inside Amazon Linux 2023 (matches the Lambda
+# provided.al2023 runtime's glibc). The lambda/provided image wraps an
+# RIE entrypoint that hijacks `bash -c`, so we use the plain AL2023 image.
+echo "[$CELL] Building tach binaries in amazonlinux:2023 ($DOCKER_PLATFORM)..."
 docker run --rm --platform=$DOCKER_PLATFORM \
   -v "$REPO_ROOT:/work:ro" -v "$WORK:/out" \
-  -w /work public.ecr.aws/lambda/provided:al2023 bash -c "
+  -w /work public.ecr.aws/amazonlinux/amazonlinux:2023 bash -c "
     dnf install -y gcc tar gzip >/dev/null
     curl -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain stable >/dev/null
     source /root/.cargo/env
