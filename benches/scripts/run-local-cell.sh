@@ -47,17 +47,6 @@ run_native_local() {
   echo "[$cell] === PHASE B (unpinned — macOS lacks taskset) ==="
   TACH_VALIDATION_MEASURE_ITERS=5000000 TACH_VALIDATION_SAMPLES=101 \
     $arch_prefix "$BIN" 2>&1 | tee "$RESULT_DIR/phase-b.log"
-
-  echo "[$cell] === CLOCK SURVEY ==="
-  cd "$REPO_ROOT/tools/clock-survey"
-  if [ -n "$arch_prefix" ]; then
-    cargo build --release --target x86_64-apple-darwin 2>&1 | tail -5
-    SURVEY_BIN="$REPO_ROOT/tools/clock-survey/target/x86_64-apple-darwin/release/clock-survey"
-  else
-    cargo build --release 2>&1 | tail -5
-    SURVEY_BIN="$REPO_ROOT/tools/clock-survey/target/release/clock-survey"
-  fi
-  $arch_prefix "$SURVEY_BIN" 2>&1 | tee "$RESULT_DIR/clock-survey.log"
 }
 
 case "$CELL" in
@@ -107,14 +96,9 @@ TACH_SELECTOR_TRACE=1 "$BIN" 2>&1 | tee ~/tach-bench/phase-a.log
 echo "=== PHASE B ==="
 TACH_VALIDATION_MEASURE_ITERS=5000000 TACH_VALIDATION_SAMPLES=101 \
   "$BIN" 2>&1 | tee ~/tach-bench/phase-b.log
-echo "=== CLOCK SURVEY ==="
-cd ~/tach-bench/tools/clock-survey
-cargo build --release 2>&1 | tail -5
-./target/release/clock-survey 2>&1 | tee ~/tach-bench/clock-survey.log
 EOF
     scp -q "macmini:~/tach-bench/phase-a.log"  "$RESULT_DIR/" || true
     scp -q "macmini:~/tach-bench/phase-b.log"  "$RESULT_DIR/" || true
-    scp -q "macmini:~/tach-bench/clock-survey.log" "$RESULT_DIR/" || true
     ;;
 
   local-docker-arm64)

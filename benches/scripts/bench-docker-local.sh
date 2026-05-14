@@ -66,16 +66,6 @@ else
   TACH_VALIDATION_MEASURE_ITERS=5000000 TACH_VALIDATION_SAMPLES=101 \
     "$BIN" 2>&1 | tee /out/phase-b.log
 fi
-
-echo === CLOCK SURVEY ===
-cd /build/tools/clock-survey
-cargo build --release 2>&1 | tail -5
-SURVEY=$(pwd)/target/release/clock-survey
-if command -v taskset >/dev/null 2>&1; then
-  taskset -c 0 "$SURVEY" 2>&1 | tee /out/clock-survey.log
-else
-  "$SURVEY" 2>&1 | tee /out/clock-survey.log
-fi
 '
 
 docker run --rm --platform="$PLATFORM" \
@@ -89,7 +79,6 @@ docker run --rm --platform="$PLATFORM" \
   }
 
 cp "$OUT_TMP"/phase-*.log "$RESULT_DIR/" 2>/dev/null || true
-cp "$OUT_TMP"/clock-survey.log "$RESULT_DIR/" 2>/dev/null || true
 
 if grep -q "cycles-le-instant.*fail" "$RESULT_DIR"/phase-*.log 2>/dev/null; then
   echo "[$CELL] CONTRACT VIOLATION: cycles-le-instant=fail"

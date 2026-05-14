@@ -1,5 +1,5 @@
 #!/bin/bash
-# Package tach-selection-validation-runner + clock-survey as an AWS Lambda
+# Package tach-selection-validation-runner as an AWS Lambda
 # custom-runtime function (provided.al2023), invoke it, and pull the output
 # from CloudWatch Logs into the per-cell phase logs.
 #
@@ -53,7 +53,7 @@ if [ -z "$ROLE_ARN" ] || [ "$ROLE_ARN" = "None" ]; then
   ROLE_ARN=$(AWS_PROFILE=$PROFILE aws iam get-role --role-name "$ROLE_NAME" --query 'Role.Arn' --output text)
 fi
 
-# Build the two binaries inside Amazon Linux 2023 (matches the Lambda
+# Build the validator binary inside Amazon Linux 2023 (matches the Lambda
 # provided.al2023 runtime's glibc). The lambda/provided image wraps an
 # RIE entrypoint that hijacks `bash -c`, so we use the plain AL2023 image.
 echo "[$CELL] Building tach binaries in amazonlinux:2023 ($DOCKER_PLATFORM)..."
@@ -67,53 +67,35 @@ docker run --rm --platform=$DOCKER_PLATFORM \
     cd /build/tools/selection-validation-runner
     cargo build --release 2>&1 | tail -5
     cp target/release/tach-selection-validation-runner /out/
-    cd /build/tools/clock-survey
-    cargo build --release 2>&1 | tail -5
-    cp target/release/clock-survey /out/
   "
 
-# Bootstrap: the Lambda custom-runtime entrypoint. Runs phase-a, phase-b,
-# and clock-survey, echoing them into the Lambda log stream.
+# Bootstrap: the Lambda custom-runtime entrypoint. Runs phase-b (validator),
+# whose stdout becomes the Lambda function response and writes to phase-b.log.
 cat > "$WORK/bootstrap" <<'BOOTSTRAP'
 #!/bin/bash
 set -e
-# Lambda runtime loop. The event payload selects which binary to run; the
-# binary's stdout becomes the function response. Caller invokes twice per
-# function — once with {"mode":"phase-b"} and once with {"mode":"survey"} —
-# and saves the responses as phase-b.log and clock-survey.log respectively.
 while true; do
   HEADERS=$(mktemp)
   EVENT=$(curl -sS -D "$HEADERS" "http://${AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/next")
   REQ_ID=$(grep -i lambda-runtime-aws-request-id "$HEADERS" | awk '{print $2}' | tr -d '\r\n')
 
-  # Run binaries with AWS_LAMBDA_RUNTIME_API stripped. The
+  # Run the validator with AWS_LAMBDA_RUNTIME_API stripped. The
   # tach-selection-validation-runner binary contains its own Lambda runtime
   # loop that would otherwise race our bash bootstrap to POST /response and
-  # win, returning only its Phase-B box table with no survey data.
-  env -u AWS_LAMBDA_RUNTIME_API /var/task/clock-survey > /tmp/survey.out 2>&1
+  # win, hijacking the response payload.
   env -u AWS_LAMBDA_RUNTIME_API \
     TACH_VALIDATION_MEASURE_ITERS=5000000 TACH_VALIDATION_SAMPLES=101 \
     /var/task/tach-selection-validation-runner > /tmp/validator.out 2>&1
 
-  RESPONSE=/tmp/response.txt
-  {
-    echo "===CLOCK-SURVEY-BEGIN==="
-    cat /tmp/survey.out
-    echo "===CLOCK-SURVEY-END==="
-    echo "===PHASE-B-BEGIN==="
-    cat /tmp/validator.out
-    echo "===PHASE-B-END==="
-  } > "$RESPONSE"
-
   curl -sS -X POST "http://${AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/$REQ_ID/response" \
-    --data-binary "@$RESPONSE" >/dev/null
+    --data-binary "@/tmp/validator.out" >/dev/null
 done
 BOOTSTRAP
 chmod +x "$WORK/bootstrap"
-chmod +x "$WORK/tach-selection-validation-runner" "$WORK/clock-survey"
+chmod +x "$WORK/tach-selection-validation-runner"
 
 ZIP="$WORK/function.zip"
-(cd "$WORK" && zip -q "$ZIP" bootstrap tach-selection-validation-runner clock-survey)
+(cd "$WORK" && zip -q "$ZIP" bootstrap tach-selection-validation-runner)
 
 # Create or update function.
 echo "[$CELL] Deploying Lambda $FN_NAME ($LAMBDA_ARCH)..."
@@ -136,25 +118,11 @@ else
   AWS_PROFILE=$PROFILE aws lambda wait function-active --region "$REGION" --function-name "$FN_NAME"
 fi
 
-# Two invocations per function: one for Phase B (validator), one for clock-survey.
-# Each binary's stdout becomes the function response body, written directly to
-# the corresponding per-cell log file.
-echo "[$CELL] Invoking (combined phase-b + survey, ~30s)..."
-COMBINED="$RESULT_DIR/lambda-combined.txt"
+echo "[$CELL] Invoking validator (phase-b, ~30s)..."
 AWS_PROFILE=$PROFILE aws lambda invoke --region "$REGION" \
   --cli-read-timeout 600 --cli-connect-timeout 30 \
   --function-name "$FN_NAME" \
-  "$COMBINED" >/dev/null
-
-# Split combined output by section markers.
-awk '
-  /^===CLOCK-SURVEY-BEGIN===$/ { section="S"; next }
-  /^===CLOCK-SURVEY-END===$/   { section="";  next }
-  /^===PHASE-B-BEGIN===$/      { section="B"; next }
-  /^===PHASE-B-END===$/        { section="";  next }
-  section=="S" { print > "'"$RESULT_DIR"'/clock-survey.log" }
-  section=="B" { print > "'"$RESULT_DIR"'/phase-b.log" }
-' "$COMBINED"
+  "$RESULT_DIR/phase-b.log" >/dev/null
 
 if grep -q "cycles-le-instant.*fail" "$RESULT_DIR"/phase-b.log 2>/dev/null; then
   echo "[$CELL] CONTRACT VIOLATION: cycles-le-instant=fail"

@@ -38,15 +38,7 @@ TACH_VALIDATION_MEASURE_ITERS=5000000 TACH_VALIDATION_SAMPLES=101 \
   taskset -c "$(( $(nproc) - 1 ))" "$BIN" 2>&1 | tee /home/ec2-user/tach/phase-b.log
 
 echo
-echo "=== CLOCK SURVEY ==="
-cd /home/ec2-user/tach/tools/clock-survey
-cargo build --release 2>&1 | tail -5
-SURVEY_BIN="$(pwd)/target/release/clock-survey"
-if command -v taskset >/dev/null 2>&1; then
-  taskset -c "$(( $(nproc) - 1 ))" "$SURVEY_BIN" 2>&1 | tee /home/ec2-user/tach/clock-survey.log
-else
-  "$SURVEY_BIN" 2>&1 | tee /home/ec2-user/tach/clock-survey.log
-fi
-
-echo
 echo "=== DONE ==="
+# clock-survey is no longer part of the baseline data path. Every clock-primitive
+# column in the rendered baseline now comes from phase-b.log (the validator's
+# interleaved harness includes per-primitive bench cases). See render-baseline.sh.

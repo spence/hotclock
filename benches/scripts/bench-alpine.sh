@@ -2,7 +2,7 @@
 # Run the bench inside an Alpine Linux Docker container on an existing AWS host.
 # Produces a musl-target cell. The host AMI is AL2023 (the standard Tier 1 host);
 # this script SSHes to it, pulls the alpine image, builds with rustup inside the
-# container, runs Phase A/B + clock-survey, and pulls logs back.
+# container, runs Phase A/B, and pulls logs back.
 #
 # Usage: AWS_PROFILE=tach benches/scripts/bench-alpine.sh <cell> <host-public-ip> <arch>
 #   <arch> is one of: x86_64 | aarch64
@@ -66,12 +66,6 @@ sudo docker run --rm --platform=DOCKER_PLATFORM_PLACEHOLDER \
     echo === PHASE B ===
     TACH_VALIDATION_MEASURE_ITERS=5000000 TACH_VALIDATION_SAMPLES=101 \\
       \"\$BIN\" 2>&1 | tee /work/phase-b.log
-
-    echo === CLOCK SURVEY ===
-    cd /work/tools/clock-survey
-    cargo build --release 2>&1 | tail -5
-    SURVEY=\$(pwd)/target/release/clock-survey
-    \"\$SURVEY\" 2>&1 | tee /work/clock-survey.log
   "
 '
 REMOTE_SCRIPT="${REMOTE_SCRIPT//DOCKER_PLATFORM_PLACEHOLDER/$DOCKER_PLATFORM}"
@@ -88,8 +82,6 @@ ssh -i "$KEY" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
 echo "[$CELL] Pulling logs..."
 scp -i "$KEY" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
   ec2-user@"$HOST_IP":'/home/ec2-user/tach-alpine/phase-*.log' "$RESULT_DIR/" 2>/dev/null || true
-scp -i "$KEY" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-  ec2-user@"$HOST_IP":/home/ec2-user/tach-alpine/clock-survey.log "$RESULT_DIR/" 2>/dev/null || true
 
 if grep -q "cycles-le-instant.*fail" "$RESULT_DIR"/phase-*.log 2>/dev/null; then
   echo "[$CELL] CONTRACT VIOLATION: cycles-le-instant=fail"
