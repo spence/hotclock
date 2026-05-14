@@ -6,8 +6,11 @@
 // Build:  rustc -O -C opt-level=3 clock-survey.rs -o clock-survey
 // Run:    ./clock-survey
 
+#[cfg(target_os = "linux")]
 use std::ffi::c_void;
+#[cfg(target_os = "linux")]
 use std::os::raw::{c_int, c_long, c_ulong};
+#[cfg(target_os = "linux")]
 use std::ptr;
 use std::time::Instant as StdInstant;
 
@@ -68,7 +71,28 @@ fn survey_x86_64() {
     report("clock_gettime(BOOTTIME)", clock_gettime_bench(7)); // CLOCK_BOOTTIME
   }
 
-  // std::time::Instant (calls clock_gettime(CLOCK_MONOTONIC) on Linux via vDSO)
+  // macOS Mach time APIs + POSIX clock_gettime (Darwin uses different IDs)
+  #[cfg(target_os = "macos")]
+  {
+    report("mach_absolute_time", Ok(bench(|| {
+      let _ = std::hint::black_box(unsafe { mach_absolute_time() });
+    })));
+    report("mach_continuous_time", Ok(bench(|| {
+      let _ = std::hint::black_box(unsafe { mach_continuous_time() });
+    })));
+    report("mach_approximate_time", Ok(bench(|| {
+      let _ = std::hint::black_box(unsafe { mach_approximate_time() });
+    })));
+    report("clock_gettime(MONOTONIC)", clock_gettime_macos_bench(6));
+    report("clock_gettime(MONOTONIC_RAW)", clock_gettime_macos_bench(4));
+  }
+
+  // Windows: QueryPerformanceCounter is the high-res monotonic clock.
+  #[cfg(target_os = "windows")]
+  report("QueryPerformanceCounter", query_performance_counter_bench());
+
+  // std::time::Instant (calls clock_gettime(CLOCK_MONOTONIC) on Linux via vDSO;
+  // mach_continuous_time on macOS; QueryPerformanceCounter on Windows)
   report("std::time::Instant", Ok(bench(|| {
     let _ = std::hint::black_box(StdInstant::now());
   })));
@@ -77,6 +101,7 @@ fn survey_x86_64() {
 #[cfg(target_arch = "x86_64")]
 fn direct_rdpmc_x86() -> Result<f64, String> {
   // 1) Intel?
+  #[allow(unused_unsafe)] // __cpuid is `unsafe fn` on some targets, safe on others
   let cpuid = unsafe { core::arch::x86_64::__cpuid(0) };
   let mut vendor = [0u8; 12];
   vendor[0..4].copy_from_slice(&cpuid.ebx.to_le_bytes());
@@ -86,7 +111,9 @@ fn direct_rdpmc_x86() -> Result<f64, String> {
     return Err(format!("not Intel (CPUID vendor: {})", String::from_utf8_lossy(&vendor)));
   }
 
-  // 2) sysfs gate (Linux)
+  // 2) sysfs gate (Linux only). On macOS/Windows, return early — direct user-mode
+  // RDPMC is not exposed by those kernels (Windows could be enabled via driver, but
+  // none of the AMI-shipped Windows kernels do; macOS XNU never).
   #[cfg(target_os = "linux")]
   {
     let paths = ["/sys/bus/event_source/devices/cpu/rdpmc", "/sys/devices/cpu/rdpmc"];
@@ -104,25 +131,30 @@ fn direct_rdpmc_x86() -> Result<f64, String> {
       Some((path, v)) if v < 2 => return Err(format!("{path} = {v} (need >=2 for unprivileged direct RDPMC)")),
       Some(_) => {}
     }
-  }
-  #[cfg(not(target_os = "linux"))]
-  return Err("non-Linux x86_64; direct user-mode RDPMC requires Linux sysfs control".into());
 
-  // 3) Actually bench (call rdpmc with fixed-counter index)
-  Ok(bench(|| {
-    let low: u32;
-    let high: u32;
-    unsafe {
-      core::arch::asm!(
-        "rdpmc",
-        in("ecx") (1u32 << 30) | 1u32, // RDPMC_FIXED_CORE_CYCLES
-        out("eax") low,
-        out("edx") high,
-        options(nomem, nostack, preserves_flags),
-      );
-    }
-    let _ = std::hint::black_box(((high as u64) << 32) | (low as u64));
-  }))
+    // 3) Actually bench (call rdpmc with fixed-counter index)
+    return Ok(bench(|| {
+      let low: u32;
+      let high: u32;
+      // SAFETY: gated above on Linux + Intel + /sys/.../rdpmc >= 2.
+      unsafe {
+        core::arch::asm!(
+          "rdpmc",
+          in("ecx") (1u32 << 30) | 1u32, // RDPMC_FIXED_CORE_CYCLES
+          out("eax") low,
+          out("edx") high,
+          options(nomem, nostack, preserves_flags),
+        );
+      }
+      let _ = std::hint::black_box(((high as u64) << 32) | (low as u64));
+    }));
+  }
+  #[cfg(target_os = "macos")]
+  return Err("macOS XNU does not expose user-mode RDPMC".into());
+  #[cfg(target_os = "windows")]
+  return Err("Windows kernel does not expose user-mode RDPMC (no /sys/.../rdpmc equivalent)".into());
+  #[cfg(not(any(target_os = "linux", target_os = "macos", target_os = "windows")))]
+  return Err("direct user-mode RDPMC requires Linux sysfs control".into());
 }
 
 #[cfg(all(target_arch = "x86_64", target_os = "linux"))]
@@ -197,6 +229,14 @@ fn survey_aarch64() {
     report("clock_gettime(MONOTONIC_RAW)", clock_gettime_macos_bench(4)); // CLOCK_MONOTONIC_RAW = 4
   }
 
+  // Windows: QueryPerformanceCounter is the high-res monotonic clock.
+  // CNTVCT_EL0 is user-readable on ARMv8+ (architectural guarantee); Windows
+  // does not gate it. CNTPCT_EL0 user access is OS-dependent on Windows — left
+  // to the fork/bench path above which on non-Linux benches directly. If a
+  // Windows ARM host SIGILLs on CNTPCT_EL0, an SEH-based probe would be the fix.
+  #[cfg(target_os = "windows")]
+  report("QueryPerformanceCounter", query_performance_counter_bench());
+
   // std::time::Instant — Linux: clock_gettime(MONOTONIC) via vDSO; macOS: mach_continuous_time + bookkeeping.
   report("std::time::Instant", Ok(bench(|| {
     let _ = std::hint::black_box(StdInstant::now());
@@ -259,6 +299,28 @@ unsafe extern "C" {
   fn mach_continuous_time() -> u64;
   fn mach_approximate_time() -> u64;
   fn clock_gettime_nsec_np(clock_id: u32) -> u64;
+}
+
+// ---------- Windows extern ----------
+
+#[cfg(target_os = "windows")]
+unsafe extern "system" {
+  fn QueryPerformanceCounter(lpPerformanceCount: *mut i64) -> i32;
+  fn QueryPerformanceFrequency(lpFrequency: *mut i64) -> i32;
+}
+
+#[cfg(target_os = "windows")]
+fn query_performance_counter_bench() -> Result<f64, String> {
+  let mut freq: i64 = 0;
+  let rc = unsafe { QueryPerformanceFrequency(&mut freq) };
+  if rc == 0 || freq == 0 {
+    return Err("QueryPerformanceFrequency unavailable".into());
+  }
+  Ok(bench(|| {
+    let mut c: i64 = 0;
+    unsafe { QueryPerformanceCounter(&mut c); }
+    let _ = std::hint::black_box(c);
+  }))
 }
 
 #[cfg(target_os = "macos")]
@@ -535,15 +597,20 @@ impl Drop for PerfPmccntr {
 fn main() {
   // Print host metadata
   println!("=== host ===");
-  if let Ok(info) = std::fs::read_to_string("/proc/cpuinfo") {
-    for line in info.lines().filter(|l| l.starts_with("model name") || l.starts_with("vendor_id") || l.starts_with("CPU implementer") || l.starts_with("CPU part")).take(2) {
-      println!("{}", line);
+  println!("target_os = {}", std::env::consts::OS);
+  println!("target_arch = {}", std::env::consts::ARCH);
+  #[cfg(target_os = "linux")]
+  {
+    if let Ok(info) = std::fs::read_to_string("/proc/cpuinfo") {
+      for line in info.lines().filter(|l| l.starts_with("model name") || l.starts_with("vendor_id") || l.starts_with("CPU implementer") || l.starts_with("CPU part")).take(2) {
+        println!("{}", line);
+      }
     }
-  }
-  for path in &["/sys/bus/event_source/devices/cpu/rdpmc", "/proc/sys/kernel/perf_user_access", "/proc/sys/kernel/perf_event_paranoid"] {
-    match std::fs::read_to_string(path) {
-      Ok(v) => println!("{} = {}", path, v.trim()),
-      Err(_) => println!("{} = absent", path),
+    for path in &["/sys/bus/event_source/devices/cpu/rdpmc", "/proc/sys/kernel/perf_user_access", "/proc/sys/kernel/perf_event_paranoid"] {
+      match std::fs::read_to_string(path) {
+        Ok(v) => println!("{} = {}", path, v.trim()),
+        Err(_) => println!("{} = absent", path),
+      }
     }
   }
   println!();
