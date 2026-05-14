@@ -106,9 +106,11 @@ ssh -i "$KEY" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
     exit 1
   }
 
-echo "[$CELL] Pulling phase logs..."
+echo "[$CELL] Pulling phase + clock-survey logs..."
 scp -i "$KEY" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
   ec2-user@"$PUBLIC_IP":'/home/ec2-user/tach/phase-*.log' "$RESULT_DIR/" 2>/dev/null || true
+scp -i "$KEY" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+  ec2-user@"$PUBLIC_IP":'/home/ec2-user/tach/clock-survey.log' "$RESULT_DIR/" 2>/dev/null || true
 
 # Verify the cycles-le-instant contract.
 if grep -q "cycles-le-instant.*fail" "$RESULT_DIR"/phase-*.log 2>/dev/null; then
