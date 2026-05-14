@@ -106,7 +106,39 @@ mod platform {
     super::compiler_fence(super::Ordering::SeqCst);
   }
 
-  #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
+  #[cfg(target_arch = "aarch64")]
+  pub(crate) fn flush_instruction_cache(ptr: *mut u8, len: usize) {
+    // ARMv8 cache-line-by-cache-line icache flush. Inline asm (no libgcc dependency)
+    // so this builds the same on glibc and musl static targets. AArch64 minimum cache
+    // line is 16 bytes; modern cores are 64. We step by 16 to cover all possibilities,
+    // matching what __clear_cache does in libgcc / compiler_rt.
+    let start = ptr as usize;
+    let end = start + len;
+    let line = 16usize;
+    let aligned_start = start & !(line - 1);
+    let mut addr = aligned_start;
+    while addr < end {
+      // SAFETY: `dc cvau` and `ic ivau` are unprivileged ARMv8 instructions; addresses
+      // within the patched gate range are valid for cache maintenance.
+      unsafe {
+        core::arch::asm!("dc cvau, {0}", in(reg) addr, options(nostack, preserves_flags));
+        core::arch::asm!("ic ivau, {0}", in(reg) addr, options(nostack, preserves_flags));
+      }
+      addr += line;
+    }
+    // SAFETY: Final dsb ish + isb ensure the icache invalidation is observed before
+    // subsequent instruction fetches on this and other cores.
+    unsafe {
+      core::arch::asm!("dsb ish", options(nostack, preserves_flags));
+      core::arch::asm!("isb", options(nostack, preserves_flags));
+    }
+  }
+
+  #[cfg(not(any(
+    target_arch = "x86",
+    target_arch = "x86_64",
+    target_arch = "aarch64"
+  )))]
   pub(crate) fn flush_instruction_cache(ptr: *mut u8, len: usize) {
     unsafe extern "C" {
       fn __clear_cache(start: *mut c_void, end: *mut c_void);
