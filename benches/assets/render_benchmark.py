@@ -102,8 +102,8 @@ LABEL_FONT_SIZE = 11
 LABEL_LINE_GAP = 13
 LABEL_TOP = BAR_BOTTOM + 21
 SIMPLE_LABEL_TOP = SIMPLE_BAR_BOTTOM + 24
-LABEL_TO_NOTE_GAP = 20
-NOTE_TO_LEGEND_GAP = 20
+LABEL_TO_LEGEND_GAP = 20
+LEGEND_TO_NOTE_GAP = 20
 TARGET_LABEL_FONT_SIZE = 7
 LEGEND_FONT_SIZE = 12
 
@@ -205,8 +205,8 @@ def render_svg(
 
   max_label_lines = max(len(labels) for labels, _ in groups)
   labels_bottom = label_top + (max_label_lines - 1) * LABEL_LINE_GAP
-  note_y = labels_bottom + LABEL_TO_NOTE_GAP
-  legend_y = note_y + NOTE_TO_LEGEND_GAP
+  legend_y = labels_bottom + LABEL_TO_LEGEND_GAP
+  note_y = legend_y + LEGEND_TO_NOTE_GAP
   legend_items = []
   legend_x = (width - legend_width) / 2
   for name, color in crates:
