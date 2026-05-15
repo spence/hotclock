@@ -2,13 +2,18 @@
 
 `tach` is an ultra-fast drop-in replacement for `std::time::Instant`, designed for hot loops, profiling, and benchmarks.
 
-Each supported target compiles `Instant::now()` directly to the fastest wall-clock-rate hardware counter for that architecture — RDTSC on x86 / x86_64, CNTVCT_EL0 on aarch64, rdtime on riscv64 / loongarch64 — and falls back to a platform-native monotonic clock everywhere else. No runtime dispatch, no microbenchmark at startup.
+Each supported target compiles `Instant::now()` directly to the fastest wall-clock-rate hardware counter for that architecture — RDTSC on x86 / x86_64, CNTVCT_EL0 on aarch64, rdtime on riscv64 / loongarch64 — and falls back to a platform-native monotonic clock everywhere else.
+
+## features
+
+- `Instant`-compatible API
+- Inlined hardware counter
+- Zero dependencies
 
 ## performance
 
 ![Cross-target Instant benchmark](benches/assets/benchmark.png)
-
-Each cell shows five clock implementations as overlay bars: the dark portion is `Instant::now()` standalone, the lighter extension is the full `now() + elapsed()` roundtrip. Numeric times are shown on the right as `now / elapsed`. `tach` is the red row. Methodology and per-target baselines: [BENCHMARKS.md](BENCHMARKS.md).
+Methodology and per-target baselines: [BENCHMARKS.md](BENCHMARKS.md)
 
 ## usage
 
@@ -20,8 +25,6 @@ let start = Instant::now();
 let elapsed = start.elapsed();
 ```
 
-That's the entire public API: `Instant::now()` and `Instant::elapsed() -> Duration`.
-
 ## semantics
 
 `Instant` is **wall-clock-rate**: backed by RDTSC / CNTVCT_EL0 / rdtime, which count at a fixed architectural rate (the nominal CPU base frequency on invariant TSC; ~24 MHz on Graviton and Apple Silicon; platform timer rate on RISC-V).
@@ -32,31 +35,21 @@ That's the entire public API: `Instant::now()` and `Instant::elapsed() -> Durati
 
 Use `Instant` for: timeouts, deadlines, latency measurements, request budgets — anywhere you want fast wall-clock time and aren't relying on strict cross-thread ordering for correctness.
 
-## feature comparison
-
-| Feature                           | `tach` | `tick_counter@0.4.5` | `quanta@0.12.6` | `minstant@0.1.7` | `std::time` |
-|-----------------------------------|--------|----------------------|-----------------|------------------|-------------|
-| `Instant`-compatible API          | ✅     | ❌                   | ✅              | ✅               | ✅          |
-| Inlined hardware counter          | ✅     | ✅                   | partial         | partial          | ❌          |
-| Documented cross-thread semantics | ✅     | ❌                   | partial         | ❌               | ✅          |
-| Zero dependency                   | ✅     | ✅                   | ❌              | ❌               | ✅          |
-
 ## platform / architecture support
 
-| Platform / target       | `Instant` clock      | OS fallback                |
-|-------------------------|----------------------|----------------------------|
-| Linux (x86_64)          | RDTSC                | clock_gettime              |
-| Linux (x86)             | RDTSC                | clock_gettime              |
-| Linux (aarch64)         | CNTVCT_EL0           | clock_gettime              |
-| Linux (riscv64)         | rdtime               | clock_gettime              |
-| Linux (loongarch64)     | rdtime.d             | clock_gettime              |
-| macOS (aarch64)         | CNTVCT_EL0           | —                          |
-| macOS (x86_64)          | RDTSC                | mach_absolute_time         |
-| Windows (x86_64)        | RDTSC                | QueryPerformanceCounter    |
-| Windows (aarch64)       | CNTVCT_EL0           | QueryPerformanceCounter    |
-| Unix / other            | OS timer             | clock_gettime              |
+Dispatch is compile-time: `Instant::now()` compiles directly to the architectural counter on every supported target — no runtime check, no fallback path.
 
-`Instant::now()` compiles directly to the listed hardware counter on every supported target — no runtime dispatch, same inline performance as the raw instruction.
+| Architecture        | `Instant::now()` counter |
+|---------------------|--------------------------|
+| x86_64              | RDTSC                    |
+| x86                 | RDTSC                    |
+| aarch64             | CNTVCT_EL0               |
+| riscv64             | rdtime                   |
+| loongarch64         | rdtime.d                 |
+
+On any other target architecture, `Instant::now()` uses the platform monotonic clock instead: `mach_absolute_time` on macOS, `clock_gettime(CLOCK_MONOTONIC)` on Unix, `std::time::Instant` everywhere else.
+
+The conversion factor from ticks to nanoseconds is read once at first use: from `cntfrq_el0` on aarch64, from `mach_timebase_info` on non-aarch64 macOS, from `QueryPerformanceFrequency` on non-aarch64 Windows, or via a one-time calibration loop on non-aarch64 Linux.
 
 ## changelog
 
