@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="766.8000000000001" height="348" viewBox="0 0 766.8000000000001 348">
+<rect width="766.8000000000001" height="348" fill="#FBF6EC"/>
+<g shape-rendering="crispEdges">
+<rect x="6" y="9" width="6" height="6" fill="#D72D24"/>
+<text x="16" y="15" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">tach::Cycles@0.2.0</text>
+<rect x="154.96" y="9" width="6" height="6" fill="#7A1B16"/>
+<text x="164.96" y="15" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">tach::Instant@0.2.0</text>
+<rect x="310.64" y="9" width="6" height="6" fill="#5B6472"/>
+<text x="320.64" y="15" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">quanta@0.12.6</text>
+<rect x="426" y="9" width="6" height="6" fill="#4F6F6A"/>
+<text x="436" y="15" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">fastant@0.1.11</text>
+<rect x="548.08" y="9" width="6" height="6" fill="#8B5E3C"/>
+<text x="558.08" y="15" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">minstant@0.1.7</text>
+<rect x="670.16" y="9" width="6" height="6" fill="#9A8A3A"/>
+<text x="680.16" y="15" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">std::Instant</text>
+<text x="383.4" y="30" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="9" fill="#2E231B">All measurements are nanoseconds.</text>
+<rect x="108.4" y="42" width="94" height="270" fill="#FBF6EC"/>
+<rect x="121.4" y="284" width="8" height="2" fill="#D72D24"/>
+<text x="125.4" y="280" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">0.33</text>
+<rect x="133.4" y="284" width="8" height="2" fill="#7A1B16"/>
+<text x="137.4" y="270" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">0.33</text>
+<rect x="145.4" y="264" width="8" height="22" fill="#5B6472"/>
+<text x="149.4" y="260" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">7.59</text>
+<rect x="157.4" y="160" width="8" height="126" fill="#4F6F6A"/>
+<text x="161.4" y="156" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">43.7</text>
+<rect x="169.4" y="162" width="8" height="124" fill="#8B5E3C"/>
+<text x="173.4" y="138" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">43.3</text>
+<rect x="181.4" y="195" width="8" height="91" fill="#9A8A3A"/>
+<text x="185.4" y="191" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">31.7</text>
+<text x="155.4" y="310" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">Apple Silicon</text>
+<text x="155.4" y="323" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">M1 MacBook Pro</text>
+<text x="155.4" y="336" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">aarch64-apple-darwin</text>
+<text x="155.4" y="349" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">(cntvct)</text>
+<rect x="222.4" y="42" width="94" height="270" fill="#FBF6EC"/>
+<rect x="235.4" y="267" width="8" height="19" fill="#D72D24"/>
+<text x="239.4" y="263" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">6.67</text>
+<rect x="247.4" y="267" width="8" height="19" fill="#7A1B16"/>
+<text x="251.4" y="253" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">6.67</text>
+<rect x="259.4" y="266" width="8" height="20" fill="#5B6472"/>
+<text x="263.4" y="242" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">7.06</text>
+<rect x="271.4" y="174" width="8" height="112" fill="#4F6F6A"/>
+<text x="275.4" y="170" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">38.9</text>
+<rect x="283.4" y="172" width="8" height="114" fill="#8B5E3C"/>
+<text x="287.4" y="158" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">39.6</text>
+<rect x="295.4" y="196" width="8" height="90" fill="#9A8A3A"/>
+<text x="299.4" y="192" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">31.5</text>
+<text x="269.4" y="310" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">AWS Graviton 3</text>
+<text x="269.4" y="323" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">c7g.4xlarge</text>
+<text x="269.4" y="336" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">aarch64-unknown-linux-gnu</text>
+<text x="269.4" y="349" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">(cntvct)</text>
+<rect x="336.4" y="42" width="94" height="270" fill="#FBF6EC"/>
+<rect x="349.4" y="254" width="8" height="32" fill="#D72D24"/>
+<text x="353.4" y="250" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">11.2</text>
+<rect x="361.4" y="254" width="8" height="32" fill="#7A1B16"/>
+<text x="365.4" y="240" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">11.2</text>
+<rect x="373.4" y="252" width="8" height="34" fill="#5B6472"/>
+<text x="377.4" y="228" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">11.7</text>
+<rect x="385.4" y="168" width="8" height="118" fill="#4F6F6A"/>
+<text x="389.4" y="164" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">40.9</text>
+<rect x="397.4" y="168" width="8" height="118" fill="#8B5E3C"/>
+<text x="401.4" y="154" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">40.9</text>
+<rect x="409.4" y="176" width="8" height="110" fill="#9A8A3A"/>
+<text x="413.4" y="172" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">38.4</text>
+<text x="383.4" y="310" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">GitHub Windows</text>
+<text x="383.4" y="323" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">windows-2025</text>
+<text x="383.4" y="336" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">x86_64-pc-windows-msvc</text>
+<text x="383.4" y="349" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">(rdtsc)</text>
+<rect x="450.4" y="42" width="94" height="270" fill="#FBF6EC"/>
+<rect x="463.4" y="248" width="8" height="38" fill="#D72D24"/>
+<text x="467.4" y="244" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">13.3</text>
+<rect x="475.4" y="248" width="8" height="38" fill="#7A1B16"/>
+<text x="479.4" y="234" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">13.4</text>
+<rect x="487.4" y="240" width="8" height="46" fill="#5B6472"/>
+<text x="491.4" y="216" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">15.9</text>
+<rect x="499.4" y="247" width="8" height="39" fill="#4F6F6A"/>
+<text x="503.4" y="243" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">13.6</text>
+<rect x="511.4" y="247" width="8" height="39" fill="#8B5E3C"/>
+<text x="515.4" y="233" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">13.7</text>
+<rect x="523.4" y="217" width="8" height="69" fill="#9A8A3A"/>
+<text x="527.4" y="213" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">23.8</text>
+<text x="497.4" y="310" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">AWS Intel Nitro</text>
+<text x="497.4" y="323" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">m7i.4xlarge</text>
+<text x="497.4" y="336" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">x86_64-unknown-linux-gnu</text>
+<text x="497.4" y="349" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">(rdtsc)</text>
+<rect x="564.4" y="42" width="94" height="270" fill="#FBF6EC"/>
+<rect x="577.4" y="272" width="8" height="14" fill="#D72D24"/>
+<text x="581.4" y="268" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">5.00</text>
+<rect x="589.4" y="266" width="8" height="20" fill="#7A1B16"/>
+<text x="593.4" y="252" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">6.84</text>
+<rect x="601.4" y="266" width="8" height="20" fill="#5B6472"/>
+<text x="605.4" y="262" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">7.12</text>
+<rect x="613.4" y="266" width="8" height="20" fill="#4F6F6A"/>
+<text x="617.4" y="252" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">6.84</text>
+<rect x="625.4" y="266" width="8" height="20" fill="#8B5E3C"/>
+<text x="629.4" y="262" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">6.84</text>
+<rect x="637.4" y="244" width="8" height="42" fill="#9A8A3A"/>
+<text x="641.4" y="240" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">14.7</text>
+<text x="611.4" y="310" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">AWS Intel Metal</text>
+<text x="611.4" y="323" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">m7i.metal-24xl</text>
+<text x="611.4" y="336" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">x86_64-unknown-linux-gnu</text>
+<text x="611.4" y="349" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">(perf-rdpmc)</text>
+</g>
+</svg>

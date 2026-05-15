@@ -14,6 +14,10 @@ SVG_PATH = ROOT / "benchmark.svg"
 PNG_PATH = ROOT / "benchmark.png"
 SIMPLE_SVG_PATH = ROOT / "benchmark-simple.svg"
 SIMPLE_PNG_PATH = ROOT / "benchmark-simple.png"
+INSTANT_SVG_PATH = ROOT / "benchmark-instant.svg"
+INSTANT_PNG_PATH = ROOT / "benchmark-instant.png"
+CYCLES_SVG_PATH = ROOT / "benchmark-cycles.svg"
+CYCLES_PNG_PATH = ROOT / "benchmark-cycles.png"
 
 BACKGROUND = "#FBF6EC"
 GROUP_BACKGROUND = "#FFF8E8"
@@ -49,6 +53,49 @@ SIMPLE_GROUPS = [
 ]
 SIMPLE_CRATES = CRATES[1:]
 
+INSTANT_CRATES = [
+  ("tach::Instant@0.2.0", "#D72D24"),
+  ("quanta@0.12.6", "#5B6472"),
+  ("fastant@0.1.11", "#4F6F6A"),
+  ("minstant@0.1.7", "#8B5E3C"),
+  ("std::Instant", "#9A8A3A"),
+]
+
+INSTANT_GROUPS = [
+  (("Apple Silicon", "M1 MacBook Pro", "aarch64-apple-darwin", "(cntvct)"),
+   [0.331, 7.591, 43.722, 43.259, 31.658]),
+  (("AWS Graviton 3", "c7g.4xlarge", "aarch64-unknown-linux-gnu", "(cntvct)"),
+   [6.673, 7.062, 38.939, 39.578, 31.463]),
+  (("GitHub Windows", "windows-2025", "x86_64-pc-windows-msvc", "(rdtsc)"),
+   [11.245, 11.670, 40.925, 40.926, 38.396]),
+  (("AWS Intel Nitro", "m7i.4xlarge", "x86_64-unknown-linux-gnu", "(rdtsc)"),
+   [13.355, 15.894, 13.641, 13.650, 23.843]),
+  (("Alpine on Metal", "m7i.metal-24xl", "x86_64-unknown-linux-musl", "(rdtsc)"),
+   [14.316, 17.074, 14.625, 14.625, 25.865]),
+]
+
+CYCLES_CRATES = [
+  ("tach::Cycles@0.2.0", "#D72D24"),
+  ("tach::Instant@0.2.0", "#7A1B16"),
+  ("quanta@0.12.6", "#5B6472"),
+  ("fastant@0.1.11", "#4F6F6A"),
+  ("minstant@0.1.7", "#8B5E3C"),
+  ("std::Instant", "#9A8A3A"),
+]
+
+CYCLES_GROUPS = [
+  (("Apple Silicon", "M1 MacBook Pro", "aarch64-apple-darwin", "(cntvct)"),
+   [0.330, 0.331, 7.591, 43.722, 43.259, 31.658]),
+  (("AWS Graviton 3", "c7g.4xlarge", "aarch64-unknown-linux-gnu", "(cntvct)"),
+   [6.673, 6.673, 7.062, 38.939, 39.578, 31.463]),
+  (("GitHub Windows", "windows-2025", "x86_64-pc-windows-msvc", "(rdtsc)"),
+   [11.248, 11.245, 11.670, 40.925, 40.926, 38.396]),
+  (("AWS Intel Nitro", "m7i.4xlarge", "x86_64-unknown-linux-gnu", "(rdtsc)"),
+   [13.345, 13.355, 15.894, 13.641, 13.650, 23.843]),
+  (("AWS Intel Metal", "m7i.metal-24xl", "x86_64-unknown-linux-gnu", "(perf-rdpmc)"),
+   [5.000, 6.842, 7.121, 6.842, 6.842, 14.679]),
+]
+
 BAR_WIDTH = 8
 BAR_GAP = 4
 GROUP_WIDTH = 94
@@ -79,6 +126,12 @@ LABEL_TOP = BAR_BOTTOM + 21
 SIMPLE_LABEL_TOP = SIMPLE_BAR_BOTTOM + 24
 TARGET_LABEL_FONT_SIZE = 7
 LEGEND_FONT_SIZE = 12
+
+
+def looks_like_target_triple(label: str) -> bool:
+  return label.count("-") >= 2 or any(
+    marker in label for marker in ("linux", "darwin", "windows", "unknown")
+  )
 
 
 def value_label(value: float) -> str:
@@ -216,7 +269,7 @@ def render_svg(
     center = group_x + GROUP_WIDTH / 2
     label_start = label_top
     for line, label in enumerate(labels):
-      size = TARGET_LABEL_FONT_SIZE if "-" in label else LABEL_FONT_SIZE
+      size = TARGET_LABEL_FONT_SIZE if looks_like_target_triple(label) else LABEL_FONT_SIZE
       parts.append(text(center, label_start + line * LABEL_LINE_GAP, label, size))
 
   parts.append("</g>")
@@ -240,11 +293,41 @@ def main() -> None:
       group_background=BACKGROUND,
     )
   )
+  INSTANT_SVG_PATH.write_text(
+    render_svg(
+      INSTANT_GROUPS,
+      INSTANT_CRATES,
+      height=SIMPLE_HEIGHT,
+      group_top=SIMPLE_GROUP_TOP,
+      group_height=SIMPLE_GROUP_HEIGHT,
+      bar_bottom=SIMPLE_BAR_BOTTOM,
+      lower_bar_height=SIMPLE_LOWER_BAR_HEIGHT,
+      upper_bar_height=SIMPLE_UPPER_BAR_HEIGHT,
+      label_top=SIMPLE_LABEL_TOP,
+      group_background=BACKGROUND,
+    )
+  )
+  CYCLES_SVG_PATH.write_text(
+    render_svg(
+      CYCLES_GROUPS,
+      CYCLES_CRATES,
+      height=SIMPLE_HEIGHT,
+      group_top=SIMPLE_GROUP_TOP,
+      group_height=SIMPLE_GROUP_HEIGHT,
+      bar_bottom=SIMPLE_BAR_BOTTOM,
+      lower_bar_height=SIMPLE_LOWER_BAR_HEIGHT,
+      upper_bar_height=SIMPLE_UPPER_BAR_HEIGHT,
+      label_top=SIMPLE_LABEL_TOP,
+      group_background=BACKGROUND,
+    )
+  )
   rsvg_convert = shutil.which("rsvg-convert")
   if rsvg_convert is None:
     raise SystemExit("rsvg-convert is required to render benchmark.png")
   subprocess.run([rsvg_convert, "-o", str(PNG_PATH), str(SVG_PATH)], check=True)
   subprocess.run([rsvg_convert, "-o", str(SIMPLE_PNG_PATH), str(SIMPLE_SVG_PATH)], check=True)
+  subprocess.run([rsvg_convert, "-o", str(INSTANT_PNG_PATH), str(INSTANT_SVG_PATH)], check=True)
+  subprocess.run([rsvg_convert, "-o", str(CYCLES_PNG_PATH), str(CYCLES_SVG_PATH)], check=True)
 
 
 if __name__ == "__main__":
