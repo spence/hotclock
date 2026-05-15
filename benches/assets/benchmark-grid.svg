@@ -20,7 +20,7 @@
 <rect x="156" y="195" width="403.851" height="16" fill="#d0bca9"/>
 <rect x="156" y="195" width="184.78" height="16" fill="#8B5E3C"/>
 <text x="565.851" y="207" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#2E231B">27.3 / 59.6</text>
-<text x="48" y="237" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#2E231B">std::Instant</text>
+<text x="48" y="237" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#2E231B">std</text>
 <rect x="156" y="225" width="296.022" height="16" fill="#d6cca8"/>
 <rect x="156" y="225" width="137.305" height="16" fill="#9A8A3A"/>
 <text x="458.022" y="237" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#2E231B">20.3 / 43.7</text>
@@ -42,7 +42,7 @@
 <rect x="822" y="195" width="404" height="16" fill="#d0bca9"/>
 <rect x="822" y="195" width="191.067" height="16" fill="#8B5E3C"/>
 <text x="1232" y="207" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#2E231B">41.7 / 88.1</text>
-<text x="714" y="237" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#2E231B">std::Instant</text>
+<text x="714" y="237" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#2E231B">std</text>
 <rect x="822" y="225" width="332.702" height="16" fill="#d6cca8"/>
 <rect x="822" y="225" width="149.024" height="16" fill="#9A8A3A"/>
 <text x="1160.7" y="237" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#2E231B">32.5 / 72.6</text>
@@ -64,7 +64,7 @@
 <rect x="156" y="487" width="234.843" height="16" fill="#d0bca9"/>
 <rect x="156" y="487" width="70.9733" height="16" fill="#8B5E3C"/>
 <text x="396.843" y="499" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#2E231B">9.39 / 31.1</text>
-<text x="48" y="529" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#2E231B">std::Instant</text>
+<text x="48" y="529" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#2E231B">std</text>
 <rect x="156" y="517" width="404" height="16" fill="#d6cca8"/>
 <rect x="156" y="517" width="183.405" height="16" fill="#9A8A3A"/>
 <text x="566" y="529" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#2E231B">24.3 / 53.5</text>
@@ -86,7 +86,7 @@
 <rect x="822" y="487" width="265.522" height="16" fill="#d0bca9"/>
 <rect x="822" y="487" width="84.8451" height="16" fill="#8B5E3C"/>
 <text x="1093.52" y="499" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#2E231B">6.84 / 21.4</text>
-<text x="714" y="529" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#2E231B">std::Instant</text>
+<text x="714" y="529" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#2E231B">std</text>
 <rect x="822" y="517" width="404" height="16" fill="#d6cca8"/>
 <rect x="822" y="517" width="181.706" height="16" fill="#9A8A3A"/>
 <text x="1232" y="529" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#2E231B">14.7 / 32.6</text>
@@ -108,7 +108,7 @@
 <rect x="156" y="779" width="404" height="16" fill="#d0bca9"/>
 <rect x="156" y="779" width="169.427" height="16" fill="#8B5E3C"/>
 <text x="566" y="791" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#2E231B">56.9 / 136</text>
-<text x="48" y="821" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#2E231B">std::Instant</text>
+<text x="48" y="821" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#2E231B">std</text>
 <rect x="156" y="809" width="316.537" height="16" fill="#d6cca8"/>
 <rect x="156" y="809" width="151.065" height="16" fill="#9A8A3A"/>
 <text x="478.537" y="821" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#2E231B">50.8 / 106</text>
@@ -130,7 +130,7 @@
 <rect x="822" y="779" width="403.729" height="16" fill="#d0bca9"/>
 <rect x="822" y="779" width="175.957" height="16" fill="#8B5E3C"/>
 <text x="1231.73" y="791" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#2E231B">45.5 / 104</text>
-<text x="714" y="821" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#2E231B">std::Instant</text>
+<text x="714" y="821" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#2E231B">std</text>
 <rect x="822" y="809" width="331.202" height="16" fill="#d6cca8"/>
 <rect x="822" y="809" width="159.381" height="16" fill="#9A8A3A"/>
 <text x="1159.2" y="821" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#2E231B">41.2 / 85.7</text>

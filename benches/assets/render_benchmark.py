@@ -26,7 +26,7 @@ CRATES = [
   ("quanta@0.12.6", "#5B6472"),
   ("fastant@0.1.11", "#4F6F6A"),
   ("minstant@0.1.7", "#8B5E3C"),
-  ("std::Instant", "#9A8A3A"),
+  ("std", "#9A8A3A"),
 ]
 
 NOW_GROUPS = [
