@@ -15,18 +15,25 @@ pub mod x86_64;
 mod direct;
 pub use direct::ticks;
 
-static FREQUENCY: AtomicU64 = AtomicU64::new(0);
+// Cached at first elapsed() call. Stored as fixed-point Q32:
+//   nanos_per_tick_q32 = (1e9 << 32) / frequency
+// Then converting ticks to nanos becomes (ticks * scale) >> 32, replacing
+// the per-call u128 division with a multiply + shift.
+static NANOS_PER_TICK_Q32: AtomicU64 = AtomicU64::new(0);
+
+const NANOS_PER_SECOND_Q32: u128 = 1_000_000_000u128 << 32;
 
 #[inline]
 #[must_use]
-pub fn frequency() -> u64 {
-  let cached = FREQUENCY.load(Ordering::Relaxed);
+pub fn nanos_per_tick_q32() -> u64 {
+  let cached = NANOS_PER_TICK_Q32.load(Ordering::Relaxed);
   if cached != 0 {
     return cached;
   }
-  let f = read_frequency();
-  FREQUENCY.store(f, Ordering::Relaxed);
-  f
+  let freq = read_frequency();
+  let scale = u64::try_from(NANOS_PER_SECOND_Q32 / u128::from(freq)).unwrap_or(u64::MAX);
+  NANOS_PER_TICK_Q32.store(scale, Ordering::Relaxed);
+  scale
 }
 
 #[cfg(target_arch = "aarch64")]

@@ -2,8 +2,6 @@ use std::time::Duration;
 
 use crate::arch;
 
-const NANOS_PER_SECOND: u128 = 1_000_000_000;
-
 /// A sampled point in the process-wide counter timeline.
 ///
 /// Drop-in replacement for [`std::time::Instant`] backed by the architectural
@@ -66,16 +64,17 @@ impl Instant {
   }
 }
 
+// Q32 fixed-point conversion: nanos = (ticks * scale) >> 32 where
+// scale = (1e9 << 32) / frequency. Avoids the per-call u128 division
+// which is slow on virtualized x86 (Nitro burst VMs, Firecracker on
+// Lambda) — typical savings on those targets is 15-25 ns/call.
 #[inline]
 fn ticks_to_nanos(ticks: u64) -> u64 {
-  let nanos = u128::from(ticks) * NANOS_PER_SECOND / u128::from(arch::frequency());
-  u64::try_from(nanos).unwrap_or(u64::MAX)
+  let product = u128::from(ticks) * u128::from(arch::nanos_per_tick_q32());
+  u64::try_from(product >> 32).unwrap_or(u64::MAX)
 }
 
 #[inline]
 fn ticks_to_duration(ticks: u64) -> Duration {
-  let nanos = u128::from(ticks) * NANOS_PER_SECOND / u128::from(arch::frequency());
-  let secs = u64::try_from(nanos / NANOS_PER_SECOND).unwrap_or(u64::MAX);
-  let subsec_nanos = u32::try_from(nanos % NANOS_PER_SECOND).unwrap_or(0);
-  Duration::new(secs, subsec_nanos)
+  Duration::from_nanos(ticks_to_nanos(ticks))
 }
