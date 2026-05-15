@@ -28,19 +28,15 @@ CRATES = [
 
 GROUPS = [
   (("Apple Silicon", "M1 MacBook Pro", "aarch64-apple-darwin"),
-   [0.331, 7.591, 43.722, 43.259, 31.658]),
+   [0.348, 4.566, 27.639, 27.217, 20.148]),
   (("AWS Graviton 3", "c7g.4xlarge", "aarch64-unknown-linux-gnu"),
-   [6.673, 7.062, 38.939, 39.578, 31.463]),
+   [6.677, 7.093, 41.428, 41.340, 32.525]),
   (("AWS Intel Burst", "t3.medium", "x86_64-unknown-linux-gnu"),
-   [8.762, 13.314, 9.408, 9.408, 24.059]),
+   [8.757, 13.282, 9.408, 9.398, 24.352]),
   (("Alpine on Metal", "m7i.metal-24xl", "x86_64-unknown-linux-musl"),
-   [14.316, 17.074, 14.625, 14.625, 25.865]),
-  (("AWS Lambda", "provided.al2023", "x86_64-unknown-linux-gnu"),
-   [9.556, 14.102, 10.206, 44.386, 29.919]),
-  (("GitHub macOS", "macos-15-intel", "x86_64-apple-darwin"),
-   [6.076, 81.234, 39.790, 40.199, 38.587]),
+   [6.842, 7.111, 6.842, 6.843, 14.649]),
   (("GitHub Windows", "windows-2025", "x86_64-pc-windows-msvc"),
-   [11.245, 11.670, 40.925, 40.926, 38.396]),
+   [11.561, 11.852, 41.247, 41.071, 38.476]),
 ]
 
 ELAPSED_CRATES = [
@@ -55,6 +51,14 @@ ELAPSED_CRATES = [
 ELAPSED_GROUPS = [
   (("Apple Silicon", "M1 MacBook Pro", "aarch64-apple-darwin"),
    [5.286, 3.387, 9.094, 59.384, 60.637, 43.699]),
+  (("AWS Graviton 3", "c7g.4xlarge", "aarch64-unknown-linux-gnu"),
+   [15.191, 13.510, 15.344, 87.169, 87.244, 70.435]),
+  (("AWS Intel Burst", "t3.medium", "x86_64-unknown-linux-gnu"),
+   [42.113, 29.282, 27.842, 31.020, 31.177, 53.736]),
+  (("Alpine on Metal", "m7i.metal-24xl", "x86_64-unknown-linux-musl"),
+   [20.526, 15.659, 17.497, 21.422, 21.415, 32.750]),
+  (("GitHub Windows", "windows-2025", "x86_64-pc-windows-msvc"),
+   [23.690, 22.817, 24.683, 94.983, 94.943, 79.865]),
 ]
 
 BAR_GAP = 4
