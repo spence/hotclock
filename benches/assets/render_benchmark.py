@@ -227,20 +227,20 @@ def render_combined_svg(now_groups, elapsed_groups, crates, bar_width, group_wid
 
 
 GRID_COLS = 2
-GRID_CELL_W = 720
-GRID_CELL_H = 340
-GRID_COL_GAP = 30
-GRID_ROW_GAP = 38
-GRID_MARGIN = 32
-GRID_CELL_PAD = 24
-GRID_TITLE_FONT_SIZE = 28
-GRID_SUBTITLE_FONT_SIZE = 18
-GRID_LABEL_FONT_SIZE = 18
-GRID_VALUE_FONT_SIZE = 18
-GRID_ROW_HEIGHT = 40
-GRID_BAR_HEIGHT = 22
-GRID_CRATE_LABEL_WIDTH = 130
-GRID_VALUE_RESERVE = 130
+GRID_CELL_W = 820
+GRID_CELL_H = 440
+GRID_COL_GAP = 36
+GRID_ROW_GAP = 48
+GRID_MARGIN = 40
+GRID_CELL_PAD = 30
+GRID_TITLE_FONT_SIZE = 38
+GRID_SUBTITLE_FONT_SIZE = 24
+GRID_LABEL_FONT_SIZE = 24
+GRID_VALUE_FONT_SIZE = 24
+GRID_ROW_HEIGHT = 54
+GRID_BAR_HEIGHT = 30
+GRID_CRATE_LABEL_WIDTH = 170
+GRID_VALUE_RESERVE = 180
 GRID_LIGHTEN = 0.62
 
 
@@ -373,9 +373,7 @@ def main() -> None:
   if rsvg_convert is None:
     raise SystemExit("rsvg-convert is required to render the benchmark PNGs")
   subprocess.run([rsvg_convert, "--zoom", "2", "-o", str(PNG_PATH), str(SVG_PATH)], check=True)
-  subprocess.run(
-    [rsvg_convert, "--zoom", "2", "-o", str(GRID_PNG_PATH), str(GRID_SVG_PATH)], check=True
-  )
+  subprocess.run([rsvg_convert, "-o", str(GRID_PNG_PATH), str(GRID_SVG_PATH)], check=True)
 
 
 if __name__ == "__main__":
