@@ -4,10 +4,6 @@ pub fn calibrate_frequency() -> u64 {
   calibrate_frequency_for(crate::arch::ticks)
 }
 
-pub fn calibrate_cycle_frequency() -> u64 {
-  calibrate_frequency_for(crate::arch::cycle_ticks)
-}
-
 pub fn calibrate_frequency_for(counter: fn() -> u64) -> u64 {
   const CALIBRATION_TIME_MS: u64 = 10;
   const NUM_SAMPLES: usize = 5;

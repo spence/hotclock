@@ -1,8 +1,7 @@
-use tach::{Cycles, Instant};
+use tach::Instant;
 
 fn main() {
   let freq = Instant::frequency();
-  let cycle_freq = Cycles::frequency();
 
   println!("tach v{}", env!("CARGO_PKG_VERSION"));
   println!();
@@ -10,10 +9,6 @@ fn main() {
   println!("Instant frequency:      {freq} Hz ({:.2} MHz)", mhz(freq));
   println!("Instant overhead:       {:.0} ps per call", measure_instant_overhead());
   println!("Instant resolution:     {}", format_instant_resolution(freq));
-  println!();
-  println!("Cycles implementation:  {}", Cycles::implementation());
-  println!("Cycles frequency:       {cycle_freq} Hz ({:.2} MHz)", mhz(cycle_freq));
-  println!("Cycles overhead:        {:.0} ps per call", measure_cycles_overhead());
 }
 
 fn measure_instant_overhead() -> f64 {
@@ -21,15 +16,6 @@ fn measure_instant_overhead() -> f64 {
   let start = std::time::Instant::now();
   for _ in 0..N {
     std::hint::black_box(Instant::now().as_raw());
-  }
-  nanos_per_call(start.elapsed().as_nanos(), N) * 1000.0
-}
-
-fn measure_cycles_overhead() -> f64 {
-  const N: usize = 1_000_000;
-  let start = std::time::Instant::now();
-  for _ in 0..N {
-    std::hint::black_box(Cycles::now().as_raw());
   }
   nanos_per_call(start.elapsed().as_nanos(), N) * 1000.0
 }
