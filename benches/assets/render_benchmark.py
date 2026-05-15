@@ -12,9 +12,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 SVG_PATH = ROOT / "benchmark.svg"
 PNG_PATH = ROOT / "benchmark.png"
+GRID_SVG_PATH = ROOT / "benchmark-grid.svg"
+GRID_PNG_PATH = ROOT / "benchmark-grid.png"
 
 BACKGROUND = "#FBF6EC"
 FONT = "Avenir Next, Helvetica, Arial, sans-serif"
+MONO = "SFMono-Regular, Menlo, Consolas, monospace"
+TEXT_FG = "#2E231B"
+MUTED_FG = "#7A6E60"
 
 CRATES = [
   ("tach@0.2.0", "#D72D24"),
@@ -221,12 +226,156 @@ def render_combined_svg(now_groups, elapsed_groups, crates, bar_width, group_wid
   return "\n".join(parts) + "\n"
 
 
+GRID_COLS = 3
+GRID_CELL_W = 640
+GRID_CELL_H = 260
+GRID_COL_GAP = 26
+GRID_ROW_GAP = 32
+GRID_MARGIN = 28
+GRID_CELL_PAD = 20
+GRID_TITLE_FONT_SIZE = 20
+GRID_SUBTITLE_FONT_SIZE = 13
+GRID_LABEL_FONT_SIZE = 13
+GRID_VALUE_FONT_SIZE = 13
+GRID_ROW_HEIGHT = 30
+GRID_BAR_HEIGHT = 16
+GRID_CRATE_LABEL_WIDTH = 100
+GRID_VALUE_RESERVE = 88
+GRID_LIGHTEN = 0.62
+
+
+def lighten(hex_color: str, amount: float) -> str:
+  h = hex_color.lstrip("#")
+  bh = BACKGROUND.lstrip("#")
+  fr, fg, fb = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+  br, bg, bb = int(bh[0:2], 16), int(bh[2:4], 16), int(bh[4:6], 16)
+  return (
+    f"#{int(fr + (br - fr) * amount):02x}"
+    f"{int(fg + (bg - fg) * amount):02x}"
+    f"{int(fb + (bb - fb) * amount):02x}"
+  )
+
+
+def styled_text(
+  x: float,
+  y: float,
+  value: str,
+  size: int,
+  family: str = FONT,
+  color: str = TEXT_FG,
+  anchor: str = "middle",
+  weight: str | None = None,
+) -> str:
+  weight_attr = f' font-weight="{weight}"' if weight else ""
+  return (
+    f'<text x="{x:g}" y="{y:g}" text-anchor="{anchor}" '
+    f'font-family="{family}" font-size="{size}"{weight_attr} '
+    f'fill="{color}">{esc(value)}</text>'
+  )
+
+
+def crate_short(name: str) -> str:
+  return name.split("@")[0]
+
+
+def render_grid_cell(now_group, elapsed_group, crates, x0: float, y0: float) -> list[str]:
+  (title, instance, triple), now_vals = now_group
+  _, elapsed_vals = elapsed_group
+
+  parts = []
+  title_x = x0 + GRID_CELL_PAD
+  title_y = y0 + GRID_CELL_PAD + GRID_TITLE_FONT_SIZE - 2
+  parts.append(
+    styled_text(title_x, title_y, title, GRID_TITLE_FONT_SIZE, anchor="start", weight="600")
+  )
+
+  subtitle = f"{instance} · {triple}"
+  subtitle_y = title_y + 18
+  parts.append(
+    styled_text(
+      title_x, subtitle_y, subtitle, GRID_SUBTITLE_FONT_SIZE,
+      family=MONO, color=MUTED_FG, anchor="start",
+    )
+  )
+
+  bar_area_left = title_x + GRID_CRATE_LABEL_WIDTH + 8
+  bar_area_right = x0 + GRID_CELL_W - GRID_CELL_PAD - GRID_VALUE_RESERVE
+  bar_area_width = bar_area_right - bar_area_left
+  cell_max = max(elapsed_vals)
+
+  rows_top = subtitle_y + 14
+  for i, ((crate_full, color), now_v, elapsed_v) in enumerate(zip(crates, now_vals, elapsed_vals)):
+    row_top = rows_top + i * GRID_ROW_HEIGHT
+    bar_y = row_top + (GRID_ROW_HEIGHT - GRID_BAR_HEIGHT) / 2
+    text_baseline = row_top + GRID_ROW_HEIGHT / 2 + 4
+
+    parts.append(
+      styled_text(
+        title_x, text_baseline, crate_short(crate_full),
+        GRID_LABEL_FONT_SIZE, family=MONO, anchor="start",
+      )
+    )
+
+    light_color = lighten(color, GRID_LIGHTEN)
+    elapsed_w = max(1.0, elapsed_v / cell_max * bar_area_width)
+    now_w = max(1.0, now_v / cell_max * bar_area_width)
+    parts.append(
+      f'<rect x="{bar_area_left:g}" y="{bar_y:g}" '
+      f'width="{elapsed_w:g}" height="{GRID_BAR_HEIGHT}" fill="{light_color}"/>'
+    )
+    parts.append(
+      f'<rect x="{bar_area_left:g}" y="{bar_y:g}" '
+      f'width="{now_w:g}" height="{GRID_BAR_HEIGHT}" fill="{color}"/>'
+    )
+
+    value_text = f"{value_label(now_v)} / {value_label(elapsed_v)}"
+    parts.append(
+      styled_text(
+        bar_area_left + elapsed_w + 6, text_baseline, value_text,
+        GRID_VALUE_FONT_SIZE, family=MONO, anchor="start",
+      )
+    )
+
+  return parts
+
+
+def render_grid_svg(now_groups, elapsed_groups, crates) -> str:
+  rows = (len(now_groups) + GRID_COLS - 1) // GRID_COLS
+  width = GRID_COLS * GRID_CELL_W + (GRID_COLS - 1) * GRID_COL_GAP + 2 * GRID_MARGIN
+  height = rows * GRID_CELL_H + (rows - 1) * GRID_ROW_GAP + 2 * GRID_MARGIN
+
+  parts = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    (
+      f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
+      f'viewBox="0 0 {width} {height}">'
+    ),
+    f'<rect width="{width}" height="{height}" fill="{BACKGROUND}"/>',
+    '<g shape-rendering="crispEdges">',
+  ]
+
+  for i, (ng, eg) in enumerate(zip(now_groups, elapsed_groups)):
+    col = i % GRID_COLS
+    row = i // GRID_COLS
+    x = GRID_MARGIN + col * (GRID_CELL_W + GRID_COL_GAP)
+    y = GRID_MARGIN + row * (GRID_CELL_H + GRID_ROW_GAP)
+    parts.extend(render_grid_cell(ng, eg, crates, x, y))
+
+  parts.append("</g>")
+  parts.append("</svg>")
+  return "\n".join(parts) + "\n"
+
+
 def main() -> None:
   SVG_PATH.write_text(render_combined_svg(NOW_GROUPS, ELAPSED_GROUPS, CRATES, BAR_WIDTH, GROUP_WIDTH))
+  GRID_SVG_PATH.write_text(render_grid_svg(NOW_GROUPS, ELAPSED_GROUPS, CRATES))
   rsvg_convert = shutil.which("rsvg-convert")
   if rsvg_convert is None:
     raise SystemExit("rsvg-convert is required to render the benchmark PNGs")
   subprocess.run([rsvg_convert, "--zoom", "2", "-o", str(PNG_PATH), str(SVG_PATH)], check=True)
+  subprocess.run(
+    [rsvg_convert, "--zoom", "2", "-o", str(GRID_PNG_PATH), str(GRID_SVG_PATH)], check=True
+  )
 
 
 if __name__ == "__main__":
