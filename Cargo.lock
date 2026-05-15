@@ -530,6 +530,7 @@ dependencies = [
  "fastant",
  "minstant",
  "quanta",
+ "wasm-bindgen",
 ]
 
 [[package]]

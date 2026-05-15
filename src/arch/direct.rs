@@ -40,12 +40,20 @@ pub fn ticks() -> u64 {
   super::loongarch64::rdtime()
 }
 
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+#[inline(always)]
+#[allow(clippy::inline_always)]
+pub fn ticks() -> u64 {
+  super::wasm::ticks()
+}
+
 #[cfg(not(any(
   target_arch = "x86_64",
   target_arch = "x86",
   target_arch = "aarch64",
   target_arch = "riscv64",
   target_arch = "loongarch64",
+  all(target_arch = "wasm32", target_os = "unknown"),
 )))]
 #[inline(always)]
 #[allow(clippy::inline_always)]

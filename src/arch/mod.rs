@@ -7,6 +7,8 @@ pub mod fallback;
 pub mod loongarch64;
 #[cfg(target_arch = "riscv64")]
 pub mod riscv64;
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+pub mod wasm;
 #[cfg(target_arch = "x86")]
 pub mod x86;
 #[cfg(target_arch = "x86_64")]
@@ -80,7 +82,19 @@ fn read_frequency() -> u64 {
   freq as u64
 }
 
-#[cfg(not(any(target_arch = "aarch64", target_os = "macos", target_os = "windows")))]
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+#[inline]
+fn read_frequency() -> u64 {
+  // ticks() returns nanos directly; identity Q32 transform.
+  1_000_000_000
+}
+
+#[cfg(not(any(
+  target_arch = "aarch64",
+  target_os = "macos",
+  target_os = "windows",
+  all(target_arch = "wasm32", target_os = "unknown"),
+)))]
 #[inline]
 fn read_frequency() -> u64 {
   crate::calibration::calibrate_frequency()
