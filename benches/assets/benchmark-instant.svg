@@ -13,7 +13,6 @@
 <rect x="607.28" y="330" width="6" height="6" fill="#9A8A3A"/>
 <text x="617.28" y="336" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">std::Instant</text>
 <text x="395" y="356" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="9" fill="#2E231B">All measurements are nanoseconds.</text>
-<rect x="6" y="12" width="94" height="270" fill="#FBF6EC"/>
 <rect x="25" y="254" width="8" height="2" fill="#D72D24"/>
 <text x="29" y="250" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">0.33</text>
 <rect x="37" y="235" width="8" height="21" fill="#5B6472"/>
@@ -27,7 +26,6 @@
 <text x="53" y="280" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">Apple Silicon</text>
 <text x="53" y="293" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">M1 MacBook Pro</text>
 <text x="53" y="306" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">aarch64-apple-darwin</text>
-<rect x="120" y="12" width="94" height="270" fill="#FBF6EC"/>
 <rect x="139" y="237" width="8" height="19" fill="#D72D24"/>
 <text x="143" y="233" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">6.67</text>
 <rect x="151" y="236" width="8" height="20" fill="#5B6472"/>
@@ -41,7 +39,6 @@
 <text x="167" y="280" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">AWS Graviton 3</text>
 <text x="167" y="293" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">c7g.4xlarge</text>
 <text x="167" y="306" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">aarch64-unknown-linux-gnu</text>
-<rect x="234" y="12" width="94" height="270" fill="#FBF6EC"/>
 <rect x="253" y="231" width="8" height="25" fill="#D72D24"/>
 <text x="257" y="227" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">8.76</text>
 <rect x="265" y="219" width="8" height="37" fill="#5B6472"/>
@@ -55,7 +52,6 @@
 <text x="281" y="280" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">AWS Intel Burst</text>
 <text x="281" y="293" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">t3.medium</text>
 <text x="281" y="306" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">x86_64-unknown-linux-gnu</text>
-<rect x="348" y="12" width="94" height="270" fill="#FBF6EC"/>
 <rect x="367" y="216" width="8" height="40" fill="#D72D24"/>
 <text x="371" y="212" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">14.3</text>
 <rect x="379" y="208" width="8" height="48" fill="#5B6472"/>
@@ -69,7 +65,6 @@
 <text x="395" y="280" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">Alpine on Metal</text>
 <text x="395" y="293" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">m7i.metal-24xl</text>
 <text x="395" y="306" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">x86_64-unknown-linux-musl</text>
-<rect x="462" y="12" width="94" height="270" fill="#FBF6EC"/>
 <rect x="481" y="229" width="8" height="27" fill="#D72D24"/>
 <text x="485" y="225" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">9.56</text>
 <rect x="493" y="216" width="8" height="40" fill="#5B6472"/>
@@ -83,7 +78,6 @@
 <text x="509" y="280" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">AWS Lambda</text>
 <text x="509" y="293" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">provided.al2023</text>
 <text x="509" y="306" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">x86_64-unknown-linux-gnu</text>
-<rect x="576" y="12" width="94" height="270" fill="#FBF6EC"/>
 <rect x="595" y="239" width="8" height="17" fill="#D72D24"/>
 <text x="599" y="235" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">6.08</text>
 <rect x="607" y="28" width="8" height="228" fill="#5B6472"/>
@@ -97,7 +91,6 @@
 <text x="623" y="280" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">GitHub macOS</text>
 <text x="623" y="293" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">macos-15-intel</text>
 <text x="623" y="306" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">x86_64-apple-darwin</text>
-<rect x="690" y="12" width="94" height="270" fill="#FBF6EC"/>
 <rect x="709" y="224" width="8" height="32" fill="#D72D24"/>
 <text x="713" y="220" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">11.2</text>
 <rect x="721" y="223" width="8" height="33" fill="#5B6472"/>

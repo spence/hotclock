@@ -8,8 +8,6 @@ Each supported target compiles `Instant::now()` directly to the fastest wall-clo
 
 ![Cross-target Instant benchmark bar chart](benches/assets/benchmark-instant.png)
 
-![Cross-target Instant benchmark heatmap](benches/assets/benchmark-heatmap.png)
-
 The benchmark is `Instant::now()` read cost across target / environment pairs. `tach::Instant` is the leftmost (red) bar in each group.
 
 ## feature comparison
