@@ -51,17 +51,17 @@
 <text x="296" y="293" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">c7g.4xlarge</text>
 <text x="296" y="306" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">aarch64-unknown-linux-gnu</text>
 <rect x="438" y="203" width="16" height="53" fill="#D72D24"/>
-<text x="446" y="199" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">18.8</text>
+<text x="446" y="199" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">18.9</text>
 <rect x="458" y="202" width="16" height="54" fill="#8B1E18"/>
 <text x="466" y="198" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">19.3</text>
-<rect x="478" y="175" width="16" height="81" fill="#5B6472"/>
-<text x="486" y="171" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">28.7</text>
-<rect x="498" y="167" width="16" height="89" fill="#4F6F6A"/>
-<text x="506" y="163" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">31.7</text>
-<rect x="518" y="168" width="16" height="88" fill="#8B5E3C"/>
-<text x="526" y="164" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">31.3</text>
-<rect x="538" y="89" width="16" height="167" fill="#9A8A3A"/>
-<text x="546" y="85" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">59.4</text>
+<rect x="478" y="177" width="16" height="79" fill="#5B6472"/>
+<text x="486" y="173" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">28.2</text>
+<rect x="498" y="169" width="16" height="87" fill="#4F6F6A"/>
+<text x="506" y="165" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">31.0</text>
+<rect x="518" y="169" width="16" height="87" fill="#8B5E3C"/>
+<text x="526" y="165" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">31.1</text>
+<rect x="538" y="106" width="16" height="150" fill="#9A8A3A"/>
+<text x="546" y="102" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">53.5</text>
 <text x="496" y="280" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">AWS Intel Burst</text>
 <text x="496" y="293" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">t3.medium</text>
 <text x="496" y="306" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">x86_64-unknown-linux-gnu</text>
