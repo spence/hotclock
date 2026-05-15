@@ -3,6 +3,7 @@ target
 
 # misc
 .DS_Store
+.claude/
 
 # bench infrastructure (per-developer secrets and ephemeral state)
 benches/scripts/.bench-key.pem
