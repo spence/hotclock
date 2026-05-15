@@ -239,8 +239,8 @@ GRID_LABEL_FONT_SIZE = 30
 GRID_VALUE_FONT_SIZE = 30
 GRID_ROW_HEIGHT = 64
 GRID_BAR_HEIGHT = 36
-GRID_CRATE_LABEL_WIDTH = 200
-GRID_VALUE_RESERVE = 220
+GRID_CRATE_LABEL_WIDTH = 156
+GRID_VALUE_RESERVE = 230
 GRID_LIGHTEN = 0.62
 
 
@@ -304,7 +304,7 @@ def render_grid_cell(now_group, elapsed_group, crates, x0: float, y0: float) -> 
     )
   )
 
-  bar_area_left = title_x + GRID_CRATE_LABEL_WIDTH + 12
+  bar_area_left = title_x + GRID_CRATE_LABEL_WIDTH + 8
   bar_area_right = x0 + GRID_CELL_W - GRID_CELL_PAD - GRID_VALUE_RESERVE
   bar_area_width = bar_area_right - bar_area_left
   cell_max = max(elapsed_vals)
@@ -313,7 +313,8 @@ def render_grid_cell(now_group, elapsed_group, crates, x0: float, y0: float) -> 
   for i, ((crate_full, color), now_v, elapsed_v) in enumerate(zip(crates, now_vals, elapsed_vals)):
     row_top = rows_top + i * GRID_ROW_HEIGHT
     bar_y = row_top + (GRID_ROW_HEIGHT - GRID_BAR_HEIGHT) / 2
-    text_baseline = row_top + GRID_ROW_HEIGHT / 2 + 4
+    bar_center = bar_y + GRID_BAR_HEIGHT / 2
+    text_baseline = bar_center + GRID_LABEL_FONT_SIZE * 0.34
 
     parts.append(
       styled_text(
@@ -337,7 +338,7 @@ def render_grid_cell(now_group, elapsed_group, crates, x0: float, y0: float) -> 
     value_text = f"{value_label(now_v)} / {value_label(elapsed_v)}"
     parts.append(
       styled_text(
-        bar_area_left + elapsed_w + 6, text_baseline, value_text,
+        bar_area_left + elapsed_w + 16, text_baseline, value_text,
         GRID_VALUE_FONT_SIZE, family=MONO, anchor="start",
       )
     )
