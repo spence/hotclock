@@ -85,10 +85,13 @@ def esc(value: str) -> str:
   return html.escape(value, quote=True)
 
 
-def text(x: float, y: float, value: str, size: int, anchor: str = "middle") -> str:
+def text(
+  x: float, y: float, value: str, size: int, anchor: str = "middle", italic: bool = False
+) -> str:
+  style = ' font-style="italic"' if italic else ""
   return (
     f'<text x="{x:g}" y="{y:g}" text-anchor="{anchor}" '
-    f'font-family="{FONT}" font-size="{size}" fill="#2E231B">{esc(value)}</text>'
+    f'font-family="{FONT}" font-size="{size}"{style} fill="#2E231B">{esc(value)}</text>'
   )
 
 
@@ -160,7 +163,7 @@ def render_svg() -> str:
   note = "All measurements are nanoseconds."
   if global_max > BREAK_VALUE:
     note = "All measurements are nanoseconds; squiggle marks compressed upper range."
-  parts.append(text(width / 2, note_y, note, 9))
+  parts.append(text(width / 2, note_y, note, 8, italic=True))
 
   for group_x, (labels, values) in zip(group_xs, GROUPS):
     bar_x = group_x + (GROUP_WIDTH - bars_width) / 2

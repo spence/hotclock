@@ -13,7 +13,7 @@
 <text x="464.96" y="336" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">minstant@0.1.7</text>
 <rect x="577.04" y="330" width="6" height="6" fill="#9A8A3A"/>
 <text x="587.04" y="336" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">std::Instant</text>
-<text x="395" y="356" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="9" fill="#2E231B">All measurements are nanoseconds.</text>
+<text x="395" y="356" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="8" font-style="italic" fill="#2E231B">All measurements are nanoseconds.</text>
 <rect x="25" y="254" width="8" height="2" fill="#D72D24"/>
 <text x="29" y="250" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">0.33</text>
 <rect x="37" y="235" width="8" height="21" fill="#5B6472"/>
