@@ -17,12 +17,16 @@ BACKGROUND = "#FBF6EC"
 FONT = "Avenir Next, Helvetica, Arial, sans-serif"
 
 CRATES = [
-  ("tach::Instant@0.2.0", "#D72D24"),
+  ("tach@0.2.0", "#D72D24"),
   ("quanta@0.12.6", "#5B6472"),
   ("fastant@0.1.11", "#4F6F6A"),
   ("minstant@0.1.7", "#8B5E3C"),
   ("std::Instant", "#9A8A3A"),
 ]
+
+TITLE = "Instant::now()"
+TITLE_Y = 22
+TITLE_FONT_SIZE = 16
 
 GROUPS = [
   (("Apple Silicon", "M1 MacBook Pro", "aarch64-apple-darwin"),
@@ -132,6 +136,7 @@ def render_svg() -> str:
     ),
     f'<rect width="{width}" height="{HEIGHT}" fill="{BACKGROUND}"/>',
     '<g shape-rendering="crispEdges">',
+    text(width / 2, TITLE_Y, TITLE, TITLE_FONT_SIZE),
   ]
 
   max_label_lines = max(len(labels) for labels, _ in GROUPS)

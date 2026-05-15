@@ -2,16 +2,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="790" height="375" viewBox="0 0 790 375">
 <rect width="790" height="375" fill="#FBF6EC"/>
 <g shape-rendering="crispEdges">
-<rect x="92.08" y="330" width="6" height="6" fill="#D72D24"/>
-<text x="102.08" y="336" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">tach::Instant@0.2.0</text>
-<rect x="247.76" y="330" width="6" height="6" fill="#5B6472"/>
-<text x="257.76" y="336" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">quanta@0.12.6</text>
-<rect x="363.12" y="330" width="6" height="6" fill="#4F6F6A"/>
-<text x="373.12" y="336" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">fastant@0.1.11</text>
-<rect x="485.2" y="330" width="6" height="6" fill="#8B5E3C"/>
-<text x="495.2" y="336" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">minstant@0.1.7</text>
-<rect x="607.28" y="330" width="6" height="6" fill="#9A8A3A"/>
-<text x="617.28" y="336" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">std::Instant</text>
+<text x="395" y="22" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="16" fill="#2E231B">Instant::now()</text>
+<rect x="122.32" y="330" width="6" height="6" fill="#D72D24"/>
+<text x="132.32" y="336" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">tach@0.2.0</text>
+<rect x="217.52" y="330" width="6" height="6" fill="#5B6472"/>
+<text x="227.52" y="336" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">quanta@0.12.6</text>
+<rect x="332.88" y="330" width="6" height="6" fill="#4F6F6A"/>
+<text x="342.88" y="336" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">fastant@0.1.11</text>
+<rect x="454.96" y="330" width="6" height="6" fill="#8B5E3C"/>
+<text x="464.96" y="336" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">minstant@0.1.7</text>
+<rect x="577.04" y="330" width="6" height="6" fill="#9A8A3A"/>
+<text x="587.04" y="336" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">std::Instant</text>
 <text x="395" y="356" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="9" fill="#2E231B">All measurements are nanoseconds.</text>
 <rect x="25" y="254" width="8" height="2" fill="#D72D24"/>
 <text x="29" y="250" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">0.33</text>
