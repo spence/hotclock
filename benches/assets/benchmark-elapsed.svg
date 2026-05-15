@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="992" height="375" viewBox="0 0 992 375">
-<rect width="992" height="375" fill="#FBF6EC"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1192" height="375" viewBox="0 0 1192 375">
+<rect width="1192" height="375" fill="#FBF6EC"/>
 <g shape-rendering="crispEdges">
-<text x="496" y="22" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="16" fill="#2E231B">Instant: now() + elapsed()</text>
-<rect x="74.92" y="330" width="6" height="6" fill="#D72D24"/>
-<text x="84.92" y="336" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">tach: elapsed()</text>
-<rect x="203.72" y="330" width="6" height="6" fill="#8B1E18"/>
-<text x="213.72" y="336" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">tach: elapsed_fast()</text>
-<rect x="366.12" y="330" width="6" height="6" fill="#5B6472"/>
-<text x="376.12" y="336" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">quanta: elapsed()</text>
-<rect x="508.36" y="330" width="6" height="6" fill="#4F6F6A"/>
-<text x="518.36" y="336" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">fastant: elapsed()</text>
-<rect x="657.32" y="330" width="6" height="6" fill="#8B5E3C"/>
-<text x="667.32" y="336" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">minstant: elapsed()</text>
-<rect x="813" y="330" width="6" height="6" fill="#9A8A3A"/>
-<text x="823" y="336" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">std: elapsed()</text>
-<text x="496" y="356" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="8" font-style="italic" fill="#2E231B">All measurements are nanoseconds; squiggle marks compressed upper range.</text>
+<text x="596" y="22" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="16" fill="#2E231B">Instant: now() + elapsed()</text>
+<rect x="174.92" y="330" width="6" height="6" fill="#D72D24"/>
+<text x="184.92" y="336" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">tach: elapsed()</text>
+<rect x="303.72" y="330" width="6" height="6" fill="#8B1E18"/>
+<text x="313.72" y="336" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">tach: elapsed_fast()</text>
+<rect x="466.12" y="330" width="6" height="6" fill="#5B6472"/>
+<text x="476.12" y="336" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">quanta: elapsed()</text>
+<rect x="608.36" y="330" width="6" height="6" fill="#4F6F6A"/>
+<text x="618.36" y="336" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">fastant: elapsed()</text>
+<rect x="757.32" y="330" width="6" height="6" fill="#8B5E3C"/>
+<text x="767.32" y="336" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">minstant: elapsed()</text>
+<rect x="913" y="330" width="6" height="6" fill="#9A8A3A"/>
+<text x="923" y="336" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">std: elapsed()</text>
+<text x="596" y="356" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="8" font-style="italic" fill="#2E231B">All measurements are nanoseconds; squiggle marks compressed upper range.</text>
 <rect x="38" y="241" width="16" height="15" fill="#D72D24"/>
 <text x="46" y="237" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">5.29</text>
 <rect x="58" y="246" width="16" height="10" fill="#8B1E18"/>
@@ -80,24 +80,43 @@
 <text x="696" y="280" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">Alpine on Metal</text>
 <text x="696" y="293" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">m7i.metal-24xl</text>
 <text x="696" y="306" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">x86_64-unknown-linux-musl</text>
-<rect x="838" y="190" width="16" height="66" fill="#D72D24"/>
-<text x="846" y="186" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">23.7</text>
-<rect x="858" y="192" width="16" height="64" fill="#8B1E18"/>
-<text x="866" y="188" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">22.8</text>
-<rect x="878" y="187" width="16" height="69" fill="#5B6472"/>
-<text x="886" y="183" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">24.7</text>
-<rect x="898" y="26" width="16" height="230" fill="#4F6F6A"/>
-<path d="M897 23 C899 18 901 28 903 23 S907 28 915 23" stroke="#FBF6EC" stroke-width="4" fill="none" stroke-linecap="round"/>
-<path d="M897 23 C899 18 901 28 903 23 S907 28 915 23" stroke="#2E231B" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.65"/>
-<text x="906" y="22" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">95.0</text>
+<rect x="838" y="55" width="16" height="201" fill="#D72D24"/>
+<text x="846" y="51" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">71.7</text>
+<rect x="858" y="120" width="16" height="136" fill="#8B1E18"/>
+<text x="866" y="116" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">48.5</text>
+<rect x="878" y="104" width="16" height="152" fill="#5B6472"/>
+<text x="886" y="100" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">54.2</text>
+<rect x="898" y="111" width="16" height="145" fill="#4F6F6A"/>
+<text x="906" y="107" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">51.8</text>
 <rect x="918" y="26" width="16" height="230" fill="#8B5E3C"/>
 <path d="M917 23 C919 18 921 28 923 23 S927 28 935 23" stroke="#FBF6EC" stroke-width="4" fill="none" stroke-linecap="round"/>
 <path d="M917 23 C919 18 921 28 923 23 S927 28 935 23" stroke="#2E231B" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.65"/>
-<text x="926" y="22" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">94.9</text>
-<rect x="938" y="32" width="16" height="224" fill="#9A8A3A"/>
-<text x="946" y="28" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">79.9</text>
-<text x="896" y="280" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">GitHub Windows</text>
-<text x="896" y="293" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">windows-2025</text>
-<text x="896" y="306" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">x86_64-pc-windows-msvc</text>
+<text x="926" y="22" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">138</text>
+<rect x="938" y="26" width="16" height="230" fill="#9A8A3A"/>
+<path d="M937 23 C939 18 941 28 943 23 S947 28 955 23" stroke="#FBF6EC" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M937 23 C939 18 941 28 943 23 S947 28 955 23" stroke="#2E231B" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.65"/>
+<text x="946" y="22" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">108</text>
+<text x="896" y="280" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">AWS Lambda</text>
+<text x="896" y="293" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">provided.al2023</text>
+<text x="896" y="306" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">x86_64-unknown-linux-gnu</text>
+<rect x="1038" y="190" width="16" height="66" fill="#D72D24"/>
+<text x="1046" y="186" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">23.7</text>
+<rect x="1058" y="192" width="16" height="64" fill="#8B1E18"/>
+<text x="1066" y="188" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">22.8</text>
+<rect x="1078" y="187" width="16" height="69" fill="#5B6472"/>
+<text x="1086" y="183" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">24.7</text>
+<rect x="1098" y="26" width="16" height="230" fill="#4F6F6A"/>
+<path d="M1097 23 C1099 18 1101 28 1103 23 S1107 28 1115 23" stroke="#FBF6EC" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M1097 23 C1099 18 1101 28 1103 23 S1107 28 1115 23" stroke="#2E231B" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.65"/>
+<text x="1106" y="22" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">95.0</text>
+<rect x="1118" y="26" width="16" height="230" fill="#8B5E3C"/>
+<path d="M1117 23 C1119 18 1121 28 1123 23 S1127 28 1135 23" stroke="#FBF6EC" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M1117 23 C1119 18 1121 28 1123 23 S1127 28 1135 23" stroke="#2E231B" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.65"/>
+<text x="1126" y="22" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">94.9</text>
+<rect x="1138" y="32" width="16" height="224" fill="#9A8A3A"/>
+<text x="1146" y="28" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">79.9</text>
+<text x="1096" y="280" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">GitHub Windows</text>
+<text x="1096" y="293" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">windows-2025</text>
+<text x="1096" y="306" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">x86_64-pc-windows-msvc</text>
 </g>
 </svg>

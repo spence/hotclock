@@ -35,6 +35,8 @@ GROUPS = [
    [8.757, 13.282, 9.408, 9.398, 24.352]),
   (("Alpine on Metal", "m7i.metal-24xl", "x86_64-unknown-linux-musl"),
    [6.842, 7.111, 6.842, 6.843, 14.649]),
+  (("AWS Lambda", "provided.al2023", "x86_64-unknown-linux-gnu"),
+   [13.669, 23.335, 15.574, 56.563, 49.177]),
   (("GitHub Windows", "windows-2025", "x86_64-pc-windows-msvc"),
    [11.561, 11.852, 41.247, 41.071, 38.476]),
 ]
@@ -57,6 +59,8 @@ ELAPSED_GROUPS = [
    [42.113, 29.282, 27.842, 31.020, 31.177, 53.736]),
   (("Alpine on Metal", "m7i.metal-24xl", "x86_64-unknown-linux-musl"),
    [20.526, 15.659, 17.497, 21.422, 21.415, 32.750]),
+  (("AWS Lambda", "provided.al2023", "x86_64-unknown-linux-gnu"),
+   [71.741, 48.550, 54.207, 51.828, 138.038, 107.954]),
   (("GitHub Windows", "windows-2025", "x86_64-pc-windows-msvc"),
    [23.690, 22.817, 24.683, 94.983, 94.943, 79.865]),
 ]

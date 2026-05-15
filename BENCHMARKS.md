@@ -14,6 +14,7 @@ environment cells. All numbers are nanoseconds per call (lower is better).
 | `aarch64-unknown-linux-gnu` | Graviton 3 Nitro VM | c7g.4xlarge | **6.68** | 7.09 | 41.43 | 41.34 | 32.53 |
 | `x86_64-unknown-linux-gnu` | Intel burst VM | t3.medium | **8.76** | 13.28 | 9.41 | 9.40 | 24.35 |
 | `x86_64-unknown-linux-musl` | Alpine Docker on Intel host | m7i.metal-24xl | **6.84** | 7.11 | **6.84** | **6.84** | 14.65 |
+| `x86_64-unknown-linux-gnu` | AWS Lambda (Firecracker) | provided.al2023 | **13.67** | 23.34 | 15.57 | 56.56 | 49.18 |
 | `x86_64-apple-darwin` | GitHub Actions | macos-13 | TBD | TBD | TBD | TBD | TBD |
 | `x86_64-pc-windows-msvc` | GitHub Actions | windows-2025 | **11.56** | 11.85 | 41.25 | 41.07 | 38.48 |
 
@@ -25,6 +26,7 @@ environment cells. All numbers are nanoseconds per call (lower is better).
 | `aarch64-unknown-linux-gnu` | Graviton 3 Nitro VM | c7g.4xlarge | 15.19 | **13.51** | 15.34 | 87.17 | 87.24 | 70.44 |
 | `x86_64-unknown-linux-gnu` | Intel burst VM | t3.medium | 42.11 | 29.28 | **27.84** | 31.02 | 31.18 | 53.74 |
 | `x86_64-unknown-linux-musl` | Alpine Docker on Intel host | m7i.metal-24xl | 20.53 | **15.66** | 17.50 | 21.42 | 21.42 | 32.75 |
+| `x86_64-unknown-linux-gnu` | AWS Lambda (Firecracker) | provided.al2023 | 71.74 | **48.55** | 54.21 | 51.83 | 138.04 | 107.95 |
 | `x86_64-apple-darwin` | GitHub Actions | macos-13 | TBD | TBD | TBD | TBD | TBD | TBD |
 | `x86_64-pc-windows-msvc` | GitHub Actions | windows-2025 | 23.69 | **22.82** | 24.68 | 94.98 | 94.94 | 79.87 |
 
@@ -116,9 +118,32 @@ gh run view <run-id> --log --job=<job-id> | grep "time:"   # extract numbers
 
 **Gotcha**: GitHub runner labels are confusing — `macos-15`/`macos-14` are Apple Silicon (ARM). `macos-13` is the only Intel macOS runner available. `windows-2025` and `ubuntu-24.04` are x86_64.
 
-### AWS Lambda (deferred)
+### AWS Lambda
 
-For `provided.al2023` x86_64 — not yet included. Would require `cargo-lambda` setup, an IAM role, a Lambda handler that runs the bench in-process, deployment, invocation, and CloudWatch log parsing.
+For `provided.al2023` x86_64. A standalone Lambda handler (not the criterion bench — Lambda's runtime doesn't accommodate criterion's filesystem assumptions) runs the bench in-process and returns the per-call timings as JSON. Source at `/tmp/tach-lambda-bench/` (separate Cargo project, depends on `tach` via path).
+
+```bash
+# Build (uses zig under the hood for cross-compile)
+cd /tmp/tach-lambda-bench
+cargo lambda build --release --output-format=zip
+
+# Deploy (requires a pre-created execution role; one-time setup with admin creds)
+cargo lambda deploy --profile $YOUR_PROFILE --region us-east-2 \
+  --iam-role arn:aws:iam::$ACCT:role/tach-bench-lambda-role \
+  --memory 1024 --timeout 300 tach-lambda-bench
+
+# Invoke and capture the JSON response
+aws lambda invoke --function-name tach-lambda-bench \
+  --profile $YOUR_PROFILE --region us-east-2 \
+  --cli-binary-format raw-in-base64-out --payload '{}' /tmp/result.json
+cat /tmp/result.json | python3 -m json.tool
+
+# Cleanup
+aws lambda delete-function --function-name tach-lambda-bench \
+  --profile $YOUR_PROFILE --region us-east-2
+```
+
+**Note**: Lambda numbers are noisier than EC2 (Firecracker VM with shared CPU). They're useful as a relative comparison but don't compare directly to bare-metal numbers.
 
 ## Updating the chart
 
