@@ -2,7 +2,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1192" height="712" viewBox="0 0 1192 712">
 <rect width="1192" height="712" fill="#FBF6EC"/>
 <g shape-rendering="crispEdges">
-<text x="596" y="22" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="16" fill="#2E231B">Instant::now()</text>
+<text x="596" y="22" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="16" fill="#2E231B">now()</text>
 <rect x="48" y="258" width="16" height="2" fill="#D72D24"/>
 <text x="56" y="254" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">0.35</text>
 <rect x="68" y="241" width="16" height="19" fill="#5B6472"/>
@@ -81,7 +81,7 @@
 <text x="1096" y="284" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#2E231B">GitHub Windows</text>
 <text x="1096" y="297" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">windows-2025</text>
 <text x="1096" y="310" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">x86_64-pc-windows-msvc</text>
-<text x="596" y="362" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="16" fill="#2E231B">Instant: now() + elapsed()</text>
+<text x="596" y="362" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="16" fill="#2E231B">now() + elapsed()</text>
 <rect x="48" y="598" width="16" height="2" fill="#D72D24"/>
 <text x="56" y="594" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="7" fill="#2E231B">1.20</text>
 <rect x="68" y="584" width="16" height="16" fill="#5B6472"/>

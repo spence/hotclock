@@ -188,13 +188,13 @@ def render_combined_svg(now_groups, elapsed_groups, crates, bar_width, group_wid
   ]
 
   parts.extend(
-    render_panel(now_groups, crates, "Instant::now()", bar_width, group_width, width, top_panel_top)
+    render_panel(now_groups, crates, "now()", bar_width, group_width, width, top_panel_top)
   )
   parts.extend(
     render_panel(
       elapsed_groups,
       crates,
-      "Instant: now() + elapsed()",
+      "now() + elapsed()",
       bar_width,
       group_width,
       width,
