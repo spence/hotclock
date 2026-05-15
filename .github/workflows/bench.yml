@@ -1,0 +1,26 @@
+name: bench
+
+on:
+  workflow_dispatch:
+
+jobs:
+  bench:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            label: macos-15-intel
+            arch: x86_64-apple-darwin
+          - runner: windows-2025
+            label: windows-2025
+            arch: x86_64-pc-windows-msvc
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo bench --bench instant -- --warm-up-time 1 --measurement-time 3
+      - name: Print summary
+        run: |
+          echo "=== cell: ${{ matrix.label }} (${{ matrix.arch }}) ==="
+          echo "Bench output above. Look for 'time: [low mid high]' lines."
