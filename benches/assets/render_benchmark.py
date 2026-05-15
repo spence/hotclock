@@ -38,7 +38,7 @@ GROUPS = [
   (("AWS Lambda", "provided.al2023", "x86_64-unknown-linux-gnu"),
    [13.602, 23.344, 15.540, 56.930, 50.760]),
   (("GitHub Windows", "windows-2025", "x86_64-pc-windows-msvc"),
-   [11.561, 11.852, 41.247, 41.071, 38.476]),
+   [12.339, 12.432, 45.535, 45.518, 41.230]),
 ]
 
 ELAPSED_CRATES = [
@@ -62,7 +62,7 @@ ELAPSED_GROUPS = [
   (("AWS Lambda", "provided.al2023", "x86_64-unknown-linux-gnu"),
    [31.929, 31.901, 50.860, 51.788, 135.750, 106.361]),
   (("GitHub Windows", "windows-2025", "x86_64-pc-windows-msvc"),
-   [23.690, 22.817, 24.683, 94.983, 94.943, 79.865]),
+   [24.695, 24.702, 25.477, 104.510, 104.440, 85.678]),
 ]
 
 BAR_GAP = 4
