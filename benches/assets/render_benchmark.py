@@ -243,12 +243,12 @@ GRID_CRATE_LABEL_WIDTH = 156
 GRID_VALUE_RESERVE = 230
 GRID_LIGHTEN = 0.62
 
-GRID_HEADER_HEIGHT = 140
-GRID_HEADER_GAP = 32
-GRID_HEADER_BAR_WIDTH = 520
-GRID_HEADER_BAR_HEIGHT = 36
+GRID_HEADER_HEIGHT = 120
+GRID_HEADER_GAP = 24
+GRID_HEADER_BAR_WIDTH = 300
+GRID_HEADER_BAR_HEIGHT = 24
 GRID_HEADER_DARK_FRACTION = 0.32
-GRID_HEADER_LABEL_GAP = 14
+GRID_HEADER_LABEL_GAP = 10
 
 
 def lighten(hex_color: str, amount: float) -> str:
@@ -342,9 +342,9 @@ def render_grid_cell(now_group, elapsed_group, crates, x0: float, y0: float) -> 
       f'width="{now_w:g}" height="{GRID_BAR_HEIGHT}" fill="{color}"/>'
     )
 
-    value_x = bar_area_left + elapsed_w + 16
+    value_x = x0 + GRID_CELL_W - GRID_CELL_PAD
     parts.append(
-      f'<text x="{value_x:g}" y="{text_baseline:g}" text-anchor="start" '
+      f'<text x="{value_x:g}" y="{text_baseline:g}" text-anchor="end" '
       f'font-family="{MONO}" font-size="{GRID_VALUE_FONT_SIZE}" fill="{TEXT_FG}">'
       f'{esc(value_label(now_v))}'
       f'<tspan fill="{MUTED_FG}"> / </tspan>'
@@ -356,8 +356,10 @@ def render_grid_cell(now_group, elapsed_group, crates, x0: float, y0: float) -> 
 
 def render_grid_header(width: float, y0: float) -> list[str]:
   parts = []
-  bar_x = GRID_MARGIN
-  bar_y = y0 + GRID_HEADER_HEIGHT - GRID_HEADER_BAR_HEIGHT - 16
+  content_left = GRID_MARGIN + GRID_CELL_PAD
+  content_right = width - GRID_MARGIN - GRID_CELL_PAD
+  bar_x = content_left
+  bar_y = y0 + GRID_HEADER_HEIGHT - GRID_HEADER_BAR_HEIGHT - 12
   dark_color = TEXT_FG
   light_color = lighten(dark_color, 0.66)
   dark_w = GRID_HEADER_BAR_WIDTH * GRID_HEADER_DARK_FRACTION
@@ -380,7 +382,7 @@ def render_grid_header(width: float, y0: float) -> list[str]:
   )
   parts.append(
     styled_text(
-      bar_x + dark_w + 24, label_baseline, "now() + elapsed()",
+      bar_x + dark_w + 18, label_baseline, "now() + elapsed()",
       GRID_LABEL_FONT_SIZE, family=MONO, anchor="start", weight="600",
     )
   )
@@ -388,7 +390,7 @@ def render_grid_header(width: float, y0: float) -> list[str]:
   unit_baseline = bar_y + GRID_HEADER_BAR_HEIGHT / 2 + GRID_LABEL_FONT_SIZE * 0.34
   parts.append(
     styled_text(
-      width - GRID_MARGIN, unit_baseline, "nanoseconds",
+      content_right, unit_baseline, "nanoseconds",
       GRID_LABEL_FONT_SIZE, family=MONO, anchor="end", color=MUTED_FG,
     )
   )
