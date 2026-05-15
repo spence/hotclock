@@ -2,10 +2,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1596" height="1948" viewBox="0 0 1596 1948">
 <rect width="1596" height="1948" fill="#FBF6EC"/>
 <g shape-rendering="crispEdges">
-<rect x="74" y="124" width="540" height="24" fill="#b5aea4"/>
-<rect x="74" y="124" width="172.8" height="24" fill="#2E231B"/>
-<text x="160.4" y="114" text-anchor="middle" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" font-weight="600" fill="#2E231B">now()</text>
-<text x="430.4" y="114" text-anchor="middle" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" font-weight="600" fill="#2E231B">now() + elapsed()</text>
+<rect x="74" y="124" width="720" height="24" fill="#b5aea4"/>
+<rect x="74" y="124" width="331.2" height="24" fill="#2E231B"/>
+<text x="239.6" y="114" text-anchor="middle" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" font-weight="600" fill="#2E231B">Instant::now()</text>
+<text x="599.6" y="114" text-anchor="middle" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" font-weight="600" fill="#2E231B">now() + elapsed()</text>
 <text x="1522" y="136" text-anchor="end" dominant-baseline="central" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#7A6E60">times shown in nanoseconds</text>
 <text x="74" y="266" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="50" font-weight="600" fill="#2E231B">Apple Silicon</text>
 <text x="74" y="306" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="28" fill="#7A6E60">M1 MacBook Pro</text>

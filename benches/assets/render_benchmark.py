@@ -245,9 +245,9 @@ GRID_LIGHTEN = 0.62
 
 GRID_HEADER_HEIGHT = 120
 GRID_HEADER_GAP = 24
-GRID_HEADER_BAR_WIDTH = 540
+GRID_HEADER_BAR_WIDTH = 720
 GRID_HEADER_BAR_HEIGHT = 24
-GRID_HEADER_DARK_FRACTION = 0.32
+GRID_HEADER_DARK_FRACTION = 0.46
 GRID_HEADER_LABEL_GAP = 10
 
 
@@ -377,7 +377,7 @@ def render_grid_header(width: float, y0: float) -> list[str]:
   label_baseline = bar_y - GRID_HEADER_LABEL_GAP
   parts.append(
     styled_text(
-      bar_x + dark_w / 2, label_baseline, "now()",
+      bar_x + dark_w / 2, label_baseline, "Instant::now()",
       GRID_LABEL_FONT_SIZE, family=MONO, anchor="middle", weight="600",
     )
   )
