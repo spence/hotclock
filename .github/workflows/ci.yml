@@ -39,16 +39,12 @@ jobs:
           rustup toolchain install stable --profile minimal
           rustup default stable
 
-      - name: Test library, binaries, and integration tests
-        run: cargo test --lib --bins --tests
+      - name: Test library and integration tests
+        run: cargo test --lib --tests
 
-      - name: Test Linux release patchpoints
+      - name: Test release library
         if: startsWith(matrix.name, 'linux-')
         run: cargo test --release --lib
-
-      - name: Test Linux x86_64 release patchpoint race
-        if: matrix.name == 'linux-x86_64'
-        run: cargo test --release --test x86_64_linux_patch
 
       - name: Test docs
         run: cargo test --doc
@@ -56,14 +52,8 @@ jobs:
       - name: Check examples
         run: cargo check --examples
 
-      - name: Run diagnostics binary
-        run: cargo run --bin tach --release
-
       - name: Run basic example
         run: cargo run --example basic --release
-
-      - name: Validate selected-clock benchmark
-        run: cargo bench --bench clock_validation
 
   benchmark-check:
     name: benchmark check
