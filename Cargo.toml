@@ -37,6 +37,3 @@ harness = false
 
 [[example]]
 name = "basic"
-
-[[example]]
-name = "benchmark"
