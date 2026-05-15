@@ -12,6 +12,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 SVG_PATH = ROOT / "benchmark-instant.svg"
 PNG_PATH = ROOT / "benchmark-instant.png"
+NOW_ELAPSED_SVG_PATH = ROOT / "benchmark-now-elapsed.svg"
+NOW_ELAPSED_PNG_PATH = ROOT / "benchmark-now-elapsed.png"
 
 BACKGROUND = "#FBF6EC"
 FONT = "Avenir Next, Helvetica, Arial, sans-serif"
@@ -23,10 +25,6 @@ CRATES = [
   ("minstant@0.1.7", "#8B5E3C"),
   ("std::Instant", "#9A8A3A"),
 ]
-
-TITLE = "Instant::now()"
-TITLE_Y = 22
-TITLE_FONT_SIZE = 16
 
 GROUPS = [
   (("Apple Silicon", "M1 MacBook Pro", "aarch64-apple-darwin"),
@@ -45,9 +43,26 @@ GROUPS = [
    [11.245, 11.670, 40.925, 40.926, 38.396]),
 ]
 
-BAR_WIDTH = 8
+NOW_ELAPSED_CRATES = [
+  ("tach: now()", "#F0635A"),
+  ("tach: elapsed()", "#D72D24"),
+  ("tach: elapsed_fast()", "#8B1E18"),
+  ("quanta: now()", "#8590A0"),
+  ("quanta: elapsed()", "#5B6472"),
+  ("fastant: now()", "#7A9A95"),
+  ("fastant: elapsed()", "#4F6F6A"),
+  ("minstant: now()", "#B58669"),
+  ("minstant: elapsed()", "#8B5E3C"),
+  ("std: now()", "#BAAA5A"),
+  ("std: elapsed()", "#9A8A3A"),
+]
+
+NOW_ELAPSED_GROUPS = [
+  (("Apple Silicon", "M1 MacBook Pro", "aarch64-apple-darwin"),
+   [0.348, 5.286, 3.387, 4.566, 9.094, 27.639, 59.384, 27.217, 60.637, 20.148, 43.699]),
+]
+
 BAR_GAP = 4
-GROUP_WIDTH = 94
 GROUP_GAP = 20
 LEFT = 6
 HEIGHT = 375
@@ -65,6 +80,8 @@ LABEL_TO_LEGEND_GAP = 30
 LEGEND_TO_NOTE_GAP = 20
 TARGET_LABEL_FONT_SIZE = 7
 LEGEND_FONT_SIZE = 12
+TITLE_Y = 22
+TITLE_FONT_SIZE = 16
 
 
 def looks_like_target_triple(label: str) -> bool:
@@ -106,12 +123,12 @@ def bar_height(value: float, global_max: float) -> int:
   return round(LOWER_BAR_HEIGHT + upper)
 
 
-def bar_break(x: float) -> list[str]:
+def bar_break(x: float, bar_width: int) -> list[str]:
   y = BAR_BOTTOM - LOWER_BAR_HEIGHT
   path = (
     f"M{x - 1:g} {y - 3:g} "
     f"C{x + 1:g} {y - 8:g} {x + 3:g} {y + 2:g} {x + 5:g} {y - 3:g} "
-    f"S{x + 9:g} {y + 2:g} {x + BAR_WIDTH + 1:g} {y - 3:g}"
+    f"S{x + 9:g} {y + 2:g} {x + bar_width + 1:g} {y - 3:g}"
   )
   return [
     f'<path d="{path}" stroke="{BACKGROUND}" stroke-width="4" fill="none" stroke-linecap="round"/>',
@@ -121,15 +138,15 @@ def bar_break(x: float) -> list[str]:
   ]
 
 
-def render_svg() -> str:
-  group_area_width = len(GROUPS) * GROUP_WIDTH + (len(GROUPS) - 1) * GROUP_GAP
-  legend_width = sum(LEGEND_SQUARE + 4 + text_width(name, LEGEND_FONT_SIZE) for name, _ in CRATES)
-  legend_width += LEGEND_GAP * (len(CRATES) - 1)
+def render_svg(groups, crates, title, bar_width, group_width) -> str:
+  group_area_width = len(groups) * group_width + (len(groups) - 1) * GROUP_GAP
+  legend_width = sum(LEGEND_SQUARE + 4 + text_width(name, LEGEND_FONT_SIZE) for name, _ in crates)
+  legend_width += LEGEND_GAP * (len(crates) - 1)
   width = max(LEFT * 2 + group_area_width, LEFT * 2 + legend_width)
   group_left = (width - group_area_width) / 2
-  group_xs = [group_left + i * (GROUP_WIDTH + GROUP_GAP) for i in range(len(GROUPS))]
-  bars_width = len(CRATES) * BAR_WIDTH + (len(CRATES) - 1) * BAR_GAP
-  global_max = max(value for _, values in GROUPS for value in values if value is not None)
+  group_xs = [group_left + i * (group_width + GROUP_GAP) for i in range(len(groups))]
+  bars_width = len(crates) * bar_width + (len(crates) - 1) * BAR_GAP
+  global_max = max(value for _, values in groups for value in values if value is not None)
 
   parts = [
     '<?xml version="1.0" encoding="UTF-8"?>',
@@ -139,16 +156,16 @@ def render_svg() -> str:
     ),
     f'<rect width="{width}" height="{HEIGHT}" fill="{BACKGROUND}"/>',
     '<g shape-rendering="crispEdges">',
-    text(width / 2, TITLE_Y, TITLE, TITLE_FONT_SIZE),
+    text(width / 2, TITLE_Y, title, TITLE_FONT_SIZE),
   ]
 
-  max_label_lines = max(len(labels) for labels, _ in GROUPS)
+  max_label_lines = max(len(labels) for labels, _ in groups)
   labels_bottom = LABEL_TOP + (max_label_lines - 1) * LABEL_LINE_GAP
   legend_y = labels_bottom + LABEL_TO_LEGEND_GAP
   note_y = legend_y + LEGEND_TO_NOTE_GAP
   legend_items = []
   legend_x = (width - legend_width) / 2
-  for name, color in CRATES:
+  for name, color in crates:
     legend_items.append((legend_x, name, color))
     legend_x += LEGEND_SQUARE + 4 + text_width(name, LEGEND_FONT_SIZE) + LEGEND_GAP
   for x, name, color in legend_items:
@@ -165,18 +182,18 @@ def render_svg() -> str:
     note = "All measurements are nanoseconds; squiggle marks compressed upper range."
   parts.append(text(width / 2, note_y, note, 8, italic=True))
 
-  for group_x, (labels, values) in zip(group_xs, GROUPS):
-    bar_x = group_x + (GROUP_WIDTH - bars_width) / 2
+  for group_x, (labels, values) in zip(group_xs, groups):
+    bar_x = group_x + (group_width - bars_width) / 2
     placed_labels = []
     for i, value in enumerate(values):
       if value is None:
         continue
       height = bar_height(value, global_max)
-      x = bar_x + i * (BAR_WIDTH + BAR_GAP)
+      x = bar_x + i * (bar_width + BAR_GAP)
       y = BAR_BOTTOM - height
-      color = CRATES[i][1]
+      color = crates[i][1]
       label = value_label(value)
-      label_x = x + BAR_WIDTH / 2
+      label_x = x + bar_width / 2
       label_y = y - 4
       width_estimate = text_width(label, VALUE_FONT_SIZE)
       while any(
@@ -186,12 +203,12 @@ def render_svg() -> str:
       ):
         label_y -= VALUE_FONT_SIZE + 3
       placed_labels.append((label_x, label_y, width_estimate))
-      parts.append(f'<rect x="{x:g}" y="{y:g}" width="{BAR_WIDTH}" height="{height}" fill="{color}"/>')
+      parts.append(f'<rect x="{x:g}" y="{y:g}" width="{bar_width}" height="{height}" fill="{color}"/>')
       if value > BREAK_VALUE:
-        parts.extend(bar_break(x))
+        parts.extend(bar_break(x, bar_width))
       parts.append(text(label_x, label_y, label, VALUE_FONT_SIZE))
 
-    center = group_x + GROUP_WIDTH / 2
+    center = group_x + group_width / 2
     for line, label in enumerate(labels):
       size = TARGET_LABEL_FONT_SIZE if looks_like_target_triple(label) else LABEL_FONT_SIZE
       parts.append(text(center, LABEL_TOP + line * LABEL_LINE_GAP, label, size))
@@ -202,11 +219,18 @@ def render_svg() -> str:
 
 
 def main() -> None:
-  SVG_PATH.write_text(render_svg())
+  SVG_PATH.write_text(render_svg(GROUPS, CRATES, "Instant::now()", 8, 94))
+  NOW_ELAPSED_SVG_PATH.write_text(
+    render_svg(NOW_ELAPSED_GROUPS, NOW_ELAPSED_CRATES, "Instant: now() vs now + elapsed()", 12, 200)
+  )
   rsvg_convert = shutil.which("rsvg-convert")
   if rsvg_convert is None:
-    raise SystemExit("rsvg-convert is required to render benchmark-instant.png")
+    raise SystemExit("rsvg-convert is required to render the benchmark PNGs")
   subprocess.run([rsvg_convert, "--zoom", "2", "-o", str(PNG_PATH), str(SVG_PATH)], check=True)
+  subprocess.run(
+    [rsvg_convert, "--zoom", "2", "-o", str(NOW_ELAPSED_PNG_PATH), str(NOW_ELAPSED_SVG_PATH)],
+    check=True,
+  )
 
 
 if __name__ == "__main__":

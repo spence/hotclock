@@ -28,7 +28,12 @@ fn bench_tach_elapsed_fast(c: &mut Criterion) {
   });
 }
 
-fn bench_quanta(c: &mut Criterion) {
+fn bench_quanta_now(c: &mut Criterion) {
+  quanta::Instant::now();
+  c.bench_function("quanta::Instant::now()", |b| b.iter(|| black_box(quanta::Instant::now())));
+}
+
+fn bench_quanta_elapsed(c: &mut Criterion) {
   quanta::Instant::now();
   c.bench_function("quanta::Instant (now + elapsed)", |b| {
     b.iter(|| {
@@ -38,7 +43,12 @@ fn bench_quanta(c: &mut Criterion) {
   });
 }
 
-fn bench_fastant(c: &mut Criterion) {
+fn bench_fastant_now(c: &mut Criterion) {
+  fastant::Instant::now();
+  c.bench_function("fastant::Instant::now()", |b| b.iter(|| black_box(fastant::Instant::now())));
+}
+
+fn bench_fastant_elapsed(c: &mut Criterion) {
   fastant::Instant::now();
   c.bench_function("fastant::Instant (now + elapsed)", |b| {
     b.iter(|| {
@@ -48,7 +58,12 @@ fn bench_fastant(c: &mut Criterion) {
   });
 }
 
-fn bench_minstant(c: &mut Criterion) {
+fn bench_minstant_now(c: &mut Criterion) {
+  minstant::Instant::now();
+  c.bench_function("minstant::Instant::now()", |b| b.iter(|| black_box(minstant::Instant::now())));
+}
+
+fn bench_minstant_elapsed(c: &mut Criterion) {
   minstant::Instant::now();
   c.bench_function("minstant::Instant (now + elapsed)", |b| {
     b.iter(|| {
@@ -58,7 +73,11 @@ fn bench_minstant(c: &mut Criterion) {
   });
 }
 
-fn bench_std(c: &mut Criterion) {
+fn bench_std_now(c: &mut Criterion) {
+  c.bench_function("std::time::Instant::now()", |b| b.iter(|| black_box(StdInstant::now())));
+}
+
+fn bench_std_elapsed(c: &mut Criterion) {
   c.bench_function("std::time::Instant (now + elapsed)", |b| {
     b.iter(|| {
       let start = StdInstant::now();
@@ -72,9 +91,13 @@ criterion_group!(
   bench_tach_now,
   bench_tach_elapsed,
   bench_tach_elapsed_fast,
-  bench_quanta,
-  bench_fastant,
-  bench_minstant,
-  bench_std,
+  bench_quanta_now,
+  bench_quanta_elapsed,
+  bench_fastant_now,
+  bench_fastant_elapsed,
+  bench_minstant_now,
+  bench_minstant_elapsed,
+  bench_std_now,
+  bench_std_elapsed,
 );
 criterion_main!(benches);
