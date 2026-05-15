@@ -2,34 +2,24 @@
 name = "tach"
 version = "0.2.0"
 edition = "2024"
+rust-version = "1.85"
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 authors = ["Spencer Creasey"]
 repository = "https://github.com/spence/tach"
-description = "ultra-fast timer for benchmarks, profilers, and hot loops"
+description = "ultra-fast drop-in replacement for std::time::Instant"
 keywords = ["timer", "clock", "benchmark", "profiling", "rdtsc"]
 categories = ["hardware-support", "development-tools::profiling"]
 exclude = [
   "benches/assets/**",
-  "benches/experiments/**",
-  "benches/results/**",
-  "benches/scripts/**",
-  "benches/baseline-*.md",
-  "benches/selection-*.md",
-  "benches/target-distribution.md",
+  "BENCHMARKS.md",
 ]
 
 [dev-dependencies]
-chrono = "0.4.44"
-clock = "0.4.0"
-clocksource = "1.0.0"
-coarsetime = "0.1.37"
 criterion = "0.8"
 fastant = "0.1.11"
 minstant = "0.1.7"
 quanta = "0.12.6"
-tick_counter = "0.4.5"
-time = "0.3.47"
 
 [[bench]]
 name = "instant"
@@ -37,3 +27,7 @@ harness = false
 
 [[example]]
 name = "basic"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
