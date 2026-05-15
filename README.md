@@ -10,7 +10,7 @@ Each supported target compiles `Instant::now()` directly to the fastest wall-clo
 
 ![Cross-target Instant benchmark heatmap](benches/assets/benchmark-heatmap.png)
 
-The benchmark is `Instant::now()` read cost across target / environment pairs. The fastest measured `Instant`-compatible clock is the first bar, and its name appears in parentheses under each target.
+The benchmark is `Instant::now()` read cost across target / environment pairs. `tach::Instant` is the leftmost (red) bar in each group.
 
 ## feature comparison
 

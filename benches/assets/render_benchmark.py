@@ -60,19 +60,19 @@ INSTANT_CRATES = [
 ]
 
 INSTANT_GROUPS = [
-  (("Apple Silicon", "M1 MacBook Pro", "aarch64-apple-darwin", "(cntvct)"),
+  (("Apple Silicon", "M1 MacBook Pro", "aarch64-apple-darwin"),
    [0.331, 7.591, 43.722, 43.259, 31.658]),
-  (("AWS Graviton 3", "c7g.4xlarge", "aarch64-unknown-linux-gnu", "(cntvct)"),
+  (("AWS Graviton 3", "c7g.4xlarge", "aarch64-unknown-linux-gnu"),
    [6.673, 7.062, 38.939, 39.578, 31.463]),
-  (("Alpine on Metal", "m7i.metal-24xl", "x86_64-unknown-linux-musl", "(rdtsc)"),
+  (("Alpine on Metal", "m7i.metal-24xl", "x86_64-unknown-linux-musl"),
    [14.316, 17.074, 14.625, 14.625, 25.865]),
-  (("AWS Intel Burst", "t3.medium", "x86_64-unknown-linux-gnu", "(rdtsc)"),
+  (("AWS Intel Burst", "t3.medium", "x86_64-unknown-linux-gnu"),
    [8.762, 13.314, 9.408, 9.408, 24.059]),
-  (("AWS Lambda", "provided.al2023", "x86_64-unknown-linux-gnu", "(rdtsc)"),
+  (("AWS Lambda", "provided.al2023", "x86_64-unknown-linux-gnu"),
    [9.556, 14.102, 10.206, 44.386, 29.919]),
-  (("GitHub macOS", "macos-15-intel", "x86_64-apple-darwin", "(rdtsc)"),
+  (("GitHub macOS", "macos-15-intel", "x86_64-apple-darwin"),
    [6.076, 81.234, 39.790, 40.199, 38.587]),
-  (("GitHub Windows", "windows-2025", "x86_64-pc-windows-msvc", "(rdtsc)"),
+  (("GitHub Windows", "windows-2025", "x86_64-pc-windows-msvc"),
    [11.245, 11.670, 40.925, 40.926, 38.396]),
 ]
 
@@ -137,10 +137,16 @@ def text_width(value: str, size: int) -> float:
   return len(value) * size * 0.56
 
 
-def bar_height(value: float, global_max: float, lower_bar_height: int, upper_bar_height: int) -> int:
-  if value <= BREAK_VALUE:
-    return max(2, round(value / BREAK_VALUE * lower_bar_height))
-  upper = (value - BREAK_VALUE) / (global_max - BREAK_VALUE) * upper_bar_height
+def bar_height(
+  value: float,
+  global_max: float,
+  lower_bar_height: int,
+  upper_bar_height: int,
+  break_value: float,
+) -> int:
+  if value <= break_value:
+    return max(2, round(value / break_value * lower_bar_height))
+  upper = (value - break_value) / (global_max - break_value) * upper_bar_height
   return round(lower_bar_height + upper)
 
 
@@ -176,6 +182,7 @@ def render_svg(
   upper_bar_height: int = UPPER_BAR_HEIGHT,
   label_top: int = LABEL_TOP,
   group_background: str = GROUP_BACKGROUND,
+  break_value: float = BREAK_VALUE,
 ) -> str:
   group_area_width = len(groups) * GROUP_WIDTH + (len(groups) - 1) * GROUP_GAP
   legend_width = sum(LEGEND_SQUARE + 4 + text_width(name, LEGEND_FONT_SIZE) for name, _ in crates)
@@ -211,7 +218,7 @@ def render_svg(
       f'font-family="{FONT}" font-size="{LEGEND_FONT_SIZE}" fill="#2E231B">{esc(name)}</text>'
     )
   note = "All measurements are nanoseconds."
-  if global_max > BREAK_VALUE:
+  if global_max > break_value:
     note = "All measurements are nanoseconds; squiggle marks compressed upper range."
   parts.append(text(width / 2, NOTE_Y, note, 9))
 
@@ -226,7 +233,7 @@ def render_svg(
     for i, value in enumerate(values):
       if value is None:
         continue
-      height = bar_height(value, global_max, lower_bar_height, upper_bar_height)
+      height = bar_height(value, global_max, lower_bar_height, upper_bar_height, break_value)
       x = bar_x + i * (BAR_WIDTH + BAR_GAP)
       y = bar_bottom - height
       color = crates[i][1]
@@ -242,7 +249,7 @@ def render_svg(
         label_y -= VALUE_FONT_SIZE + 3
       placed_labels.append((label_x, label_y, width_estimate))
       parts.append(f'<rect x="{x:g}" y="{y:g}" width="{BAR_WIDTH}" height="{height}" fill="{color}"/>')
-      if value > BREAK_VALUE:
+      if value > break_value:
         parts.extend(bar_break(x, bar_bottom, lower_bar_height, group_background))
       parts.append(text(label_x, label_y, label, VALUE_FONT_SIZE))
 
@@ -285,6 +292,7 @@ def main() -> None:
       upper_bar_height=SIMPLE_UPPER_BAR_HEIGHT,
       label_top=SIMPLE_LABEL_TOP,
       group_background=BACKGROUND,
+      break_value=100.0,
     )
   )
   rsvg_convert = shutil.which("rsvg-convert")
