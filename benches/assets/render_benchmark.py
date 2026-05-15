@@ -226,7 +226,7 @@ def render_combined_svg(now_groups, elapsed_groups, crates, bar_width, group_wid
   return "\n".join(parts) + "\n"
 
 
-GRID_COLS = 3
+GRID_COLS = 2
 GRID_CELL_W = 640
 GRID_CELL_H = 260
 GRID_COL_GAP = 26
