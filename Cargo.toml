@@ -17,7 +17,6 @@ exclude = [
   "benches/baseline-*.md",
   "benches/selection-*.md",
   "benches/target-distribution.md",
-  ".DS_Store",
 ]
 
 [dev-dependencies]
