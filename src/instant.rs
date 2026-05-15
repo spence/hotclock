@@ -76,5 +76,14 @@ fn ticks_to_nanos(ticks: u64) -> u64 {
 
 #[inline]
 fn ticks_to_duration(ticks: u64) -> Duration {
-  Duration::from_nanos(ticks_to_nanos(ticks))
+  let nanos = ticks_to_nanos(ticks);
+  // Common case for elapsed (< 1 second): build Duration directly from
+  // secs=0 + subsec_nanos. The compiler can prove `nanos_u32 < 1e9` from
+  // the branch and elide the internal divide in Duration::new. Avoids
+  // a divide by 1e9 on the hot path (~10 ns on virtualized x86).
+  if nanos < 1_000_000_000 {
+    Duration::new(0, nanos as u32)
+  } else {
+    Duration::from_nanos(nanos)
+  }
 }
