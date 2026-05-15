@@ -227,20 +227,20 @@ def render_combined_svg(now_groups, elapsed_groups, crates, bar_width, group_wid
 
 
 GRID_COLS = 2
-GRID_CELL_W = 640
-GRID_CELL_H = 260
-GRID_COL_GAP = 26
-GRID_ROW_GAP = 32
-GRID_MARGIN = 28
-GRID_CELL_PAD = 20
-GRID_TITLE_FONT_SIZE = 20
-GRID_SUBTITLE_FONT_SIZE = 13
-GRID_LABEL_FONT_SIZE = 13
-GRID_VALUE_FONT_SIZE = 13
-GRID_ROW_HEIGHT = 30
-GRID_BAR_HEIGHT = 16
-GRID_CRATE_LABEL_WIDTH = 100
-GRID_VALUE_RESERVE = 88
+GRID_CELL_W = 720
+GRID_CELL_H = 340
+GRID_COL_GAP = 30
+GRID_ROW_GAP = 38
+GRID_MARGIN = 32
+GRID_CELL_PAD = 24
+GRID_TITLE_FONT_SIZE = 28
+GRID_SUBTITLE_FONT_SIZE = 18
+GRID_LABEL_FONT_SIZE = 18
+GRID_VALUE_FONT_SIZE = 18
+GRID_ROW_HEIGHT = 40
+GRID_BAR_HEIGHT = 22
+GRID_CRATE_LABEL_WIDTH = 130
+GRID_VALUE_RESERVE = 130
 GRID_LIGHTEN = 0.62
 
 
@@ -290,7 +290,7 @@ def render_grid_cell(now_group, elapsed_group, crates, x0: float, y0: float) -> 
   )
 
   subtitle = f"{instance} · {triple}"
-  subtitle_y = title_y + 18
+  subtitle_y = title_y + GRID_SUBTITLE_FONT_SIZE + 8
   parts.append(
     styled_text(
       title_x, subtitle_y, subtitle, GRID_SUBTITLE_FONT_SIZE,
@@ -298,12 +298,12 @@ def render_grid_cell(now_group, elapsed_group, crates, x0: float, y0: float) -> 
     )
   )
 
-  bar_area_left = title_x + GRID_CRATE_LABEL_WIDTH + 8
+  bar_area_left = title_x + GRID_CRATE_LABEL_WIDTH + 10
   bar_area_right = x0 + GRID_CELL_W - GRID_CELL_PAD - GRID_VALUE_RESERVE
   bar_area_width = bar_area_right - bar_area_left
   cell_max = max(elapsed_vals)
 
-  rows_top = subtitle_y + 14
+  rows_top = subtitle_y + 18
   for i, ((crate_full, color), now_v, elapsed_v) in enumerate(zip(crates, now_vals, elapsed_vals)):
     row_top = rows_top + i * GRID_ROW_HEIGHT
     bar_y = row_top + (GRID_ROW_HEIGHT - GRID_BAR_HEIGHT) / 2
