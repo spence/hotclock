@@ -64,12 +64,18 @@ INSTANT_GROUPS = [
    [0.331, 7.591, 43.722, 43.259, 31.658]),
   (("AWS Graviton 3", "c7g.4xlarge", "aarch64-unknown-linux-gnu", "(cntvct)"),
    [6.673, 7.062, 38.939, 39.578, 31.463]),
-  (("GitHub Windows", "windows-2025", "x86_64-pc-windows-msvc", "(rdtsc)"),
-   [11.245, 11.670, 40.925, 40.926, 38.396]),
-  (("AWS Intel Nitro", "m7i.4xlarge", "x86_64-unknown-linux-gnu", "(rdtsc)"),
-   [13.355, 15.894, 13.641, 13.650, 23.843]),
   (("Alpine on Metal", "m7i.metal-24xl", "x86_64-unknown-linux-musl", "(rdtsc)"),
    [14.316, 17.074, 14.625, 14.625, 25.865]),
+  (("GitHub macOS", "macos-15-intel", "x86_64-apple-darwin", "(rdtsc)"),
+   [6.076, 81.234, 39.790, 40.199, 38.587]),
+  (("GitHub Windows", "windows-2025", "x86_64-pc-windows-msvc", "(rdtsc)"),
+   [11.245, 11.670, 40.925, 40.926, 38.396]),
+  (("AWS Intel Burst", "t3.medium", "x86_64-unknown-linux-gnu", "(rdtsc)"),
+   [8.762, 13.314, 9.408, 9.408, 24.059]),
+  (("AWS Lambda", "provided.al2023", "x86_64-unknown-linux-gnu", "(rdtsc)"),
+   [9.556, 14.102, 10.206, 44.386, 29.919]),
+  (("AWS Intel Metal", "m7i.metal-24xl", "x86_64-unknown-linux-gnu", "(rdtsc)"),
+   [6.842, 7.121, 6.842, 6.842, 14.679]),
 ]
 
 BAR_WIDTH = 8
