@@ -298,9 +298,9 @@ def main() -> None:
   rsvg_convert = shutil.which("rsvg-convert")
   if rsvg_convert is None:
     raise SystemExit("rsvg-convert is required to render benchmark.png")
-  subprocess.run([rsvg_convert, "-o", str(PNG_PATH), str(SVG_PATH)], check=True)
-  subprocess.run([rsvg_convert, "-o", str(SIMPLE_PNG_PATH), str(SIMPLE_SVG_PATH)], check=True)
-  subprocess.run([rsvg_convert, "-o", str(INSTANT_PNG_PATH), str(INSTANT_SVG_PATH)], check=True)
+  subprocess.run([rsvg_convert, "--zoom", "2", "-o", str(PNG_PATH), str(SVG_PATH)], check=True)
+  subprocess.run([rsvg_convert, "--zoom", "2", "-o", str(SIMPLE_PNG_PATH), str(SIMPLE_SVG_PATH)], check=True)
+  subprocess.run([rsvg_convert, "--zoom", "2", "-o", str(INSTANT_PNG_PATH), str(INSTANT_SVG_PATH)], check=True)
 
 
 if __name__ == "__main__":
