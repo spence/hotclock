@@ -1,138 +1,144 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1756" height="1496" viewBox="0 0 1756 1496">
-<rect width="1756" height="1496" fill="#FBF6EC"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1596" height="1804" viewBox="0 0 1596 1804">
+<rect width="1596" height="1804" fill="#FBF6EC"/>
 <g shape-rendering="crispEdges">
-<text x="70" y="106" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="38" font-weight="600" fill="#2E231B">Apple Silicon</text>
-<text x="70" y="138" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#7A6E60">M1 MacBook Pro · aarch64-apple-darwin</text>
-<text x="70" y="187" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">tach</text>
-<rect x="250" y="168" width="8.02521" height="30" fill="#eda9a0"/>
-<rect x="250" y="168" width="2.33314" height="30" fill="#D72D24"/>
-<text x="264.025" y="187" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">0.35 / 1.20</text>
-<text x="70" y="241" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">quanta</text>
-<rect x="250" y="222" width="61.4327" height="30" fill="#bebebd"/>
-<rect x="250" y="222" width="30.7398" height="30" fill="#5B6472"/>
-<text x="317.433" y="241" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">4.58 / 9.16</text>
-<text x="70" y="295" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">fastant</text>
-<rect x="250" y="276" width="400" height="30" fill="#b9c2ba"/>
-<rect x="250" y="276" width="182.548" height="30" fill="#4F6F6A"/>
-<text x="656" y="295" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">27.2 / 59.7</text>
-<text x="70" y="349" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">minstant</text>
-<rect x="250" y="330" width="399.853" height="30" fill="#d0bca9"/>
-<rect x="250" y="330" width="182.951" height="30" fill="#8B5E3C"/>
-<text x="655.853" y="349" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">27.3 / 59.6</text>
-<text x="70" y="403" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">std</text>
-<rect x="250" y="384" width="293.091" height="30" fill="#d6cca8"/>
-<rect x="250" y="384" width="135.946" height="30" fill="#9A8A3A"/>
-<text x="549.091" y="403" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">20.3 / 43.7</text>
-<text x="926" y="106" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="38" font-weight="600" fill="#2E231B">AWS Graviton 3</text>
-<text x="926" y="138" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#7A6E60">c7g.4xlarge · aarch64-unknown-linux-gnu</text>
-<text x="926" y="187" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">tach</text>
-<rect x="1106" y="168" width="60.6077" height="30" fill="#eda9a0"/>
-<rect x="1106" y="168" width="30.2948" height="30" fill="#D72D24"/>
-<text x="1172.61" y="187" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">6.67 / 13.4</text>
-<text x="926" y="241" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">quanta</text>
-<rect x="1106" y="222" width="69.4579" height="30" fill="#bebebd"/>
-<rect x="1106" y="222" width="31.8424" height="30" fill="#5B6472"/>
-<text x="1181.46" y="241" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">7.02 / 15.3</text>
-<text x="926" y="295" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">fastant</text>
-<rect x="1106" y="276" width="398.511" height="30" fill="#b9c2ba"/>
-<rect x="1106" y="276" width="189.185" height="30" fill="#4F6F6A"/>
-<text x="1510.51" y="295" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">41.7 / 87.8</text>
-<text x="926" y="349" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">minstant</text>
-<rect x="1106" y="330" width="400" height="30" fill="#d0bca9"/>
-<rect x="1106" y="330" width="189.176" height="30" fill="#8B5E3C"/>
-<text x="1512" y="349" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">41.7 / 88.1</text>
-<text x="926" y="403" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">std</text>
-<rect x="1106" y="384" width="329.407" height="30" fill="#d6cca8"/>
-<rect x="1106" y="384" width="147.548" height="30" fill="#9A8A3A"/>
-<text x="1441.41" y="403" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">32.5 / 72.6</text>
-<text x="70" y="594" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="38" font-weight="600" fill="#2E231B">AWS Intel Burst</text>
-<text x="70" y="626" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#7A6E60">t3.medium · x86_64-unknown-linux-gnu</text>
-<text x="70" y="675" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">tach</text>
-<rect x="250" y="656" width="141.693" height="30" fill="#eda9a0"/>
-<rect x="250" y="656" width="65.3939" height="30" fill="#D72D24"/>
-<text x="397.693" y="675" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">8.74 / 18.9</text>
-<text x="70" y="729" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">quanta</text>
-<rect x="250" y="710" width="210.767" height="30" fill="#bebebd"/>
-<rect x="250" y="710" width="99.6354" height="30" fill="#5B6472"/>
-<text x="466.767" y="729" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">13.3 / 28.2</text>
-<text x="70" y="783" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">fastant</text>
-<rect x="250" y="764" width="232.069" height="30" fill="#b9c2ba"/>
-<rect x="250" y="764" width="83.7114" height="30" fill="#4F6F6A"/>
-<text x="488.069" y="783" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">11.2 / 31.0</text>
-<text x="70" y="837" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">minstant</text>
-<rect x="250" y="818" width="232.517" height="30" fill="#d0bca9"/>
-<rect x="250" y="818" width="70.2706" height="30" fill="#8B5E3C"/>
-<text x="488.517" y="837" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">9.39 / 31.1</text>
-<text x="70" y="891" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">std</text>
-<rect x="250" y="872" width="400" height="30" fill="#d6cca8"/>
-<rect x="250" y="872" width="181.589" height="30" fill="#9A8A3A"/>
-<text x="656" y="891" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">24.3 / 53.5</text>
-<text x="926" y="594" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="38" font-weight="600" fill="#2E231B">Alpine on Metal</text>
-<text x="926" y="626" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#7A6E60">m7i.metal-24xl · x86_64-unknown-linux-musl</text>
-<text x="926" y="675" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">tach</text>
-<rect x="1106" y="656" width="168.01" height="30" fill="#eda9a0"/>
-<rect x="1106" y="656" width="84.005" height="30" fill="#D72D24"/>
-<text x="1280.01" y="675" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">6.84 / 13.7</text>
-<text x="926" y="729" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">quanta</text>
-<rect x="1106" y="710" width="214.997" height="30" fill="#bebebd"/>
-<rect x="1106" y="710" width="87.2341" height="30" fill="#5B6472"/>
-<text x="1327" y="729" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">7.11 / 17.5</text>
-<text x="926" y="783" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">fastant</text>
-<rect x="1106" y="764" width="262.734" height="30" fill="#b9c2ba"/>
-<rect x="1106" y="764" width="84.005" height="30" fill="#4F6F6A"/>
-<text x="1374.73" y="783" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">6.84 / 21.4</text>
-<text x="926" y="837" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">minstant</text>
-<rect x="1106" y="818" width="262.893" height="30" fill="#d0bca9"/>
-<rect x="1106" y="818" width="84.005" height="30" fill="#8B5E3C"/>
-<text x="1374.89" y="837" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">6.84 / 21.4</text>
-<text x="926" y="891" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">std</text>
-<rect x="1106" y="872" width="400" height="30" fill="#d6cca8"/>
-<rect x="1106" y="872" width="179.907" height="30" fill="#9A8A3A"/>
-<text x="1512" y="891" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">14.7 / 32.6</text>
-<text x="70" y="1082" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="38" font-weight="600" fill="#2E231B">AWS Lambda</text>
-<text x="70" y="1114" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#7A6E60">provided.al2023 · x86_64-unknown-linux-gnu</text>
-<text x="70" y="1163" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">tach</text>
-<rect x="250" y="1144" width="94.0818" height="30" fill="#eda9a0"/>
-<rect x="250" y="1144" width="40.0796" height="30" fill="#D72D24"/>
-<text x="350.082" y="1163" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">13.6 / 31.9</text>
-<text x="70" y="1217" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">quanta</text>
-<rect x="250" y="1198" width="149.864" height="30" fill="#bebebd"/>
-<rect x="250" y="1198" width="68.7853" height="30" fill="#5B6472"/>
-<text x="405.864" y="1217" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">23.3 / 50.9</text>
-<text x="70" y="1271" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">fastant</text>
-<rect x="250" y="1252" width="152.598" height="30" fill="#b9c2ba"/>
-<rect x="250" y="1252" width="45.7901" height="30" fill="#4F6F6A"/>
-<text x="408.598" y="1271" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">15.5 / 51.8</text>
-<text x="70" y="1325" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">minstant</text>
-<rect x="250" y="1306" width="400" height="30" fill="#d0bca9"/>
-<rect x="250" y="1306" width="167.75" height="30" fill="#8B5E3C"/>
-<text x="656" y="1325" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">56.9 / 136</text>
-<text x="70" y="1379" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">std</text>
-<rect x="250" y="1360" width="313.403" height="30" fill="#d6cca8"/>
-<rect x="250" y="1360" width="149.569" height="30" fill="#9A8A3A"/>
-<text x="569.403" y="1379" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">50.8 / 106</text>
-<text x="926" y="1082" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="38" font-weight="600" fill="#2E231B">GitHub Windows</text>
-<text x="926" y="1114" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#7A6E60">windows-2025 · x86_64-pc-windows-msvc</text>
-<text x="926" y="1163" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">tach</text>
-<rect x="1106" y="1144" width="94.5173" height="30" fill="#eda9a0"/>
-<rect x="1106" y="1144" width="47.2261" height="30" fill="#D72D24"/>
-<text x="1206.52" y="1163" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">12.3 / 24.7</text>
-<text x="926" y="1217" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">quanta</text>
-<rect x="1106" y="1198" width="97.5103" height="30" fill="#bebebd"/>
-<rect x="1106" y="1198" width="47.582" height="30" fill="#5B6472"/>
-<text x="1209.51" y="1217" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">12.4 / 25.5</text>
-<text x="926" y="1271" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">fastant</text>
-<rect x="1106" y="1252" width="400" height="30" fill="#b9c2ba"/>
-<rect x="1106" y="1252" width="174.28" height="30" fill="#4F6F6A"/>
-<text x="1512" y="1271" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">45.5 / 105</text>
-<text x="926" y="1325" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">minstant</text>
-<rect x="1106" y="1306" width="399.732" height="30" fill="#d0bca9"/>
-<rect x="1106" y="1306" width="174.215" height="30" fill="#8B5E3C"/>
-<text x="1511.73" y="1325" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">45.5 / 104</text>
-<text x="926" y="1379" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">std</text>
-<rect x="1106" y="1360" width="327.923" height="30" fill="#d6cca8"/>
-<rect x="1106" y="1360" width="157.803" height="30" fill="#9A8A3A"/>
-<text x="1439.92" y="1379" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" fill="#2E231B">41.2 / 85.7</text>
+<text x="74" y="122" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="50" font-weight="600" fill="#2E231B">Apple Silicon</text>
+<text x="74" y="162" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="28" fill="#7A6E60">M1 MacBook Pro</text>
+<text x="74" y="194" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="28" fill="#7A6E60">aarch64-apple-darwin</text>
+<text x="74" y="252" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">tach</text>
+<rect x="286" y="230" width="4.81513" height="36" fill="#eda9a0"/>
+<rect x="286" y="230" width="1.39989" height="36" fill="#D72D24"/>
+<text x="296.815" y="252" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">0.35 / 1.20</text>
+<text x="74" y="316" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">quanta</text>
+<rect x="286" y="294" width="36.8596" height="36" fill="#bebebd"/>
+<rect x="286" y="294" width="18.4439" height="36" fill="#5B6472"/>
+<text x="328.86" y="316" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">4.58 / 9.16</text>
+<text x="74" y="380" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">fastant</text>
+<rect x="286" y="358" width="240" height="36" fill="#b9c2ba"/>
+<rect x="286" y="358" width="109.529" height="36" fill="#4F6F6A"/>
+<text x="532" y="380" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">27.2 / 59.7</text>
+<text x="74" y="444" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">minstant</text>
+<rect x="286" y="422" width="239.912" height="36" fill="#d0bca9"/>
+<rect x="286" y="422" width="109.77" height="36" fill="#8B5E3C"/>
+<text x="531.912" y="444" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">27.3 / 59.6</text>
+<text x="74" y="508" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">std</text>
+<rect x="286" y="486" width="175.855" height="36" fill="#d6cca8"/>
+<rect x="286" y="486" width="81.5675" height="36" fill="#9A8A3A"/>
+<text x="467.855" y="508" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">20.3 / 43.7</text>
+<text x="850" y="122" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="50" font-weight="600" fill="#2E231B">AWS Graviton 3</text>
+<text x="850" y="162" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="28" fill="#7A6E60">c7g.4xlarge</text>
+<text x="850" y="194" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="28" fill="#7A6E60">aarch64-unknown-linux-gnu</text>
+<text x="850" y="252" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">tach</text>
+<rect x="1062" y="230" width="36.3646" height="36" fill="#eda9a0"/>
+<rect x="1062" y="230" width="18.1769" height="36" fill="#D72D24"/>
+<text x="1104.36" y="252" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">6.67 / 13.4</text>
+<text x="850" y="316" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">quanta</text>
+<rect x="1062" y="294" width="41.6747" height="36" fill="#bebebd"/>
+<rect x="1062" y="294" width="19.1055" height="36" fill="#5B6472"/>
+<text x="1109.67" y="316" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">7.02 / 15.3</text>
+<text x="850" y="380" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">fastant</text>
+<rect x="1062" y="358" width="239.107" height="36" fill="#b9c2ba"/>
+<rect x="1062" y="358" width="113.511" height="36" fill="#4F6F6A"/>
+<text x="1307.11" y="380" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">41.7 / 87.8</text>
+<text x="850" y="444" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">minstant</text>
+<rect x="1062" y="422" width="240" height="36" fill="#d0bca9"/>
+<rect x="1062" y="422" width="113.505" height="36" fill="#8B5E3C"/>
+<text x="1308" y="444" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">41.7 / 88.1</text>
+<text x="850" y="508" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">std</text>
+<rect x="1062" y="486" width="197.644" height="36" fill="#d6cca8"/>
+<rect x="1062" y="486" width="88.5288" height="36" fill="#9A8A3A"/>
+<text x="1265.64" y="508" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">32.5 / 72.6</text>
+<text x="74" y="714" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="50" font-weight="600" fill="#2E231B">AWS Intel Burst</text>
+<text x="74" y="754" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="28" fill="#7A6E60">t3.medium</text>
+<text x="74" y="786" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="28" fill="#7A6E60">x86_64-unknown-linux-gnu</text>
+<text x="74" y="844" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">tach</text>
+<rect x="286" y="822" width="85.0158" height="36" fill="#eda9a0"/>
+<rect x="286" y="822" width="39.2363" height="36" fill="#D72D24"/>
+<text x="377.016" y="844" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">8.74 / 18.9</text>
+<text x="74" y="908" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">quanta</text>
+<rect x="286" y="886" width="126.46" height="36" fill="#bebebd"/>
+<rect x="286" y="886" width="59.7812" height="36" fill="#5B6472"/>
+<text x="418.46" y="908" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">13.3 / 28.2</text>
+<text x="74" y="972" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">fastant</text>
+<rect x="286" y="950" width="139.241" height="36" fill="#b9c2ba"/>
+<rect x="286" y="950" width="50.2268" height="36" fill="#4F6F6A"/>
+<text x="431.241" y="972" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">11.2 / 31.0</text>
+<text x="74" y="1036" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">minstant</text>
+<rect x="286" y="1014" width="139.51" height="36" fill="#d0bca9"/>
+<rect x="286" y="1014" width="42.1623" height="36" fill="#8B5E3C"/>
+<text x="431.51" y="1036" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">9.39 / 31.1</text>
+<text x="74" y="1100" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">std</text>
+<rect x="286" y="1078" width="240" height="36" fill="#d6cca8"/>
+<rect x="286" y="1078" width="108.953" height="36" fill="#9A8A3A"/>
+<text x="532" y="1100" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">24.3 / 53.5</text>
+<text x="850" y="714" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="50" font-weight="600" fill="#2E231B">Alpine on Metal</text>
+<text x="850" y="754" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="28" fill="#7A6E60">m7i.metal-24xl</text>
+<text x="850" y="786" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="28" fill="#7A6E60">x86_64-unknown-linux-musl</text>
+<text x="850" y="844" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">tach</text>
+<rect x="1062" y="822" width="100.806" height="36" fill="#eda9a0"/>
+<rect x="1062" y="822" width="50.403" height="36" fill="#D72D24"/>
+<text x="1168.81" y="844" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">6.84 / 13.7</text>
+<text x="850" y="908" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">quanta</text>
+<rect x="1062" y="886" width="128.998" height="36" fill="#bebebd"/>
+<rect x="1062" y="886" width="52.3405" height="36" fill="#5B6472"/>
+<text x="1197" y="908" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">7.11 / 17.5</text>
+<text x="850" y="972" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">fastant</text>
+<rect x="1062" y="950" width="157.64" height="36" fill="#b9c2ba"/>
+<rect x="1062" y="950" width="50.403" height="36" fill="#4F6F6A"/>
+<text x="1225.64" y="972" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">6.84 / 21.4</text>
+<text x="850" y="1036" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">minstant</text>
+<rect x="1062" y="1014" width="157.736" height="36" fill="#d0bca9"/>
+<rect x="1062" y="1014" width="50.403" height="36" fill="#8B5E3C"/>
+<text x="1225.74" y="1036" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">6.84 / 21.4</text>
+<text x="850" y="1100" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">std</text>
+<rect x="1062" y="1078" width="240" height="36" fill="#d6cca8"/>
+<rect x="1062" y="1078" width="107.944" height="36" fill="#9A8A3A"/>
+<text x="1308" y="1100" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">14.7 / 32.6</text>
+<text x="74" y="1306" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="50" font-weight="600" fill="#2E231B">AWS Lambda</text>
+<text x="74" y="1346" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="28" fill="#7A6E60">provided.al2023</text>
+<text x="74" y="1378" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="28" fill="#7A6E60">x86_64-unknown-linux-gnu</text>
+<text x="74" y="1436" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">tach</text>
+<rect x="286" y="1414" width="56.4491" height="36" fill="#eda9a0"/>
+<rect x="286" y="1414" width="24.0477" height="36" fill="#D72D24"/>
+<text x="348.449" y="1436" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">13.6 / 31.9</text>
+<text x="74" y="1500" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">quanta</text>
+<rect x="286" y="1478" width="89.9182" height="36" fill="#bebebd"/>
+<rect x="286" y="1478" width="41.2712" height="36" fill="#5B6472"/>
+<text x="381.918" y="1500" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">23.3 / 50.9</text>
+<text x="74" y="1564" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">fastant</text>
+<rect x="286" y="1542" width="91.5589" height="36" fill="#b9c2ba"/>
+<rect x="286" y="1542" width="27.474" height="36" fill="#4F6F6A"/>
+<text x="383.559" y="1564" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">15.5 / 51.8</text>
+<text x="74" y="1628" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">minstant</text>
+<rect x="286" y="1606" width="240" height="36" fill="#d0bca9"/>
+<rect x="286" y="1606" width="100.65" height="36" fill="#8B5E3C"/>
+<text x="532" y="1628" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">56.9 / 136</text>
+<text x="74" y="1692" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">std</text>
+<rect x="286" y="1670" width="188.042" height="36" fill="#d6cca8"/>
+<rect x="286" y="1670" width="89.7414" height="36" fill="#9A8A3A"/>
+<text x="480.042" y="1692" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">50.8 / 106</text>
+<text x="850" y="1306" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="50" font-weight="600" fill="#2E231B">GitHub Windows</text>
+<text x="850" y="1346" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="28" fill="#7A6E60">windows-2025</text>
+<text x="850" y="1378" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="28" fill="#7A6E60">x86_64-pc-windows-msvc</text>
+<text x="850" y="1436" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">tach</text>
+<rect x="1062" y="1414" width="56.7104" height="36" fill="#eda9a0"/>
+<rect x="1062" y="1414" width="28.3357" height="36" fill="#D72D24"/>
+<text x="1124.71" y="1436" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">12.3 / 24.7</text>
+<text x="850" y="1500" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">quanta</text>
+<rect x="1062" y="1478" width="58.5062" height="36" fill="#bebebd"/>
+<rect x="1062" y="1478" width="28.5492" height="36" fill="#5B6472"/>
+<text x="1126.51" y="1500" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">12.4 / 25.5</text>
+<text x="850" y="1564" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">fastant</text>
+<rect x="1062" y="1542" width="240" height="36" fill="#b9c2ba"/>
+<rect x="1062" y="1542" width="104.568" height="36" fill="#4F6F6A"/>
+<text x="1308" y="1564" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">45.5 / 105</text>
+<text x="850" y="1628" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">minstant</text>
+<rect x="1062" y="1606" width="239.839" height="36" fill="#d0bca9"/>
+<rect x="1062" y="1606" width="104.529" height="36" fill="#8B5E3C"/>
+<text x="1307.84" y="1628" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">45.5 / 104</text>
+<text x="850" y="1692" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">std</text>
+<rect x="1062" y="1670" width="196.754" height="36" fill="#d6cca8"/>
+<rect x="1062" y="1670" width="94.6818" height="36" fill="#9A8A3A"/>
+<text x="1264.75" y="1692" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">41.2 / 85.7</text>
 </g>
 </svg>

@@ -227,20 +227,20 @@ def render_combined_svg(now_groups, elapsed_groups, crates, bar_width, group_wid
 
 
 GRID_COLS = 2
-GRID_CELL_W = 820
-GRID_CELL_H = 440
+GRID_CELL_W = 740
+GRID_CELL_H = 540
 GRID_COL_GAP = 36
-GRID_ROW_GAP = 48
+GRID_ROW_GAP = 52
 GRID_MARGIN = 40
-GRID_CELL_PAD = 30
-GRID_TITLE_FONT_SIZE = 38
-GRID_SUBTITLE_FONT_SIZE = 24
-GRID_LABEL_FONT_SIZE = 24
-GRID_VALUE_FONT_SIZE = 24
-GRID_ROW_HEIGHT = 54
-GRID_BAR_HEIGHT = 30
-GRID_CRATE_LABEL_WIDTH = 170
-GRID_VALUE_RESERVE = 180
+GRID_CELL_PAD = 34
+GRID_TITLE_FONT_SIZE = 50
+GRID_SUBTITLE_FONT_SIZE = 28
+GRID_LABEL_FONT_SIZE = 30
+GRID_VALUE_FONT_SIZE = 30
+GRID_ROW_HEIGHT = 64
+GRID_BAR_HEIGHT = 36
+GRID_CRATE_LABEL_WIDTH = 200
+GRID_VALUE_RESERVE = 220
 GRID_LIGHTEN = 0.62
 
 
@@ -289,21 +289,27 @@ def render_grid_cell(now_group, elapsed_group, crates, x0: float, y0: float) -> 
     styled_text(title_x, title_y, title, GRID_TITLE_FONT_SIZE, anchor="start", weight="600")
   )
 
-  subtitle = f"{instance} · {triple}"
-  subtitle_y = title_y + GRID_SUBTITLE_FONT_SIZE + 8
+  subtitle_y = title_y + GRID_SUBTITLE_FONT_SIZE + 12
   parts.append(
     styled_text(
-      title_x, subtitle_y, subtitle, GRID_SUBTITLE_FONT_SIZE,
+      title_x, subtitle_y, instance, GRID_SUBTITLE_FONT_SIZE,
+      family=MONO, color=MUTED_FG, anchor="start",
+    )
+  )
+  triple_y = subtitle_y + GRID_SUBTITLE_FONT_SIZE + 4
+  parts.append(
+    styled_text(
+      title_x, triple_y, triple, GRID_SUBTITLE_FONT_SIZE,
       family=MONO, color=MUTED_FG, anchor="start",
     )
   )
 
-  bar_area_left = title_x + GRID_CRATE_LABEL_WIDTH + 10
+  bar_area_left = title_x + GRID_CRATE_LABEL_WIDTH + 12
   bar_area_right = x0 + GRID_CELL_W - GRID_CELL_PAD - GRID_VALUE_RESERVE
   bar_area_width = bar_area_right - bar_area_left
   cell_max = max(elapsed_vals)
 
-  rows_top = subtitle_y + 18
+  rows_top = triple_y + 22
   for i, ((crate_full, color), now_v, elapsed_v) in enumerate(zip(crates, now_vals, elapsed_vals)):
     row_top = rows_top + i * GRID_ROW_HEIGHT
     bar_y = row_top + (GRID_ROW_HEIGHT - GRID_BAR_HEIGHT) / 2
