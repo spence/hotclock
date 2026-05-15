@@ -1,4 +1,4 @@
-use std::sync::atomic::{AtomicU64, Ordering};
+use core::sync::atomic::{AtomicU64, Ordering};
 
 #[cfg(target_arch = "aarch64")]
 pub mod aarch64;
@@ -7,7 +7,7 @@ pub mod fallback;
 pub mod loongarch64;
 #[cfg(target_arch = "riscv64")]
 pub mod riscv64;
-#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+#[cfg(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))]
 pub mod wasm;
 #[cfg(target_arch = "x86")]
 pub mod x86;
@@ -59,11 +59,8 @@ fn read_frequency() -> u64 {
     fn mach_timebase_info(info: *mut MachTimebaseInfo) -> i32;
   }
   let mut info = MachTimebaseInfo { numer: 0, denom: 0 };
-  // SAFETY: `mach_timebase_info` populates the struct and returns 0 on success.
-  let rc = unsafe { mach_timebase_info(&mut info) };
-  if rc != 0 || info.numer == 0 {
-    return crate::calibration::calibrate_frequency();
-  }
+  // SAFETY: `mach_timebase_info` populates the struct.
+  unsafe { mach_timebase_info(&mut info) };
   1_000_000_000u64 * u64::from(info.denom) / u64::from(info.numer)
 }
 
@@ -74,18 +71,22 @@ fn read_frequency() -> u64 {
     fn QueryPerformanceFrequency(lpFrequency: *mut i64) -> i32;
   }
   let mut freq: i64 = 0;
-  // SAFETY: `QueryPerformanceFrequency` writes a single i64 and returns nonzero on success.
-  let ok = unsafe { QueryPerformanceFrequency(&mut freq) };
-  if ok == 0 || freq <= 0 {
-    return crate::calibration::calibrate_frequency();
-  }
+  // SAFETY: `QueryPerformanceFrequency` writes a single i64.
+  unsafe { QueryPerformanceFrequency(&mut freq) };
   freq as u64
 }
 
-#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+#[cfg(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))]
 #[inline]
 fn read_frequency() -> u64 {
   // ticks() returns nanos directly; identity Q32 transform.
+  1_000_000_000
+}
+
+#[cfg(target_os = "wasi")]
+#[inline]
+fn read_frequency() -> u64 {
+  // ticks() returns nanos from clock_time_get directly; identity transform.
   1_000_000_000
 }
 
@@ -93,7 +94,8 @@ fn read_frequency() -> u64 {
   target_arch = "aarch64",
   target_os = "macos",
   target_os = "windows",
-  all(target_arch = "wasm32", target_os = "unknown"),
+  target_os = "wasi",
+  all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
 )))]
 #[inline]
 fn read_frequency() -> u64 {

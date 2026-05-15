@@ -1,3 +1,4 @@
+#![no_std]
 #![warn(clippy::undocumented_unsafe_blocks)]
 #![warn(rustdoc::broken_intra_doc_links)]
 
@@ -28,10 +29,20 @@
 //! use [`std::time::Instant`].
 
 mod arch;
+#[cfg(not(any(
+  target_arch = "aarch64",
+  target_os = "macos",
+  target_os = "windows",
+  target_os = "wasi",
+  all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+)))]
 mod calibration;
 mod instant;
 
 pub use instant::Instant;
+
+#[cfg(test)]
+extern crate std;
 
 #[cfg(test)]
 mod tests {

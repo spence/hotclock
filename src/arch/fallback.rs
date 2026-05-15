@@ -1,19 +1,17 @@
-// These fallbacks are reachable from `direct.rs` only on targets without a canonical
-// architectural counter (powerpc64, s390x, etc.). On supported architectures the
-// canonical counter is used directly and these symbols are dead — hence `allow(dead_code)`.
+// Direct OS-clock fallbacks for targets without an architectural counter.
+// Each submodule is cfg-gated to its platform; `direct::ticks()` selects one
+// based on target_os.
 
 #[cfg(all(target_os = "macos", not(target_arch = "aarch64")))]
 mod mach {
   unsafe extern "C" {
-    #[allow(dead_code)]
     fn mach_absolute_time() -> u64;
   }
 
-  #[allow(dead_code)]
   #[inline(always)]
   pub fn mach_time() -> u64 {
-    // SAFETY: `mach_absolute_time` takes no arguments, has no Rust-side aliasing
-    // requirements, and returns the host monotonic tick value.
+    // SAFETY: `mach_absolute_time` takes no arguments and returns the host
+    // monotonic tick value with no Rust-side aliasing requirements.
     unsafe { mach_absolute_time() }
   }
 }
@@ -32,11 +30,9 @@ mod monotonic {
   const CLOCK_MONOTONIC: i32 = 1;
 
   unsafe extern "C" {
-    #[allow(dead_code)]
     fn clock_gettime(clk_id: i32, tp: *mut Timespec) -> i32;
   }
 
-  #[allow(dead_code)]
   #[inline(always)]
   pub fn clock_monotonic() -> u64 {
     let mut ts = Timespec { tv_sec: 0, tv_nsec: 0 };
@@ -48,23 +44,26 @@ mod monotonic {
 }
 
 #[cfg(all(unix, not(target_os = "macos")))]
-#[allow(unused_imports)]
 pub use monotonic::*;
 
-#[cfg(not(unix))]
-mod instant {
-  use std::sync::OnceLock;
-  use std::time::Instant;
+#[cfg(target_os = "wasi")]
+mod wasi {
+  #[link(wasm_import_module = "wasi_snapshot_preview1")]
+  unsafe extern "C" {
+    fn clock_time_get(id: u32, precision: u64, time: *mut u64) -> u16;
+  }
 
-  static START: OnceLock<Instant> = OnceLock::new();
+  const CLOCK_MONOTONIC: u32 = 1;
 
-  #[allow(dead_code)]
   #[inline(always)]
-  pub fn instant_elapsed() -> u64 {
-    START.get_or_init(Instant::now).elapsed().as_nanos() as u64
+  pub fn wasi_clock_monotonic() -> u64 {
+    let mut t: u64 = 0;
+    // SAFETY: writes a single u64 the host fills in. CLOCK_MONOTONIC and
+    // precision=0 are always-valid inputs for wasi_snapshot_preview1.
+    let _ = unsafe { clock_time_get(CLOCK_MONOTONIC, 0, &mut t) };
+    t
   }
 }
 
-#[cfg(not(unix))]
-#[allow(unused_imports)]
-pub use instant::*;
+#[cfg(target_os = "wasi")]
+pub use wasi::*;

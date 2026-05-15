@@ -101,6 +101,7 @@ jobs:
           - wasm32-wasip2
           - wasm32-unknown-emscripten
           - wasm32-wasip1-threads
+          - wasm32v1-none
 
     steps:
       - uses: actions/checkout@v6

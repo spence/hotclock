@@ -40,7 +40,7 @@ pub fn ticks() -> u64 {
   super::loongarch64::rdtime()
 }
 
-#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+#[cfg(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))]
 #[inline(always)]
 #[allow(clippy::inline_always)]
 pub fn ticks() -> u64 {
@@ -53,7 +53,7 @@ pub fn ticks() -> u64 {
   target_arch = "aarch64",
   target_arch = "riscv64",
   target_arch = "loongarch64",
-  all(target_arch = "wasm32", target_os = "unknown"),
+  all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
 )))]
 #[inline(always)]
 #[allow(clippy::inline_always)]
@@ -66,8 +66,12 @@ pub fn ticks() -> u64 {
   {
     super::fallback::clock_monotonic()
   }
-  #[cfg(not(unix))]
+  #[cfg(target_os = "wasi")]
   {
-    super::fallback::instant_elapsed()
+    super::fallback::wasi_clock_monotonic()
+  }
+  #[cfg(not(any(unix, target_os = "macos", target_os = "wasi")))]
+  {
+    panic!("tach: no monotonic clock source on this target")
   }
 }
