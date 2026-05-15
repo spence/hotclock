@@ -4,8 +4,8 @@
 <g shape-rendering="crispEdges">
 <rect x="74" y="124" width="540" height="24" fill="#b5aea4"/>
 <rect x="74" y="124" width="172.8" height="24" fill="#2E231B"/>
-<text x="74" y="114" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" font-weight="600" fill="#2E231B">now()</text>
-<text x="264.8" y="114" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" font-weight="600" fill="#2E231B">now() + elapsed()</text>
+<text x="160.4" y="114" text-anchor="middle" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" font-weight="600" fill="#2E231B">now()</text>
+<text x="430.4" y="114" text-anchor="middle" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" font-weight="600" fill="#2E231B">now() + elapsed()</text>
 <text x="1522" y="146.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#7A6E60">nanoseconds</text>
 <text x="74" y="266" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="50" font-weight="600" fill="#2E231B">Apple Silicon</text>
 <text x="74" y="306" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="28" fill="#7A6E60">M1 MacBook Pro</text>
@@ -13,137 +13,137 @@
 <text x="74" y="402.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">tach</text>
 <rect x="238" y="374" width="5.57752" height="36" fill="#eda9a0"/>
 <rect x="238" y="374" width="1.62153" height="36" fill="#D72D24"/>
-<text x="746" y="402.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">0.35<tspan fill="#7A6E60"> / </tspan>1.20</text>
+<text x="746" y="402.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">0.35<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">1.20</tspan></text>
 <text x="74" y="466.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">quanta</text>
 <rect x="238" y="438" width="42.6958" height="36" fill="#bebebd"/>
 <rect x="238" y="438" width="21.3642" height="36" fill="#5B6472"/>
-<text x="746" y="466.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">4.58<tspan fill="#7A6E60"> / </tspan>9.16</text>
+<text x="746" y="466.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">4.58<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">9.16</tspan></text>
 <text x="74" y="530.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">fastant</text>
 <rect x="238" y="502" width="278" height="36" fill="#b9c2ba"/>
 <rect x="238" y="502" width="126.871" height="36" fill="#4F6F6A"/>
-<text x="746" y="530.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">27.2<tspan fill="#7A6E60"> / </tspan>59.7</text>
+<text x="746" y="530.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">27.2<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">59.7</tspan></text>
 <text x="74" y="594.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">minstant</text>
 <rect x="238" y="566" width="277.897" height="36" fill="#d0bca9"/>
 <rect x="238" y="566" width="127.151" height="36" fill="#8B5E3C"/>
-<text x="746" y="594.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">27.3<tspan fill="#7A6E60"> / </tspan>59.6</text>
+<text x="746" y="594.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">27.3<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">59.6</tspan></text>
 <text x="74" y="658.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">std</text>
 <rect x="238" y="630" width="203.698" height="36" fill="#d6cca8"/>
 <rect x="238" y="630" width="94.4824" height="36" fill="#9A8A3A"/>
-<text x="746" y="658.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">20.3<tspan fill="#7A6E60"> / </tspan>43.7</text>
+<text x="746" y="658.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">20.3<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">43.7</tspan></text>
 <text x="850" y="266" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="50" font-weight="600" fill="#2E231B">AWS Graviton 3</text>
 <text x="850" y="306" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="28" fill="#7A6E60">c7g.4xlarge</text>
 <text x="850" y="338" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="28" fill="#7A6E60">aarch64-unknown-linux-gnu</text>
 <text x="850" y="402.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">tach</text>
 <rect x="1014" y="374" width="42.1224" height="36" fill="#eda9a0"/>
 <rect x="1014" y="374" width="21.0549" height="36" fill="#D72D24"/>
-<text x="1522" y="402.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">6.67<tspan fill="#7A6E60"> / </tspan>13.4</text>
+<text x="1522" y="402.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">6.67<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">13.4</tspan></text>
 <text x="850" y="466.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">quanta</text>
 <rect x="1014" y="438" width="48.2732" height="36" fill="#bebebd"/>
 <rect x="1014" y="438" width="22.1305" height="36" fill="#5B6472"/>
-<text x="1522" y="466.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">7.02<tspan fill="#7A6E60"> / </tspan>15.3</text>
+<text x="1522" y="466.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">7.02<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">15.3</tspan></text>
 <text x="850" y="530.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">fastant</text>
 <rect x="1014" y="502" width="276.965" height="36" fill="#b9c2ba"/>
 <rect x="1014" y="502" width="131.483" height="36" fill="#4F6F6A"/>
-<text x="1522" y="530.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">41.7<tspan fill="#7A6E60"> / </tspan>87.8</text>
+<text x="1522" y="530.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">41.7<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">87.8</tspan></text>
 <text x="850" y="594.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">minstant</text>
 <rect x="1014" y="566" width="278" height="36" fill="#d0bca9"/>
 <rect x="1014" y="566" width="131.477" height="36" fill="#8B5E3C"/>
-<text x="1522" y="594.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">41.7<tspan fill="#7A6E60"> / </tspan>88.1</text>
+<text x="1522" y="594.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">41.7<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">88.1</tspan></text>
 <text x="850" y="658.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">std</text>
 <rect x="1014" y="630" width="228.938" height="36" fill="#d6cca8"/>
 <rect x="1014" y="630" width="102.546" height="36" fill="#9A8A3A"/>
-<text x="1522" y="658.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">32.5<tspan fill="#7A6E60"> / </tspan>72.6</text>
+<text x="1522" y="658.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">32.5<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">72.6</tspan></text>
 <text x="74" y="858" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="50" font-weight="600" fill="#2E231B">AWS Intel Burst</text>
 <text x="74" y="898" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="28" fill="#7A6E60">t3.medium</text>
 <text x="74" y="930" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="28" fill="#7A6E60">x86_64-unknown-linux-gnu</text>
 <text x="74" y="994.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">tach</text>
 <rect x="238" y="966" width="98.4766" height="36" fill="#eda9a0"/>
 <rect x="238" y="966" width="45.4488" height="36" fill="#D72D24"/>
-<text x="746" y="994.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">8.74<tspan fill="#7A6E60"> / </tspan>18.9</text>
+<text x="746" y="994.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">8.74<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">18.9</tspan></text>
 <text x="74" y="1058.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">quanta</text>
 <rect x="238" y="1030" width="146.483" height="36" fill="#bebebd"/>
 <rect x="238" y="1030" width="69.2466" height="36" fill="#5B6472"/>
-<text x="746" y="1058.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">13.3<tspan fill="#7A6E60"> / </tspan>28.2</text>
+<text x="746" y="1058.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">13.3<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">28.2</tspan></text>
 <text x="74" y="1122.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">fastant</text>
 <rect x="238" y="1094" width="161.288" height="36" fill="#b9c2ba"/>
 <rect x="238" y="1094" width="58.1794" height="36" fill="#4F6F6A"/>
-<text x="746" y="1122.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">11.2<tspan fill="#7A6E60"> / </tspan>31.0</text>
+<text x="746" y="1122.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">11.2<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">31.0</tspan></text>
 <text x="74" y="1186.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">minstant</text>
 <rect x="238" y="1158" width="161.6" height="36" fill="#d0bca9"/>
 <rect x="238" y="1158" width="48.838" height="36" fill="#8B5E3C"/>
-<text x="746" y="1186.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">9.39<tspan fill="#7A6E60"> / </tspan>31.1</text>
+<text x="746" y="1186.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">9.39<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">31.1</tspan></text>
 <text x="74" y="1250.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">std</text>
 <rect x="238" y="1222" width="278" height="36" fill="#d6cca8"/>
 <rect x="238" y="1222" width="126.204" height="36" fill="#9A8A3A"/>
-<text x="746" y="1250.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">24.3<tspan fill="#7A6E60"> / </tspan>53.5</text>
+<text x="746" y="1250.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">24.3<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">53.5</tspan></text>
 <text x="850" y="858" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="50" font-weight="600" fill="#2E231B">Alpine on Metal</text>
 <text x="850" y="898" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="28" fill="#7A6E60">m7i.metal-24xl</text>
 <text x="850" y="930" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="28" fill="#7A6E60">x86_64-unknown-linux-musl</text>
 <text x="850" y="994.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">tach</text>
 <rect x="1014" y="966" width="116.767" height="36" fill="#eda9a0"/>
 <rect x="1014" y="966" width="58.3835" height="36" fill="#D72D24"/>
-<text x="1522" y="994.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">6.84<tspan fill="#7A6E60"> / </tspan>13.7</text>
+<text x="1522" y="994.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">6.84<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">13.7</tspan></text>
 <text x="850" y="1058.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">quanta</text>
 <rect x="1014" y="1030" width="149.423" height="36" fill="#bebebd"/>
 <rect x="1014" y="1030" width="60.6277" height="36" fill="#5B6472"/>
-<text x="1522" y="1058.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">7.11<tspan fill="#7A6E60"> / </tspan>17.5</text>
+<text x="1522" y="1058.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">7.11<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">17.5</tspan></text>
 <text x="850" y="1122.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">fastant</text>
 <rect x="1014" y="1094" width="182.6" height="36" fill="#b9c2ba"/>
 <rect x="1014" y="1094" width="58.3835" height="36" fill="#4F6F6A"/>
-<text x="1522" y="1122.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">6.84<tspan fill="#7A6E60"> / </tspan>21.4</text>
+<text x="1522" y="1122.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">6.84<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">21.4</tspan></text>
 <text x="850" y="1186.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">minstant</text>
 <rect x="1014" y="1158" width="182.711" height="36" fill="#d0bca9"/>
 <rect x="1014" y="1158" width="58.3835" height="36" fill="#8B5E3C"/>
-<text x="1522" y="1186.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">6.84<tspan fill="#7A6E60"> / </tspan>21.4</text>
+<text x="1522" y="1186.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">6.84<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">21.4</tspan></text>
 <text x="850" y="1250.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">std</text>
 <rect x="1014" y="1222" width="278" height="36" fill="#d6cca8"/>
 <rect x="1014" y="1222" width="125.036" height="36" fill="#9A8A3A"/>
-<text x="1522" y="1250.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">14.7<tspan fill="#7A6E60"> / </tspan>32.6</text>
+<text x="1522" y="1250.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">14.7<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">32.6</tspan></text>
 <text x="74" y="1450" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="50" font-weight="600" fill="#2E231B">AWS Lambda</text>
 <text x="74" y="1490" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="28" fill="#7A6E60">provided.al2023</text>
 <text x="74" y="1522" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="28" fill="#7A6E60">x86_64-unknown-linux-gnu</text>
 <text x="74" y="1586.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">tach</text>
 <rect x="238" y="1558" width="65.3868" height="36" fill="#eda9a0"/>
 <rect x="238" y="1558" width="27.8553" height="36" fill="#D72D24"/>
-<text x="746" y="1586.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">13.6<tspan fill="#7A6E60"> / </tspan>31.9</text>
+<text x="746" y="1586.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">13.6<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">31.9</tspan></text>
 <text x="74" y="1650.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">quanta</text>
 <rect x="238" y="1622" width="104.155" height="36" fill="#bebebd"/>
 <rect x="238" y="1622" width="47.8058" height="36" fill="#5B6472"/>
-<text x="746" y="1650.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">23.3<tspan fill="#7A6E60"> / </tspan>50.9</text>
+<text x="746" y="1650.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">23.3<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">50.9</tspan></text>
 <text x="74" y="1714.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">fastant</text>
 <rect x="238" y="1686" width="106.056" height="36" fill="#b9c2ba"/>
 <rect x="238" y="1686" width="31.8241" height="36" fill="#4F6F6A"/>
-<text x="746" y="1714.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">15.5<tspan fill="#7A6E60"> / </tspan>51.8</text>
+<text x="746" y="1714.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">15.5<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">51.8</tspan></text>
 <text x="74" y="1778.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">minstant</text>
 <rect x="238" y="1750" width="278" height="36" fill="#d0bca9"/>
 <rect x="238" y="1750" width="116.586" height="36" fill="#8B5E3C"/>
-<text x="746" y="1778.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">56.9<tspan fill="#7A6E60"> / </tspan>136</text>
+<text x="746" y="1778.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">56.9<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">136</tspan></text>
 <text x="74" y="1842.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">std</text>
 <rect x="238" y="1814" width="217.815" height="36" fill="#d6cca8"/>
 <rect x="238" y="1814" width="103.95" height="36" fill="#9A8A3A"/>
-<text x="746" y="1842.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">50.8<tspan fill="#7A6E60"> / </tspan>106</text>
+<text x="746" y="1842.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">50.8<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">106</tspan></text>
 <text x="850" y="1450" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="50" font-weight="600" fill="#2E231B">GitHub Windows</text>
 <text x="850" y="1490" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="28" fill="#7A6E60">windows-2025</text>
 <text x="850" y="1522" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="28" fill="#7A6E60">x86_64-pc-windows-msvc</text>
 <text x="850" y="1586.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">tach</text>
 <rect x="1014" y="1558" width="65.6895" height="36" fill="#eda9a0"/>
 <rect x="1014" y="1558" width="32.8221" height="36" fill="#D72D24"/>
-<text x="1522" y="1586.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">12.3<tspan fill="#7A6E60"> / </tspan>24.7</text>
+<text x="1522" y="1586.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">12.3<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">24.7</tspan></text>
 <text x="850" y="1650.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">quanta</text>
 <rect x="1014" y="1622" width="67.7696" height="36" fill="#bebebd"/>
 <rect x="1014" y="1622" width="33.0695" height="36" fill="#5B6472"/>
-<text x="1522" y="1650.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">12.4<tspan fill="#7A6E60"> / </tspan>25.5</text>
+<text x="1522" y="1650.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">12.4<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">25.5</tspan></text>
 <text x="850" y="1714.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">fastant</text>
 <rect x="1014" y="1686" width="278" height="36" fill="#b9c2ba"/>
 <rect x="1014" y="1686" width="121.125" height="36" fill="#4F6F6A"/>
-<text x="1522" y="1714.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">45.5<tspan fill="#7A6E60"> / </tspan>105</text>
+<text x="1522" y="1714.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">45.5<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">105</tspan></text>
 <text x="850" y="1778.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">minstant</text>
 <rect x="1014" y="1750" width="277.814" height="36" fill="#d0bca9"/>
 <rect x="1014" y="1750" width="121.079" height="36" fill="#8B5E3C"/>
-<text x="1522" y="1778.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">45.5<tspan fill="#7A6E60"> / </tspan>104</text>
+<text x="1522" y="1778.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">45.5<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">104</tspan></text>
 <text x="850" y="1842.2" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="30" fill="#2E231B">std</text>
 <rect x="1014" y="1814" width="227.906" height="36" fill="#d6cca8"/>
 <rect x="1014" y="1814" width="109.673" height="36" fill="#9A8A3A"/>
-<text x="1522" y="1842.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">41.2<tspan fill="#7A6E60"> / </tspan>85.7</text>
+<text x="1522" y="1842.2" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="29" fill="#2E231B">41.2<tspan dx="5" fill="#7A6E60">/</tspan><tspan dx="5">85.7</tspan></text>
 </g>
 </svg>

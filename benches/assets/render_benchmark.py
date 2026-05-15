@@ -347,8 +347,9 @@ def render_grid_cell(now_group, elapsed_group, crates, x0: float, y0: float) -> 
       f'<text x="{value_x:g}" y="{text_baseline:g}" text-anchor="end" '
       f'font-family="{MONO}" font-size="{GRID_VALUE_FONT_SIZE}" fill="{TEXT_FG}">'
       f'{esc(value_label(now_v))}'
-      f'<tspan fill="{MUTED_FG}"> / </tspan>'
-      f'{esc(value_label(elapsed_v))}</text>'
+      f'<tspan dx="5" fill="{MUTED_FG}">/</tspan>'
+      f'<tspan dx="5">{esc(value_label(elapsed_v))}</tspan>'
+      f'</text>'
     )
 
   return parts
@@ -376,14 +377,16 @@ def render_grid_header(width: float, y0: float) -> list[str]:
   label_baseline = bar_y - GRID_HEADER_LABEL_GAP
   parts.append(
     styled_text(
-      bar_x, label_baseline, "now()",
-      GRID_LABEL_FONT_SIZE, family=MONO, anchor="start", weight="600",
+      bar_x + dark_w / 2, label_baseline, "now()",
+      GRID_LABEL_FONT_SIZE, family=MONO, anchor="middle", weight="600",
     )
   )
   parts.append(
     styled_text(
-      bar_x + dark_w + 18, label_baseline, "now() + elapsed()",
-      GRID_LABEL_FONT_SIZE, family=MONO, anchor="start", weight="600",
+      bar_x + dark_w + (GRID_HEADER_BAR_WIDTH - dark_w) / 2,
+      label_baseline,
+      "now() + elapsed()",
+      GRID_LABEL_FONT_SIZE, family=MONO, anchor="middle", weight="600",
     )
   )
 
