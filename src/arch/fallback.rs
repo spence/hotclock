@@ -66,4 +66,5 @@ mod instant {
 }
 
 #[cfg(not(unix))]
+#[allow(unused_imports)]
 pub use instant::*;
