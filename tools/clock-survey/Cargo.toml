@@ -1,9 +1,0 @@
-[package]
-name = "tach-clock-survey"
-version = "0.0.0"
-edition = "2024"
-publish = false
-
-[[bin]]
-name = "clock-survey"
-path = "src/main.rs"

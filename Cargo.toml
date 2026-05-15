@@ -9,11 +9,7 @@ repository = "https://github.com/spence/tach"
 description = "ultra-fast timer for benchmarks, profilers, and hot loops"
 keywords = ["timer", "clock", "benchmark", "profiling", "rdtsc"]
 categories = ["hardware-support", "development-tools::profiling"]
-exclude = [
-  "tools/**",
-  "benches/selection-validation-*.md",
-  "benches/inline-selection-benchmark-*.md",
-]
+exclude = ["benches/**"]
 
 [dev-dependencies]
 chrono = "0.4.44"
