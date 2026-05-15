@@ -28,7 +28,7 @@ environment cells. All numbers are nanoseconds per call (lower is better).
 | `x86_64-unknown-linux-gnu` | AWS Lambda (Firecracker) | provided.al2023 | **31.93** | 50.86 | 51.79 | 135.75 | 106.36 |
 | `x86_64-pc-windows-msvc` | GitHub Actions | windows-2025 | **24.70** | 25.48 | 104.51 | 104.44 | 85.68 |
 
-Chart: [`benches/assets/benchmark.png`](benches/assets/benchmark.png) — top panel is `Instant::now()` standalone, bottom panel is the full `now() + elapsed()` roundtrip.
+Chart: [`benches/assets/benchmark.png`](benches/assets/benchmark.png) — one cell per target environment. Each crate row shows `Instant::now()` (dark portion of bar) and the full `now() + elapsed()` roundtrip (lighter extension), with numeric times as `now / elapsed` on the right.
 
 **Not included**: `x86_64-apple-darwin` (GitHub Actions `macos-13`) — could not land an Intel macOS runner allocation across multiple `workflow_dispatch` attempts. The GitHub-hosted Intel macOS runner pool has very low capacity.
 
@@ -147,10 +147,10 @@ aws lambda delete-function --function-name tach-lambda-bench \
 
 ## Updating the chart
 
-After collecting new measurements, edit `NOW_GROUPS` (top panel) and `ELAPSED_GROUPS` (bottom panel) in `benches/assets/render_benchmark.py`, then:
+After collecting new measurements, edit `NOW_GROUPS` and `ELAPSED_GROUPS` in `benches/assets/render.py`, then:
 
 ```bash
-python3 benches/assets/render_benchmark.py
+python3 benches/assets/render.py
 ```
 
 `rsvg-convert` is required (`brew install librsvg` on macOS, `apt install librsvg2-bin` on Debian).

@@ -8,7 +8,7 @@ Each supported target compiles `Instant::now()` directly to the fastest wall-clo
 
 ![Cross-target Instant benchmark](benches/assets/benchmark.png)
 
-`tach::Instant` is the leftmost (red) bar in each group. Top panel: `Instant::now()` standalone. Bottom panel: the full `now() + elapsed()` roundtrip. Methodology and per-target baselines: [BENCHMARKS.md](BENCHMARKS.md).
+Each cell shows five clock implementations as overlay bars: the dark portion is `Instant::now()` standalone, the lighter extension is the full `now() + elapsed()` roundtrip. Numeric times are shown on the right as `now / elapsed`. `tach` is the red row. Methodology and per-target baselines: [BENCHMARKS.md](BENCHMARKS.md).
 
 ## usage
 
