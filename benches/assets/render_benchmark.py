@@ -81,18 +81,16 @@ BAR_GAP = 4
 GROUP_WIDTH = 94
 GROUP_GAP = 20
 LEFT = 6
-HEIGHT = 462
-SIMPLE_HEIGHT = 348
-LEGEND_Y = 15
+HEIGHT = 475
+SIMPLE_HEIGHT = 365
 LEGEND_GAP = 18
 LEGEND_SQUARE = 6
-NOTE_Y = 30
-GROUP_TOP = 42
-SIMPLE_GROUP_TOP = 42
+GROUP_TOP = 12
+SIMPLE_GROUP_TOP = 12
 GROUP_HEIGHT = 382
 SIMPLE_GROUP_HEIGHT = 270
-BAR_BOTTOM = 384
-SIMPLE_BAR_BOTTOM = 286
+BAR_BOTTOM = 354
+SIMPLE_BAR_BOTTOM = 256
 BREAK_VALUE = 80.0
 LOWER_BAR_HEIGHT = 160
 SIMPLE_LOWER_BAR_HEIGHT = 230
@@ -104,6 +102,8 @@ LABEL_FONT_SIZE = 11
 LABEL_LINE_GAP = 13
 LABEL_TOP = BAR_BOTTOM + 21
 SIMPLE_LABEL_TOP = SIMPLE_BAR_BOTTOM + 24
+LABEL_TO_NOTE_GAP = 20
+NOTE_TO_LEGEND_GAP = 20
 TARGET_LABEL_FONT_SIZE = 7
 LEGEND_FONT_SIZE = 12
 
@@ -203,6 +203,10 @@ def render_svg(
     '<g shape-rendering="crispEdges">',
   ]
 
+  max_label_lines = max(len(labels) for labels, _ in groups)
+  labels_bottom = label_top + (max_label_lines - 1) * LABEL_LINE_GAP
+  note_y = labels_bottom + LABEL_TO_NOTE_GAP
+  legend_y = note_y + NOTE_TO_LEGEND_GAP
   legend_items = []
   legend_x = (width - legend_width) / 2
   for name, color in crates:
@@ -210,17 +214,17 @@ def render_svg(
     legend_x += LEGEND_SQUARE + 4 + text_width(name, LEGEND_FONT_SIZE) + LEGEND_GAP
   for x, name, color in legend_items:
     parts.append(
-      f'<rect x="{x:g}" y="{LEGEND_Y - LEGEND_SQUARE}" '
+      f'<rect x="{x:g}" y="{legend_y - LEGEND_SQUARE}" '
       f'width="{LEGEND_SQUARE}" height="{LEGEND_SQUARE}" fill="{color}"/>'
     )
     parts.append(
-      f'<text x="{x + LEGEND_SQUARE + 4:g}" y="{LEGEND_Y:g}" text-anchor="start" '
+      f'<text x="{x + LEGEND_SQUARE + 4:g}" y="{legend_y:g}" text-anchor="start" '
       f'font-family="{FONT}" font-size="{LEGEND_FONT_SIZE}" fill="#2E231B">{esc(name)}</text>'
     )
   note = "All measurements are nanoseconds."
   if global_max > break_value:
     note = "All measurements are nanoseconds; squiggle marks compressed upper range."
-  parts.append(text(width / 2, NOTE_Y, note, 9))
+  parts.append(text(width / 2, note_y, note, 9))
 
   for group_x, (labels, values) in zip(group_xs, groups):
     parts.append(
