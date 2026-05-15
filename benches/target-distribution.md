@@ -2,8 +2,8 @@
 
 Reference snapshot of where Rust binaries actually run, split into two market
 segments: **server / production cloud** and **desktop / local dev / CI**. These
-weights inform which cells we add to the benchmark matrix, which selector paths
-are worth implementing, and which targets we feature in the README charts.
+weights inform which cells we add to the benchmark matrix and which targets
+we feature in the README chart.
 
 Estimates as of 2026-05-14. **Conf** is a 0–100 self-assessed confidence
 rating; **Range** is the plausible interval on the point estimate; **Σ** is the
@@ -63,18 +63,13 @@ running cumulative share within the segment.
 
 ## How we use this
 
-1. **Benchmark cells.** The 24-cell 2026-05-14 baseline covers every target in
+1. **Benchmark cells.** A representative baseline covers every target in
    the top 5 of either segment by point estimate, plus relevant intra-target
    variations (bare-metal vs Nitro VM, Apple Silicon M1 vs M4 Pro, etc.).
-   Targets below ~1 % combined market share are deferred unless they gate a
-   specific selector path.
-2. **Selector candidates.** Targets in the top 5 server-side justify dedicated
-   PMU candidates (`x86_64-perf-rdpmc`, `aarch64-perf-pmccntr`). Targets below
-   ~1 % combined fall through to `Cycles::now() == Instant::now()` with no
-   runtime selection.
-3. **README chart cells.** The Instant and Cycles charts each include cells
-   covering the top 4–5 weighted targets across both segments — roughly
-   90–94 % combined coverage by population.
+   Targets below ~1 % combined market share are deferred.
+2. **README chart cells.** The performance chart includes cells covering the
+   top 4–5 weighted targets across both segments — roughly 90–94 % combined
+   coverage by population.
 
 ## When to update
 
