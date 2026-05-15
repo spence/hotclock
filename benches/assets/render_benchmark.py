@@ -60,9 +60,6 @@ LEFT = 6
 LEGEND_GAP = 18
 LEGEND_SQUARE = 6
 BAR_AREA_HEIGHT = 230
-LOWER_BAR_HEIGHT = 230
-UPPER_BAR_HEIGHT = 0
-BREAK_VALUE = 82.0
 VALUE_FONT_SIZE = 7
 LABEL_FONT_SIZE = 11
 LABEL_LINE_GAP = 13
@@ -115,25 +112,7 @@ def text_width(value: str, size: int) -> float:
 
 
 def bar_height(value: float, global_max: float) -> int:
-  if value <= BREAK_VALUE:
-    return max(2, round(value / BREAK_VALUE * LOWER_BAR_HEIGHT))
-  upper = (value - BREAK_VALUE) / (global_max - BREAK_VALUE) * UPPER_BAR_HEIGHT
-  return round(LOWER_BAR_HEIGHT + upper)
-
-
-def bar_break(x: float, bar_width: int, bar_bottom: float) -> list[str]:
-  y = bar_bottom - LOWER_BAR_HEIGHT
-  path = (
-    f"M{x - 1:g} {y - 3:g} "
-    f"C{x + 1:g} {y - 8:g} {x + 3:g} {y + 2:g} {x + 5:g} {y - 3:g} "
-    f"S{x + 9:g} {y + 2:g} {x + bar_width + 1:g} {y - 3:g}"
-  )
-  return [
-    f'<path d="{path}" stroke="{BACKGROUND}" stroke-width="4" fill="none" stroke-linecap="round"/>',
-    '<path '
-    f'd="{path}" stroke="#2E231B" stroke-width="0.8" fill="none" '
-    'stroke-linecap="round" opacity="0.65"/>',
-  ]
+  return max(2, round(value / global_max * BAR_AREA_HEIGHT))
 
 
 def render_panel(groups, crates, title, bar_width, group_width, width, panel_top) -> list[str]:
@@ -172,8 +151,6 @@ def render_panel(groups, crates, title, bar_width, group_width, width, panel_top
         label_y -= VALUE_FONT_SIZE + 3
       placed_labels.append((label_x, label_y, width_estimate))
       parts.append(f'<rect x="{x:g}" y="{y:g}" width="{bar_width}" height="{h}" fill="{color}"/>')
-      if value > BREAK_VALUE:
-        parts.extend(bar_break(x, bar_width, bar_bottom))
       parts.append(text(label_x, label_y, label, VALUE_FONT_SIZE))
 
     center = group_x + group_width / 2
@@ -237,16 +214,7 @@ def render_combined_svg(now_groups, elapsed_groups, crates, bar_width, group_wid
     )
     legend_x += LEGEND_SQUARE + 4 + text_width(name, LEGEND_FONT_SIZE) + LEGEND_GAP
 
-  all_max = max(
-    value
-    for _, values in (now_groups + elapsed_groups)
-    for value in values
-    if value is not None
-  )
-  note = "All measurements are nanoseconds."
-  if all_max > BREAK_VALUE:
-    note = "All measurements are nanoseconds; squiggle marks compressed upper range."
-  parts.append(text(width / 2, note_y, note, 8, italic=True))
+  parts.append(text(width / 2, note_y, "All measurements are nanoseconds.", 8, italic=True))
 
   parts.append("</g>")
   parts.append("</svg>")
