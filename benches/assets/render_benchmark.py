@@ -12,8 +12,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 SVG_PATH = ROOT / "benchmark-instant.svg"
 PNG_PATH = ROOT / "benchmark-instant.png"
-NOW_ELAPSED_SVG_PATH = ROOT / "benchmark-now-elapsed.svg"
-NOW_ELAPSED_PNG_PATH = ROOT / "benchmark-now-elapsed.png"
+ELAPSED_SVG_PATH = ROOT / "benchmark-elapsed.svg"
+ELAPSED_PNG_PATH = ROOT / "benchmark-elapsed.png"
 
 BACKGROUND = "#FBF6EC"
 FONT = "Avenir Next, Helvetica, Arial, sans-serif"
@@ -43,23 +43,18 @@ GROUPS = [
    [11.245, 11.670, 40.925, 40.926, 38.396]),
 ]
 
-NOW_ELAPSED_CRATES = [
-  ("tach: now()", "#F0635A"),
+ELAPSED_CRATES = [
   ("tach: elapsed()", "#D72D24"),
   ("tach: elapsed_fast()", "#8B1E18"),
-  ("quanta: now()", "#8590A0"),
   ("quanta: elapsed()", "#5B6472"),
-  ("fastant: now()", "#7A9A95"),
   ("fastant: elapsed()", "#4F6F6A"),
-  ("minstant: now()", "#B58669"),
   ("minstant: elapsed()", "#8B5E3C"),
-  ("std: now()", "#BAAA5A"),
   ("std: elapsed()", "#9A8A3A"),
 ]
 
-NOW_ELAPSED_GROUPS = [
+ELAPSED_GROUPS = [
   (("Apple Silicon", "M1 MacBook Pro", "aarch64-apple-darwin"),
-   [0.348, 5.286, 3.387, 4.566, 9.094, 27.639, 59.384, 27.217, 60.637, 20.148, 43.699]),
+   [5.286, 3.387, 9.094, 59.384, 60.637, 43.699]),
 ]
 
 BAR_GAP = 4
@@ -220,15 +215,15 @@ def render_svg(groups, crates, title, bar_width, group_width) -> str:
 
 def main() -> None:
   SVG_PATH.write_text(render_svg(GROUPS, CRATES, "Instant::now()", 8, 94))
-  NOW_ELAPSED_SVG_PATH.write_text(
-    render_svg(NOW_ELAPSED_GROUPS, NOW_ELAPSED_CRATES, "Instant: now() vs now + elapsed()", 12, 200)
+  ELAPSED_SVG_PATH.write_text(
+    render_svg(ELAPSED_GROUPS, ELAPSED_CRATES, "Instant: now() + elapsed()", 16, 180)
   )
   rsvg_convert = shutil.which("rsvg-convert")
   if rsvg_convert is None:
     raise SystemExit("rsvg-convert is required to render the benchmark PNGs")
   subprocess.run([rsvg_convert, "--zoom", "2", "-o", str(PNG_PATH), str(SVG_PATH)], check=True)
   subprocess.run(
-    [rsvg_convert, "--zoom", "2", "-o", str(NOW_ELAPSED_PNG_PATH), str(NOW_ELAPSED_SVG_PATH)],
+    [rsvg_convert, "--zoom", "2", "-o", str(ELAPSED_PNG_PATH), str(ELAPSED_SVG_PATH)],
     check=True,
   )
 
