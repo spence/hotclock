@@ -64,10 +64,10 @@ INSTANT_GROUPS = [
    [0.331, 7.591, 43.722, 43.259, 31.658]),
   (("AWS Graviton 3", "c7g.4xlarge", "aarch64-unknown-linux-gnu"),
    [6.673, 7.062, 38.939, 39.578, 31.463]),
-  (("Alpine on Metal", "m7i.metal-24xl", "x86_64-unknown-linux-musl"),
-   [14.316, 17.074, 14.625, 14.625, 25.865]),
   (("AWS Intel Burst", "t3.medium", "x86_64-unknown-linux-gnu"),
    [8.762, 13.314, 9.408, 9.408, 24.059]),
+  (("Alpine on Metal", "m7i.metal-24xl", "x86_64-unknown-linux-musl"),
+   [14.316, 17.074, 14.625, 14.625, 25.865]),
   (("AWS Lambda", "provided.al2023", "x86_64-unknown-linux-gnu"),
    [9.556, 14.102, 10.206, 44.386, 29.919]),
   (("GitHub macOS", "macos-15-intel", "x86_64-apple-darwin"),
@@ -296,7 +296,7 @@ def main() -> None:
       upper_bar_height=SIMPLE_UPPER_BAR_HEIGHT,
       label_top=SIMPLE_LABEL_TOP,
       group_background=BACKGROUND,
-      break_value=100.0,
+      break_value=82.0,
     )
   )
   rsvg_convert = shutil.which("rsvg-convert")
