@@ -8,7 +8,7 @@ Each supported target compiles `Instant::now()` directly to the fastest wall-clo
 
 ![Cross-target Instant::now() benchmark](benches/assets/benchmark-instant.png)
 
-`tach::Instant` is the leftmost (red) bar in each group. For the full `now() + elapsed()` roundtrip (including `elapsed_fast()`), see [benchmark-elapsed.png](benches/assets/benchmark-elapsed.png). Methodology and per-target baselines: [BENCHMARKS.md](BENCHMARKS.md).
+`tach::Instant` is the leftmost (red) bar in each group. For the full `now() + elapsed()` roundtrip, see [benchmark-elapsed.png](benches/assets/benchmark-elapsed.png). Methodology and per-target baselines: [BENCHMARKS.md](BENCHMARKS.md).
 
 ## usage
 
@@ -17,11 +17,10 @@ use tach::Instant;
 
 let start = Instant::now();
 // ... work ...
-let elapsed = start.elapsed();           // std::Instant drop-in (returns Duration)
-let nanos   = start.elapsed_fast();      // raw nanoseconds (skips Duration construction)
+let elapsed = start.elapsed();
 ```
 
-That's the entire public API: `Instant::now()`, `Instant::elapsed() -> Duration`, and `Instant::elapsed_fast() -> u64`.
+That's the entire public API: `Instant::now()` and `Instant::elapsed() -> Duration`.
 
 ## semantics
 
@@ -64,6 +63,6 @@ Use `Instant` for: timeouts, deadlines, latency measurements, request budgets â€
 ### 0.2.0
 
 - Initial published release.
-- Minimal drop-in `Instant` API: `now()` + `elapsed()` + `elapsed_fast()`.
+- Minimal drop-in `Instant` API: `now()` + `elapsed()`.
 - Compiles to a single architectural counter instruction on every supported target.
 - Documented cross-thread semantics: same source for every thread, thread-state independent; not strictly cross-thread monotonic â€” see `std::time::Instant` for that guarantee.

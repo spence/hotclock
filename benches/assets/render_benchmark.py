@@ -43,7 +43,6 @@ GROUPS = [
 
 ELAPSED_CRATES = [
   ("tach: elapsed()", "#D72D24"),
-  ("tach: elapsed_fast()", "#8B1E18"),
   ("quanta: elapsed()", "#5B6472"),
   ("fastant: elapsed()", "#4F6F6A"),
   ("minstant: elapsed()", "#8B5E3C"),
@@ -52,17 +51,17 @@ ELAPSED_CRATES = [
 
 ELAPSED_GROUPS = [
   (("Apple Silicon", "M1 MacBook Pro", "aarch64-apple-darwin"),
-   [1.197, 1.105, 9.163, 59.662, 59.640, 43.716]),
+   [1.197, 9.163, 59.662, 59.640, 43.716]),
   (("AWS Graviton 3", "c7g.4xlarge", "aarch64-unknown-linux-gnu"),
-   [13.354, 13.351, 15.304, 87.806, 88.134, 72.580]),
+   [13.354, 15.304, 87.806, 88.134, 72.580]),
   (("AWS Intel Burst", "t3.medium", "x86_64-unknown-linux-gnu"),
-   [18.944, 19.273, 28.179, 31.027, 31.087, 53.479]),
+   [18.944, 28.179, 31.027, 31.087, 53.479]),
   (("Alpine on Metal", "m7i.metal-24xl", "x86_64-unknown-linux-musl"),
-   [13.684, 13.684, 17.511, 21.399, 21.412, 32.579]),
+   [13.684, 17.511, 21.399, 21.412, 32.579]),
   (("AWS Lambda", "provided.al2023", "x86_64-unknown-linux-gnu"),
-   [31.929, 31.901, 50.860, 51.788, 135.750, 106.361]),
+   [31.929, 50.860, 51.788, 135.750, 106.361]),
   (("GitHub Windows", "windows-2025", "x86_64-pc-windows-msvc"),
-   [24.695, 24.702, 25.477, 104.510, 104.440, 85.678]),
+   [24.695, 25.477, 104.510, 104.440, 85.678]),
 ]
 
 BAR_GAP = 4

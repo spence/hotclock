@@ -62,13 +62,4 @@ mod tests {
     assert!(elapsed.as_millis() >= 9, "elapsed too short: {elapsed:?}");
     assert!(elapsed.as_millis() < 200, "elapsed too long: {elapsed:?}");
   }
-
-  #[test]
-  fn elapsed_fast_after_sleep() {
-    let start = Instant::now();
-    std::thread::sleep(Duration::from_millis(10));
-    let nanos = start.elapsed_fast();
-    assert!(nanos >= 9_000_000, "elapsed_fast too short: {nanos} ns");
-    assert!(nanos < 200_000_000, "elapsed_fast too long: {nanos} ns");
-  }
 }

@@ -41,26 +41,12 @@ impl Instant {
 
   /// Returns the duration that has elapsed since `self` was sampled.
   ///
-  /// Drop-in equivalent for [`std::time::Instant::elapsed()`]. Use
-  /// [`elapsed_fast`](Instant::elapsed_fast) when integer nanoseconds suffice
-  /// and you want to skip [`Duration`] construction.
+  /// Drop-in equivalent for [`std::time::Instant::elapsed()`].
   #[inline]
   #[must_use]
   pub fn elapsed(&self) -> Duration {
     let delta = arch::ticks().wrapping_sub(self.0);
     ticks_to_duration(delta)
-  }
-
-  /// Returns the elapsed nanoseconds since `self` was sampled.
-  ///
-  /// Faster than [`elapsed`](Instant::elapsed) when you only need an integer:
-  /// skips the [`Duration`] `(secs, nanos)` construction. Saturates at
-  /// [`u64::MAX`] (~584 years).
-  #[inline]
-  #[must_use]
-  pub fn elapsed_fast(&self) -> u64 {
-    let delta = arch::ticks().wrapping_sub(self.0);
-    ticks_to_nanos(delta)
   }
 }
 
@@ -69,14 +55,9 @@ impl Instant {
 // which is slow on virtualized x86 (Nitro burst VMs, Firecracker on
 // Lambda) — typical savings on those targets is 15-25 ns/call.
 #[inline]
-fn ticks_to_nanos(ticks: u64) -> u64 {
-  let product = u128::from(ticks) * u128::from(arch::nanos_per_tick_q32());
-  u64::try_from(product >> 32).unwrap_or(u64::MAX)
-}
-
-#[inline]
 fn ticks_to_duration(ticks: u64) -> Duration {
-  let nanos = ticks_to_nanos(ticks);
+  let product = u128::from(ticks) * u128::from(arch::nanos_per_tick_q32());
+  let nanos = u64::try_from(product >> 32).unwrap_or(u64::MAX);
   // Common case for elapsed (< 1 second): build Duration directly from
   // secs=0 + subsec_nanos. The compiler can prove `nanos_u32 < 1e9` from
   // the branch and elide the internal divide in Duration::new. Avoids

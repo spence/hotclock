@@ -1,7 +1,7 @@
 # tach benchmarks
 
 `tach::Instant::now()` and `Instant::elapsed()` cost compared with `quanta`,
-`fastant`, `minstant`, and `std::time::Instant` across seven target /
+`fastant`, `minstant`, and `std::time::Instant` across six target /
 environment cells. All numbers are nanoseconds per call (lower is better).
 
 ## Results
@@ -10,27 +10,27 @@ environment cells. All numbers are nanoseconds per call (lower is better).
 
 | Target | Environment | Instance | tach | quanta | fastant | minstant | std |
 |---|---|---|---:|---:|---:|---:|---:|
-| `aarch64-apple-darwin` | Apple Silicon MBP | M1 MacBook Pro | **0.35** | 4.57 | 27.64 | 27.22 | 20.15 |
-| `aarch64-unknown-linux-gnu` | Graviton 3 Nitro VM | c7g.4xlarge | **6.68** | 7.09 | 41.43 | 41.34 | 32.53 |
-| `x86_64-unknown-linux-gnu` | Intel burst VM | t3.medium | **8.76** | 13.28 | 9.41 | 9.40 | 24.35 |
+| `aarch64-apple-darwin` | Apple Silicon MBP | M1 MacBook Pro | **0.35** | 4.59 | 27.23 | 27.29 | 20.28 |
+| `aarch64-unknown-linux-gnu` | Graviton 3 Nitro VM | c7g.4xlarge | **6.68** | 7.02 | 41.68 | 41.68 | 32.51 |
+| `x86_64-unknown-linux-gnu` | Intel burst VM | t3.medium | **8.74** | 13.32 | 11.19 | 9.40 | 24.28 |
 | `x86_64-unknown-linux-musl` | Alpine Docker on Intel host | m7i.metal-24xl | **6.84** | 7.11 | **6.84** | **6.84** | 14.65 |
-| `x86_64-unknown-linux-gnu` | AWS Lambda (Firecracker) | provided.al2023 | **13.67** | 23.34 | 15.57 | 56.56 | 49.18 |
-| `x86_64-apple-darwin` | GitHub Actions | macos-13 | TBD | TBD | TBD | TBD | TBD |
-| `x86_64-pc-windows-msvc` | GitHub Actions | windows-2025 | **11.56** | 11.85 | 41.25 | 41.07 | 38.48 |
+| `x86_64-unknown-linux-gnu` | AWS Lambda (Firecracker) | provided.al2023 | **13.60** | 23.34 | 15.54 | 56.93 | 50.76 |
+| `x86_64-pc-windows-msvc` | GitHub Actions | windows-2025 | **12.34** | 12.43 | 45.54 | 45.52 | 41.23 |
 
 ### `Instant::now() + elapsed()` cost (full roundtrip)
 
-| Target | Environment | Instance | tach.elapsed | tach.elapsed_fast | quanta | fastant | minstant | std |
-|---|---|---|---:|---:|---:|---:|---:|---:|
-| `aarch64-apple-darwin` | Apple Silicon MBP | M1 MacBook Pro | 5.29 | **3.39** | 9.09 | 59.38 | 60.64 | 43.70 |
-| `aarch64-unknown-linux-gnu` | Graviton 3 Nitro VM | c7g.4xlarge | 15.19 | **13.51** | 15.34 | 87.17 | 87.24 | 70.44 |
-| `x86_64-unknown-linux-gnu` | Intel burst VM | t3.medium | 42.11 | 29.28 | **27.84** | 31.02 | 31.18 | 53.74 |
-| `x86_64-unknown-linux-musl` | Alpine Docker on Intel host | m7i.metal-24xl | 20.53 | **15.66** | 17.50 | 21.42 | 21.42 | 32.75 |
-| `x86_64-unknown-linux-gnu` | AWS Lambda (Firecracker) | provided.al2023 | 71.74 | **48.55** | 54.21 | 51.83 | 138.04 | 107.95 |
-| `x86_64-apple-darwin` | GitHub Actions | macos-13 | TBD | TBD | TBD | TBD | TBD | TBD |
-| `x86_64-pc-windows-msvc` | GitHub Actions | windows-2025 | 23.69 | **22.82** | 24.68 | 94.98 | 94.94 | 79.87 |
+| Target | Environment | Instance | tach | quanta | fastant | minstant | std |
+|---|---|---|---:|---:|---:|---:|---:|
+| `aarch64-apple-darwin` | Apple Silicon MBP | M1 MacBook Pro | **1.20** | 9.16 | 59.66 | 59.64 | 43.72 |
+| `aarch64-unknown-linux-gnu` | Graviton 3 Nitro VM | c7g.4xlarge | **13.35** | 15.30 | 87.81 | 88.13 | 72.58 |
+| `x86_64-unknown-linux-gnu` | Intel burst VM | t3.medium | **18.94** | 28.18 | 31.03 | 31.09 | 53.48 |
+| `x86_64-unknown-linux-musl` | Alpine Docker on Intel host | m7i.metal-24xl | **13.68** | 17.51 | 21.40 | 21.41 | 32.58 |
+| `x86_64-unknown-linux-gnu` | AWS Lambda (Firecracker) | provided.al2023 | **31.93** | 50.86 | 51.79 | 135.75 | 106.36 |
+| `x86_64-pc-windows-msvc` | GitHub Actions | windows-2025 | **24.70** | 25.48 | 104.51 | 104.44 | 85.68 |
 
-Charts: [`benches/assets/benchmark-instant.png`](benches/assets/benchmark-instant.png) (now() across targets), [`benches/assets/benchmark-elapsed.png`](benches/assets/benchmark-elapsed.png) (single-cell elapsed detail).
+Charts: [`benches/assets/benchmark-instant.png`](benches/assets/benchmark-instant.png) (now() across targets), [`benches/assets/benchmark-elapsed.png`](benches/assets/benchmark-elapsed.png) (now + elapsed across targets).
+
+**Not included**: `x86_64-apple-darwin` (GitHub Actions `macos-13`) — could not land an Intel macOS runner allocation across multiple `workflow_dispatch` attempts. The GitHub-hosted Intel macOS runner pool has very low capacity.
 
 ## Methodology
 
@@ -106,7 +106,7 @@ sudo docker run --rm alpine:latest sh -c '
 
 ### GitHub Actions runners
 
-For `x86_64-apple-darwin` (macos-13) and `x86_64-pc-windows-msvc` (windows-2025):
+For `x86_64-pc-windows-msvc` (windows-2025) and `x86_64-apple-darwin` (macos-13):
 
 The workflow at [`.github/workflows/bench.yml`](.github/workflows/bench.yml) runs on manual dispatch. Trigger via:
 
@@ -116,7 +116,7 @@ gh run watch                                                # follow live
 gh run view <run-id> --log --job=<job-id> | grep "time:"   # extract numbers
 ```
 
-**Gotcha**: GitHub runner labels are confusing — `macos-15`/`macos-14` are Apple Silicon (ARM). `macos-13` is the only Intel macOS runner available. `windows-2025` and `ubuntu-24.04` are x86_64.
+**Gotcha**: GitHub runner labels are confusing — `macos-15`/`macos-14` are Apple Silicon (ARM). `macos-13` is the only Intel macOS runner available. `windows-2025` and `ubuntu-24.04` are x86_64. Intel macOS runner capacity is limited on the GH-hosted fleet; expect long queues.
 
 ### AWS Lambda
 
@@ -147,7 +147,7 @@ aws lambda delete-function --function-name tach-lambda-bench \
 
 ## Updating the chart
 
-After collecting new measurements, edit `INSTANT_GROUPS` (now-only chart) and `ELAPSED_GROUPS` (elapsed detail chart) in `benches/assets/render_benchmark.py`, then:
+After collecting new measurements, edit `INSTANT_GROUPS` (now-only chart) and `ELAPSED_GROUPS` (elapsed chart) in `benches/assets/render_benchmark.py`, then:
 
 ```bash
 python3 benches/assets/render_benchmark.py

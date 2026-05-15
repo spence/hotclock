@@ -19,15 +19,6 @@ fn bench_tach_elapsed(c: &mut Criterion) {
   });
 }
 
-fn bench_tach_elapsed_fast(c: &mut Criterion) {
-  c.bench_function("tach::Instant (now + elapsed_fast)", |b| {
-    b.iter(|| {
-      let start = Instant::now();
-      black_box(start.elapsed_fast())
-    });
-  });
-}
-
 fn bench_quanta_now(c: &mut Criterion) {
   quanta::Instant::now();
   c.bench_function("quanta::Instant::now()", |b| b.iter(|| black_box(quanta::Instant::now())));
@@ -90,7 +81,6 @@ criterion_group!(
   benches,
   bench_tach_now,
   bench_tach_elapsed,
-  bench_tach_elapsed_fast,
   bench_quanta_now,
   bench_quanta_elapsed,
   bench_fastant_now,

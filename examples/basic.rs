@@ -10,11 +10,8 @@ fn main() {
   for i in 0..1_000_000 {
     sum = std::hint::black_box(sum.wrapping_add(i));
   }
-
   let elapsed = start.elapsed();
-  let nanos = start.elapsed_fast();
 
   println!("1M additions (sum = {sum}):");
-  println!("  elapsed()      = {elapsed:?}");
-  println!("  elapsed_fast() = {nanos} ns");
+  println!("  elapsed = {elapsed:?}");
 }
