@@ -31,10 +31,6 @@ quanta = "0.12.6"
 tick_counter = "0.4.5"
 time = "0.3.47"
 
-[[bin]]
-name = "tach"
-path = "src/bin/tach.rs"
-
 [[bench]]
 name = "instant"
 harness = false

@@ -12,25 +12,11 @@ pub fn ticks() -> u64 {
   super::x86_64::rdtsc()
 }
 
-#[cfg(target_arch = "x86_64")]
-#[inline]
-#[must_use]
-pub const fn implementation() -> &'static str {
-  "x86_64-rdtsc"
-}
-
 #[cfg(target_arch = "x86")]
 #[inline(always)]
 #[allow(clippy::inline_always)]
 pub fn ticks() -> u64 {
   super::x86::rdtsc()
-}
-
-#[cfg(target_arch = "x86")]
-#[inline]
-#[must_use]
-pub const fn implementation() -> &'static str {
-  "x86-rdtsc"
 }
 
 #[cfg(target_arch = "aarch64")]
@@ -40,13 +26,6 @@ pub fn ticks() -> u64 {
   super::aarch64::cntvct()
 }
 
-#[cfg(target_arch = "aarch64")]
-#[inline]
-#[must_use]
-pub const fn implementation() -> &'static str {
-  "aarch64-cntvct"
-}
-
 #[cfg(target_arch = "riscv64")]
 #[inline(always)]
 #[allow(clippy::inline_always)]
@@ -54,25 +33,11 @@ pub fn ticks() -> u64 {
   super::riscv64::rdtime()
 }
 
-#[cfg(target_arch = "riscv64")]
-#[inline]
-#[must_use]
-pub const fn implementation() -> &'static str {
-  "riscv64-rdtime"
-}
-
 #[cfg(target_arch = "loongarch64")]
 #[inline(always)]
 #[allow(clippy::inline_always)]
 pub fn ticks() -> u64 {
   super::loongarch64::rdtime()
-}
-
-#[cfg(target_arch = "loongarch64")]
-#[inline]
-#[must_use]
-pub const fn implementation() -> &'static str {
-  "loongarch64-rdtime"
 }
 
 #[cfg(not(any(
@@ -96,29 +61,5 @@ pub fn ticks() -> u64 {
   #[cfg(not(unix))]
   {
     super::fallback::instant_elapsed()
-  }
-}
-
-#[cfg(not(any(
-  target_arch = "x86_64",
-  target_arch = "x86",
-  target_arch = "aarch64",
-  target_arch = "riscv64",
-  target_arch = "loongarch64",
-)))]
-#[inline]
-#[must_use]
-pub const fn implementation() -> &'static str {
-  #[cfg(target_os = "macos")]
-  {
-    "macos-mach"
-  }
-  #[cfg(all(unix, not(target_os = "macos")))]
-  {
-    "unix-monotonic"
-  }
-  #[cfg(not(unix))]
-  {
-    "std-instant"
   }
 }

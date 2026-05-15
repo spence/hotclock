@@ -13,7 +13,7 @@ pub mod x86;
 pub mod x86_64;
 
 mod direct;
-pub use direct::{implementation, ticks};
+pub use direct::ticks;
 
 static FREQUENCY: OnceLock<u64> = OnceLock::new();
 
