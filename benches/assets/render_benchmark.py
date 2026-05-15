@@ -390,12 +390,12 @@ def render_grid_header(width: float, y0: float) -> list[str]:
     )
   )
 
-  unit_baseline = bar_y + GRID_HEADER_BAR_HEIGHT / 2 + GRID_LABEL_FONT_SIZE * 0.34
+  bar_center_y = bar_y + GRID_HEADER_BAR_HEIGHT / 2
   parts.append(
-    styled_text(
-      content_right, unit_baseline, "times shown in nanoseconds",
-      GRID_LABEL_FONT_SIZE, family=MONO, anchor="end", color=MUTED_FG,
-    )
+    f'<text x="{content_right:g}" y="{bar_center_y:g}" '
+    f'text-anchor="end" dominant-baseline="central" '
+    f'font-family="{MONO}" font-size="{GRID_LABEL_FONT_SIZE}" '
+    f'fill="{MUTED_FG}">times shown in nanoseconds</text>'
   )
   return parts
 
@@ -403,10 +403,8 @@ def render_grid_header(width: float, y0: float) -> list[str]:
 def render_grid_svg(now_groups, elapsed_groups, crates) -> str:
   rows = (len(now_groups) + GRID_COLS - 1) // GRID_COLS
   width = GRID_COLS * GRID_CELL_W + (GRID_COLS - 1) * GRID_COL_GAP + 2 * GRID_MARGIN
-  cells_top = GRID_MARGIN
-  cells_bottom = cells_top + rows * GRID_CELL_H + (rows - 1) * GRID_ROW_GAP
-  legend_top = cells_bottom + GRID_HEADER_GAP
-  height = legend_top + GRID_HEADER_HEIGHT + GRID_MARGIN
+  cells_top = GRID_MARGIN + GRID_HEADER_HEIGHT + GRID_HEADER_GAP
+  height = cells_top + rows * GRID_CELL_H + (rows - 1) * GRID_ROW_GAP + GRID_MARGIN
 
   parts = [
     '<?xml version="1.0" encoding="UTF-8"?>',
@@ -418,14 +416,14 @@ def render_grid_svg(now_groups, elapsed_groups, crates) -> str:
     '<g shape-rendering="crispEdges">',
   ]
 
+  parts.extend(render_grid_header(width, GRID_MARGIN))
+
   for i, (ng, eg) in enumerate(zip(now_groups, elapsed_groups)):
     col = i % GRID_COLS
     row = i // GRID_COLS
     x = GRID_MARGIN + col * (GRID_CELL_W + GRID_COL_GAP)
     y = cells_top + row * (GRID_CELL_H + GRID_ROW_GAP)
     parts.extend(render_grid_cell(ng, eg, crates, x, y))
-
-  parts.extend(render_grid_header(width, legend_top))
 
   parts.append("</g>")
   parts.append("</svg>")
