@@ -8,7 +8,7 @@ Each supported target compiles `Instant::now()` directly to the fastest wall-clo
 
 ![Cross-target Instant::now() benchmark](benches/assets/benchmark-instant.png)
 
-`tach::Instant` is the leftmost (red) bar in each group. Full methodology and the 7-cell baseline table: see [BENCHMARKS.md](BENCHMARKS.md).
+`tach::Instant` is the leftmost (red) bar in each group. For the full `now() + elapsed()` roundtrip (including `elapsed_fast()`), see [benchmark-elapsed.png](benches/assets/benchmark-elapsed.png). Methodology and per-target baselines: [BENCHMARKS.md](BENCHMARKS.md).
 
 ## usage
 
