@@ -1,11 +1,9 @@
-//! Compile-time direct Instant clock dispatch.
+//! Compile-time Instant clock dispatch.
 //!
 //! On every supported target, `Instant::now()` reads the canonical wall-clock-rate
-//! counter for that target architecture: RDTSC on x86/x86_64, CNTVCT_EL0 on aarch64,
-//! rdtime on riscv64/loongarch64. On unsupported architectures, the platform
-//! monotonic clock is used. No runtime selection, no validation, no patching for
-//! Instant — every benchmarked (target × env) cell picks the same canonical clock,
-//! so selection adds no value here. See `benches/selection-falsification-2026-05-09.md`.
+//! counter for that target architecture: RDTSC on x86 / x86_64, CNTVCT_EL0 on aarch64,
+//! rdtime on riscv64 / loongarch64. On unsupported architectures, the platform
+//! monotonic clock is used.
 
 #[cfg(target_arch = "x86_64")]
 #[inline(always)]

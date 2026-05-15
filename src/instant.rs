@@ -5,8 +5,8 @@ use crate::{Ticks, arch, convert};
 /// A sampled point in the process-wide counter timeline.
 ///
 /// `Instant` is a `#[repr(transparent)]` newtype over [`u64`]. The value wrapper is zero-cost;
-/// [`Instant::now()`] is either a direct counter read, a runtime-selected patched callsite, or
-/// a selected fallback read depending on target. `Instant` is `Send` and `Sync`, comparable, and
+/// [`Instant::now()`] compiles to a single architectural counter read on supported targets and
+/// to a platform monotonic-clock read otherwise. `Instant` is `Send` and `Sync`, comparable, and
 /// hashable. It is not a civil-time or OS timestamp.
 ///
 /// # Obtaining elapsed time
@@ -31,9 +31,7 @@ pub struct Instant(u64);
 impl Instant {
   /// Reads the current value of the process-wide tick counter.
   ///
-  /// Direct targets compile to a single counter read. Runtime-selected targets lazily select the
-  /// best valid counter and patch warmed call sites to the chosen counter or fallback trampoline
-  /// where the target supports crate-owned patchpoints.
+  /// Compiles to a single architectural counter read on every supported target.
   ///
   /// # Example
   ///
@@ -81,8 +79,7 @@ impl Instant {
   /// Returns the tick counter frequency in Hz.
   ///
   /// Calibrated lazily and thread-safely on first call by measuring the tick rate against
-  /// the system clock over a short spin-wait. Calling this method pre-warms calibration and,
-  /// on runtime-selected targets, counter selection. The result is cached for the lifetime of
+  /// the system clock over a short spin-wait. The result is cached for the lifetime of
   /// the process.
   ///
   /// # Example
