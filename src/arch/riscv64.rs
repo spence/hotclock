@@ -16,19 +16,31 @@ pub fn rdtime() -> u64 {
   cnt
 }
 
-/// Ordered `rdtime`: `fence ir, ir` orders prior instructions+reads vs
-/// subsequent instructions+reads so the CSR read cannot be hoisted above a
-/// preceding `Acquire`-or-stronger observation.
+/// Ordered `rdtime`: emits a full memory barrier (`fence iorw, iorw`)
+/// before the CSR read.
+///
+/// Caveat: `rdtime` reads a Zicntr control/status register, not memory, and
+/// the base RISC-V spec does not explicitly define whether memory fences
+/// constrain CSR access ordering. This implementation uses the strongest
+/// available memory barrier as a best-effort guarantee; on most current
+/// hardware the barrier serializes the pipeline enough to prevent the CSR
+/// read from being hoisted above prior `Acquire`-or-stronger observations,
+/// but the contract is weaker than aarch64's `isb sy` or x86's `lfence`,
+/// which are documented to order their respective counter instructions.
+///
+/// `nomem` is intentionally omitted so the compiler also keeps surrounding
+/// memory operations in order around the asm block.
 #[inline(always)]
 pub fn rdtime_ordered() -> u64 {
   let cnt: u64;
-  // SAFETY: `fence ir, ir; rdtime` only sequences execution and reads a CSR; no memory access.
+  // SAFETY: `fence iorw, iorw; rdtime` orders prior I/O and memory ops vs subsequent ones
+  // and reads the timer CSR; no stack access. Compiler treats as memory-touching.
   unsafe {
     asm!(
-        "fence ir, ir",
+        "fence iorw, iorw",
         "rdtime {}",
         out(reg) cnt,
-        options(nostack, nomem, preserves_flags)
+        options(nostack, preserves_flags)
     );
   }
   cnt

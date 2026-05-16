@@ -25,7 +25,7 @@ let elapsed = start.elapsed();
 
 ## semantics
 
-`Instant` is **wall-clock-rate**: backed by RDTSC / CNTVCT_EL0 / rdtime, which count at a fixed architectural rate (the nominal CPU base frequency on invariant TSC; ~24 MHz on Graviton and Apple Silicon; platform timer rate on RISC-V).
+`Instant` is **wall-clock-rate**: backed by RDTSC / CNTVCT_EL0 / rdtime, which count at a fixed architectural rate. The rate is platform- and silicon-specific — on invariant TSC it's the nominal CPU base frequency; on aarch64 it's read from `CNTFRQ_EL0` (M1 MBP is 24 MHz, M4 Pro is 1 GHz, Graviton 3 is 1 GHz — varies by silicon generation); on RISC-V it's the platform timer rate.
 
 - **Thread-state independent.** Keeps ticking during park / unpark, priority changes, descheduling, deep-sleep wake. The same number of ticks elapse per nanosecond whether your thread was scheduled or not.
 - **Same source for every thread** in the process. All threads read from the same counter.
@@ -42,7 +42,7 @@ let deadline = scheduler.load(Ordering::Acquire);
 let now = tach::Instant::now();   // ← can be sampled BEFORE `deadline` is observed
 ```
 
-On aarch64 `mrs cntvct_el0` is a system-register read; on x86 `rdtsc` is not a serializing instruction. Memory fences (including the `Acquire` load) do not constrain when those reads execute, so the timestamp can drift earlier than the synchronization point. No fast Rust time crate (`quanta`, `fastant`, `minstant`, or `tach`) addresses this; `std::time::Instant` only does on Windows (kernel boundary via `QueryPerformanceCounter`).
+On aarch64 `mrs cntvct_el0` is a system-register read; on x86 `rdtsc` is not a serializing instruction. Memory fences (including the `Acquire` load) do not constrain when those reads execute, so the timestamp can drift earlier than the synchronization point. No other fast Rust time crate (`quanta`, `fastant`, `minstant`) addresses this; `std::time::Instant` only does on Windows (kernel boundary via `QueryPerformanceCounter`). `tach::OrderedInstant` (described below) does.
 
 Use `OrderedInstant` when you need the contract *"my timestamp is sampled after any prior `Acquire`-or-stronger observation"*:
 
@@ -51,7 +51,7 @@ let deadline = scheduler.load(Ordering::Acquire);
 let now = tach::OrderedInstant::now();  // safe to correlate with `deadline`
 ```
 
-`OrderedInstant::now()` emits the arch-appropriate barrier before the counter read (`isb sy` on aarch64, `lfence` on x86, `fence ir, ir` on riscv64, `dbar 0` on loongarch64). Fallback paths (`clock_gettime`, `mach_absolute_time`, WASI `clock_time_get`, `Performance.now()`) already cross a kernel / runtime / JS boundary that serializes naturally.
+`OrderedInstant::now()` emits the arch-appropriate barrier before the counter read (`isb sy` on aarch64, `lfence` on x86). Fallback paths (`clock_gettime`, `mach_absolute_time`, WASI `clock_time_get`, `Performance.now()`) already cross a kernel / runtime / JS boundary that serializes naturally. On riscv64 (`fence iorw, iorw`) and loongarch64 (`dbar 0`) the strongest available memory barrier is used as best-effort; whether the architectural memory fence orders CSR reads (`rdtime`, `rdtime.d`) is implementation-defined in their respective specs, so the contract is weaker than on aarch64 / x86.
 
 Cost is ~5–20 ns more than `Instant::now()` depending on architecture; still substantially faster than `std::time::Instant::now()` on Linux and macOS, where std uses the vDSO / libsystem path but does not itself guarantee this ordering against atomics.
 

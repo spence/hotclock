@@ -20,18 +20,24 @@ pub fn cntvct() -> u64 {
 /// the system-register read, so the timestamp cannot be sampled before a
 /// prior `Acquire`-or-stronger observation (`mrs` is a system-register
 /// access; memory fences alone do not constrain when it executes).
+///
+/// `nomem` is intentionally omitted: the CPU barrier orders execution, but
+/// the compiler must also keep surrounding memory operations in order
+/// around the read. With `nomem` the optimizer would be free to hoist a
+/// prior `Acquire` load past the asm, defeating the contract.
 #[inline(always)]
 #[allow(clippy::inline_always)]
 pub fn cntvct_ordered() -> u64 {
   let cnt: u64;
-  // SAFETY: `isb sy; mrs cntvct_el0` only reads the architectural counter and forces a
-  // pipeline sync; neither instruction touches memory or the stack.
+  // SAFETY: `isb sy; mrs cntvct_el0` reads the architectural counter and forces a pipeline
+  // sync; neither instruction accesses the stack. Compiler treats as memory-touching so
+  // surrounding loads aren't reordered across it.
   unsafe {
     asm!(
         "isb sy",
         "mrs {}, cntvct_el0",
         out(reg) cnt,
-        options(nostack, nomem, preserves_flags)
+        options(nostack, preserves_flags)
     );
   }
   cnt

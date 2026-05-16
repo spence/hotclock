@@ -15,20 +15,27 @@ pub fn rdtime() -> u64 {
   cnt
 }
 
-/// Ordered `rdtime.d`: `dbar 0` is a full memory + execution barrier on
-/// LoongArch; the subsequent CSR read cannot be reordered before any
-/// preceding `Acquire`-or-stronger observation.
+/// Ordered `rdtime.d`: emits `dbar 0` (full data barrier) before the CSR
+/// read.
+///
+/// Caveat: `dbar 0` is a memory-access barrier; whether it constrains the
+/// `rdtime.d` CSR read is implementation-defined in the LoongArch spec.
+/// This is best-effort and weaker than aarch64's `isb sy` or x86's `lfence`,
+/// which are documented to order their respective counter instructions.
+///
+/// `nomem` is intentionally omitted so the compiler also keeps surrounding
+/// memory operations in order around the asm block.
 #[inline(always)]
 pub fn rdtime_ordered() -> u64 {
   let cnt: u64;
-  // SAFETY: `dbar 0; rdtime.d` orders prior accesses and reads the architectural timer;
-  // neither touches Rust memory.
+  // SAFETY: `dbar 0; rdtime.d` orders prior memory ops and reads the architectural timer;
+  // no stack access. Compiler treats as memory-touching.
   unsafe {
     asm!(
         "dbar 0",
         "rdtime.d {}, $zero",
         out(reg) cnt,
-        options(nostack, nomem, preserves_flags)
+        options(nostack, preserves_flags)
     );
   }
   cnt
