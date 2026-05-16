@@ -53,6 +53,7 @@ mod tests {
   fn instant_is_send_sync() {
     fn assert_send_sync<T: Send + Sync>() {}
     assert_send_sync::<Instant>();
+    assert_send_sync::<OrderedInstant>();
   }
 
   #[test]
@@ -72,5 +73,51 @@ mod tests {
     let elapsed = start.elapsed();
     assert!(elapsed.as_millis() >= 9, "elapsed too short: {elapsed:?}");
     assert!(elapsed.as_millis() < 200, "elapsed too long: {elapsed:?}");
+  }
+
+  #[test]
+  fn ordered_now_advances() {
+    let mut previous = OrderedInstant::now();
+    for _ in 0..10_000 {
+      let current = OrderedInstant::now();
+      assert!(current >= previous, "ordered counter moved backward");
+      previous = current;
+    }
+  }
+
+  #[test]
+  fn ordered_elapsed_after_sleep() {
+    let start = OrderedInstant::now();
+    std::thread::sleep(Duration::from_millis(10));
+    let elapsed = start.elapsed();
+    assert!(elapsed.as_millis() >= 9, "ordered elapsed too short: {elapsed:?}");
+    assert!(elapsed.as_millis() < 200, "ordered elapsed too long: {elapsed:?}");
+  }
+
+  // `as_unordered()` shares the same underlying tick value, so an elapsed
+  // measurement from the converted unordered handle should match an elapsed
+  // measurement from the original within bench-runtime noise.
+  #[test]
+  fn ordered_as_unordered_preserves_tick_value() {
+    let ordered = OrderedInstant::now();
+    let unordered = ordered.as_unordered();
+    let elapsed_from_ordered = ordered.elapsed_unordered();
+    let elapsed_from_unordered = unordered.elapsed();
+    let diff = elapsed_from_ordered.abs_diff(elapsed_from_unordered);
+    // The two .elapsed*() calls happen back-to-back; diff is whatever a
+    // single counter read costs. 1ms is generous noise budget.
+    assert!(diff.as_millis() < 1, "elapsed diverged after as_unordered: {diff:?}");
+  }
+
+  // Pairing OrderedInstant start with elapsed_unordered() end: end timestamp
+  // is unordered but should still come after the ordered start (sleep is well
+  // longer than any reordering window).
+  #[test]
+  fn ordered_elapsed_unordered_after_sleep() {
+    let start = OrderedInstant::now();
+    std::thread::sleep(Duration::from_millis(10));
+    let elapsed = start.elapsed_unordered();
+    assert!(elapsed.as_millis() >= 9, "elapsed_unordered too short: {elapsed:?}");
+    assert!(elapsed.as_millis() < 200, "elapsed_unordered too long: {elapsed:?}");
   }
 }

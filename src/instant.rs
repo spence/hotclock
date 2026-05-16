@@ -72,9 +72,24 @@ impl Instant {
 /// acquire-load completes (on aarch64 `mrs cntvct_el0` is a system-register
 /// access that memory fences do not constrain; on x86 `rdtsc` is not a
 /// serializing instruction). [`OrderedInstant::now()`] emits the
-/// arch-appropriate barrier (`isb sy` on aarch64, `lfence` on x86,
-/// `fence ir, ir` on riscv64, `dbar 0` on loongarch64) before the counter
-/// read so reordering is prevented.
+/// arch-appropriate barrier before the counter read.
+///
+/// # Per-architecture barrier
+///
+/// - **aarch64**: `isb sy` before `mrs cntvct_el0` — the established pattern,
+///   documented to order the system-register read.
+/// - **x86 / x86_64**: `lfence` before `rdtsc` — Intel-documented; AMD honors
+///   it when the kernel sets `DE_CFG[1]` (Linux does so by default for
+///   Spectre v1 mitigation).
+/// - **riscv64**: `fence iorw, iorw` before `rdtime`. **Best-effort**: whether
+///   memory fences constrain CSR access (`rdtime` reads the Zicntr time CSR,
+///   not memory) is implementation-defined in the RISC-V spec. Weaker
+///   contract than aarch64 / x86.
+/// - **loongarch64**: `dbar 0` before `rdtime.d`. **Best-effort**: same
+///   caveat — `dbar 0` is a memory barrier; its constraint on CSR access is
+///   implementation-defined.
+/// - **wasm / WASI / fallback paths**: kernel / runtime / JS boundary already
+///   serializes naturally.
 ///
 /// # Cost
 ///
