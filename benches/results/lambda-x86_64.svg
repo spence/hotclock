@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="914" viewBox="0 0 1280 914">
+<rect width="1280" height="914" fill="#FBF6EC"/>
+<text x="30" y="36" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="28" font-weight="600" fill="#2E231B">AWS Lambda — provided.al2023</text>
+<text x="30" y="66" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="14" fill="#7A6E60">x86_64-unknown-linux-gnu · 1024 MB / Firecracker · 3 invocations</text>
+<text x="30" y="112" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="22" font-weight="600" fill="#2E231B">Instant::now() — median (bar) and min–max across 3 runs</text>
+<text x="30" y="368" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="22" font-weight="600" fill="#2E231B">Instant::now() + elapsed() — median (bar) and min–max across 3 runs</text>
+<text x="30" y="624" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="22" font-weight="600" fill="#2E231B">Per-crate aggregate (nanoseconds)</text>
+<text x="118" y="149" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16" font-weight="600" fill="#D72D24">tach</text>
+<rect x="130" y="135" width="235.319" height="18" fill="#D72D24"/>
+<line x1="364.877" y1="144" x2="376.214" y2="144" stroke="#2E231B" stroke-width="1.2"/>
+<line x1="364.877" y1="139" x2="364.877" y2="149" stroke="#2E231B" stroke-width="1.2"/>
+<line x1="376.214" y1="139" x2="376.214" y2="149" stroke="#2E231B" stroke-width="1.2"/>
+<text x="1058" y="149" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#D72D24">14.6 ns  [14.6–15.3]</text>
+<text x="118" y="185" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16" fill="#2E231B">quanta</text>
+<rect x="130" y="171" width="392.814" height="18" fill="#5B6472"/>
+<line x1="518.18" y1="180" x2="524.027" y2="180" stroke="#2E231B" stroke-width="1.2"/>
+<line x1="518.18" y1="175" x2="518.18" y2="185" stroke="#2E231B" stroke-width="1.2"/>
+<line x1="524.027" y1="175" x2="524.027" y2="185" stroke="#2E231B" stroke-width="1.2"/>
+<text x="1058" y="185" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="14" fill="#2E231B">24.4 ns  [24.1–24.5]</text>
+<text x="118" y="221" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16" fill="#2E231B">fastant</text>
+<rect x="130" y="207" width="255.286" height="18" fill="#4F6F6A"/>
+<line x1="382.481" y1="216" x2="387.824" y2="216" stroke="#2E231B" stroke-width="1.2"/>
+<line x1="382.481" y1="211" x2="382.481" y2="221" stroke="#2E231B" stroke-width="1.2"/>
+<line x1="387.824" y1="211" x2="387.824" y2="221" stroke="#2E231B" stroke-width="1.2"/>
+<text x="1058" y="221" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="14" fill="#2E231B">15.9 ns  [15.7–16.0]</text>
+<text x="118" y="257" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16" fill="#2E231B">minstant</text>
+<rect x="130" y="243" width="918.661" height="18" fill="#8B5E3C"/>
+<line x1="1046.55" y1="252" x2="1050" y2="252" stroke="#2E231B" stroke-width="1.2"/>
+<line x1="1046.55" y1="247" x2="1046.55" y2="257" stroke="#2E231B" stroke-width="1.2"/>
+<line x1="1050" y1="247" x2="1050" y2="257" stroke="#2E231B" stroke-width="1.2"/>
+<text x="1058" y="257" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="14" fill="#2E231B">57.0 ns  [56.9–57.1]</text>
+<text x="118" y="293" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16" fill="#2E231B">std</text>
+<rect x="130" y="279" width="780.074" height="18" fill="#9A8A3A"/>
+<line x1="908.417" y1="288" x2="910.48" y2="288" stroke="#2E231B" stroke-width="1.2"/>
+<line x1="908.417" y1="283" x2="908.417" y2="293" stroke="#2E231B" stroke-width="1.2"/>
+<line x1="910.48" y1="283" x2="910.48" y2="293" stroke="#2E231B" stroke-width="1.2"/>
+<text x="1058" y="293" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="14" fill="#2E231B">48.4 ns  [48.3–48.5]</text>
+<text x="118" y="405" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16" font-weight="600" fill="#D72D24">tach</text>
+<rect x="130" y="391" width="220.955" height="18" fill="#D72D24"/>
+<line x1="350.837" y1="400" x2="351.056" y2="400" stroke="#2E231B" stroke-width="1.2"/>
+<line x1="350.837" y1="395" x2="350.837" y2="405" stroke="#2E231B" stroke-width="1.2"/>
+<line x1="351.056" y1="395" x2="351.056" y2="405" stroke="#2E231B" stroke-width="1.2"/>
+<text x="1058" y="405" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#D72D24">32.9 ns  [32.9–32.9]</text>
+<text x="118" y="441" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16" fill="#2E231B">quanta</text>
+<rect x="130" y="427" width="349.766" height="18" fill="#5B6472"/>
+<line x1="477.344" y1="436" x2="481.74" y2="436" stroke="#2E231B" stroke-width="1.2"/>
+<line x1="477.344" y1="431" x2="477.344" y2="441" stroke="#2E231B" stroke-width="1.2"/>
+<line x1="481.74" y1="431" x2="481.74" y2="441" stroke="#2E231B" stroke-width="1.2"/>
+<text x="1058" y="441" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="14" fill="#2E231B">52.1 ns  [51.7–52.4]</text>
+<text x="118" y="477" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16" fill="#2E231B">fastant</text>
+<rect x="130" y="463" width="347.849" height="18" fill="#4F6F6A"/>
+<line x1="476.795" y1="472" x2="486.309" y2="472" stroke="#2E231B" stroke-width="1.2"/>
+<line x1="476.795" y1="467" x2="476.795" y2="477" stroke="#2E231B" stroke-width="1.2"/>
+<line x1="486.309" y1="467" x2="486.309" y2="477" stroke="#2E231B" stroke-width="1.2"/>
+<text x="1058" y="477" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="14" fill="#2E231B">51.8 ns  [51.7–53.1]</text>
+<text x="118" y="513" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16" fill="#2E231B">minstant</text>
+<rect x="130" y="499" width="916.182" height="18" fill="#8B5E3C"/>
+<line x1="1044.5" y1="508" x2="1050" y2="508" stroke="#2E231B" stroke-width="1.2"/>
+<line x1="1044.5" y1="503" x2="1044.5" y2="513" stroke="#2E231B" stroke-width="1.2"/>
+<line x1="1050" y1="503" x2="1050" y2="513" stroke="#2E231B" stroke-width="1.2"/>
+<text x="1058" y="513" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="14" fill="#2E231B">136 ns  [136–137]</text>
+<text x="118" y="549" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16" fill="#2E231B">std</text>
+<rect x="130" y="535" width="719.07" height="18" fill="#9A8A3A"/>
+<line x1="847.829" y1="544" x2="849.19" y2="544" stroke="#2E231B" stroke-width="1.2"/>
+<line x1="847.829" y1="539" x2="847.829" y2="549" stroke="#2E231B" stroke-width="1.2"/>
+<line x1="849.19" y1="539" x2="849.19" y2="549" stroke="#2E231B" stroke-width="1.2"/>
+<text x="1058" y="549" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="14" fill="#2E231B">107 ns  [107–107]</text>
+<text x="50" y="664" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16" font-weight="600" fill="#7A6E60">crate</text>
+<text x="390" y="664" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16" font-weight="600" fill="#7A6E60">now() median</text>
+<text x="630" y="664" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16" font-weight="600" fill="#7A6E60">now() min–max</text>
+<text x="910" y="664" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16" font-weight="600" fill="#7A6E60">now+elapsed median</text>
+<text x="1150" y="664" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16" font-weight="600" fill="#7A6E60">now+elapsed min–max</text>
+<line x1="30" y1="672" x2="1250" y2="672" stroke="#7A6E60" stroke-width="0.5" opacity="0.5"/>
+<text x="50" y="710" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18" font-weight="600" fill="#D72D24">tach</text>
+<text x="390" y="710" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18" font-weight="600" fill="#D72D24">14.6 ns</text>
+<text x="630" y="710" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16" fill="#7A6E60">[14.6, 15.3]</text>
+<text x="910" y="710" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18" font-weight="600" fill="#D72D24">32.9 ns</text>
+<text x="1150" y="710" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16" fill="#7A6E60">[32.9, 32.9]</text>
+<text x="50" y="748" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18" fill="#2E231B">quanta</text>
+<text x="390" y="748" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18" fill="#2E231B">24.4 ns</text>
+<text x="630" y="748" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16" fill="#7A6E60">[24.1, 24.5]</text>
+<text x="910" y="748" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18" fill="#2E231B">52.1 ns</text>
+<text x="1150" y="748" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16" fill="#7A6E60">[51.7, 52.4]</text>
+<text x="50" y="786" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18" fill="#2E231B">fastant</text>
+<text x="390" y="786" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18" fill="#2E231B">15.9 ns</text>
+<text x="630" y="786" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16" fill="#7A6E60">[15.7, 16.0]</text>
+<text x="910" y="786" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18" fill="#2E231B">51.8 ns</text>
+<text x="1150" y="786" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16" fill="#7A6E60">[51.7, 53.1]</text>
+<text x="50" y="824" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18" fill="#2E231B">minstant</text>
+<text x="390" y="824" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18" fill="#2E231B">57.0 ns</text>
+<text x="630" y="824" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16" fill="#7A6E60">[56.9, 57.1]</text>
+<text x="910" y="824" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18" fill="#2E231B">136 ns</text>
+<text x="1150" y="824" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16" fill="#7A6E60">[136, 137]</text>
+<text x="50" y="862" text-anchor="start" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18" fill="#2E231B">std</text>
+<text x="390" y="862" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18" fill="#2E231B">48.4 ns</text>
+<text x="630" y="862" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16" fill="#7A6E60">[48.3, 48.5]</text>
+<text x="910" y="862" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18" fill="#2E231B">107 ns</text>
+<text x="1150" y="862" text-anchor="end" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16" fill="#7A6E60">[107, 107]</text>
+</svg>

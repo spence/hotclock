@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
-"""Compose criterion's per-group violin SVGs + estimates JSON into a single
-self-contained SVG report for one cell, written to benches/violins/<cell>.svg.
+"""Compose a per-cell benchmark report SVG.
 
-Usage:
-  cd <repo-root>
-  cargo bench --bench instant
-  python3 benches/assets/build-cell-report.py <cell-name> [--title "..."] [--subtitle "..."] [--criterion-dir <path>]
+Two input modes:
 
-The cell name becomes the output filename. --title and --subtitle override the
-default header text. --criterion-dir overrides where the tool looks for
-criterion output (default: target/criterion).
+(1) Criterion mode (default) — reads criterion's per-group violin SVGs +
+    per-crate pdf_small.svg + estimates.json, builds a report with violin
+    + per-crate distribution + medians table.
 
-Reads from <criterion-dir>:
-  Instant__now()/report/violin.svg
-  Instant__now() + elapsed()/report/violin.svg
-  Instant__now()/<crate>/new/estimates.json   (per crate)
-  Instant__now() + elapsed()/<crate>/new/estimates.json
+      python3 benches/assets/build-cell-report.py <cell-name> \\
+        --title "..." --subtitle "..." [--criterion-dir <path>]
 
-Writes:
-  benches/violins/<cell-name>.svg
+(2) Lambda mode — reads N run JSONs produced by the standalone
+    tach-lambda-bench handler, builds a bar-and-whisker chart of the
+    medians plus min/max ranges across runs.
+
+      python3 benches/assets/build-cell-report.py lambda-x86_64 \\
+        --title "..." --subtitle "..." \\
+        --lambda-runs <dir-containing-run*.json>
+
+Output path: benches/results/<cell-name>.svg
 """
 
 from __future__ import annotations
@@ -33,7 +33,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_CRITERION_DIR = REPO_ROOT / "target" / "criterion"
-OUTPUT_DIR = REPO_ROOT / "benches" / "violins"
+OUTPUT_DIR = REPO_ROOT / "benches" / "results"
 
 GROUP_NOW = "Instant__now()"
 GROUP_ELAPSED = "Instant__now() + elapsed()"
@@ -154,8 +154,15 @@ def text_el(
   )
 
 
-def build_table(now_data: dict[str, dict], elapsed_data: dict[str, dict], y_top: float) -> tuple[str, float]:
-  """Build the per-crate medians table. Returns (svg_fragment, y_bottom)."""
+def build_table(
+  now_data: dict[str, dict],
+  elapsed_data: dict[str, dict],
+  y_top: float,
+  range_label: str = "95% CI",
+) -> tuple[str, float]:
+  """Build the per-crate medians table. Returns (svg_fragment, y_bottom).
+  range_label is what appears in the column headers above the bracketed values
+  (e.g. "95% CI" for criterion or "min–max" for Lambda)."""
   parts = []
   col_x_crate = PAD + 20
   col_x_now = PAD + 360
@@ -163,13 +170,12 @@ def build_table(now_data: dict[str, dict], elapsed_data: dict[str, dict], y_top:
   col_x_elapsed = PAD + 880
   col_x_elapsed_ci = PAD + 1120
 
-  # Header row
   hy = y_top + 26
   parts.append(text_el(col_x_crate, hy, "crate", 16, family=MONO, color=MUTED_FG, weight="600"))
   parts.append(text_el(col_x_now, hy, "now() median", 16, family=MONO, color=MUTED_FG, weight="600", anchor="end"))
-  parts.append(text_el(col_x_now_ci, hy, "now() 95% CI", 16, family=MONO, color=MUTED_FG, weight="600", anchor="end"))
+  parts.append(text_el(col_x_now_ci, hy, f"now() {range_label}", 16, family=MONO, color=MUTED_FG, weight="600", anchor="end"))
   parts.append(text_el(col_x_elapsed, hy, "now+elapsed median", 16, family=MONO, color=MUTED_FG, weight="600", anchor="end"))
-  parts.append(text_el(col_x_elapsed_ci, hy, "now+elapsed 95% CI", 16, family=MONO, color=MUTED_FG, weight="600", anchor="end"))
+  parts.append(text_el(col_x_elapsed_ci, hy, f"now+elapsed {range_label}", 16, family=MONO, color=MUTED_FG, weight="600", anchor="end"))
 
   # Underline
   underline_y = hy + 8
@@ -319,6 +325,158 @@ def build_report(criterion_dir: Path, cell_name: str, title: str, subtitle: str)
   return "\n".join(parts) + "\n"
 
 
+def read_lambda_runs(runs_dir: Path) -> list[dict]:
+  """Read all run*.json files in a directory. Returns list of run dicts."""
+  files = sorted(runs_dir.glob("run*.json"))
+  if not files:
+    raise FileNotFoundError(f"No run*.json files found in {runs_dir}")
+  return [json.loads(p.read_text()) for p in files]
+
+
+def build_lambda_bar_chart(
+  runs: list[dict], metric: str, y_offset: float
+) -> tuple[str, float]:
+  """Horizontal bar chart with whiskers. One row per crate, bar = median across
+  runs, whiskers = [min, max] range. metric in {"now", "elapsed"}.
+  Returns (svg_fragment, rendered_height)."""
+  parts = []
+  row_h = 36
+  bar_h = 18
+  left = PAD + 100  # space for crate label
+  right = TARGET_WIDTH - PAD - 200  # space for value label on right
+  bar_area_w = right - left
+
+  # Collect per-crate {min, median, max}
+  stats = {}
+  for crate in CRATES:
+    samples = sorted(r[crate][metric] for r in runs)
+    stats[crate] = {
+      "min": samples[0],
+      "median": samples[len(samples) // 2],
+      "max": samples[-1],
+    }
+  global_max = max(s["max"] for s in stats.values())
+
+  for i, crate in enumerate(CRATES):
+    row_y = y_offset + i * row_h
+    bar_center_y = row_y + row_h / 2
+    bar_top_y = bar_center_y - bar_h / 2
+
+    color = TACH_FG if crate == "tach" else "#5B6472"
+    if crate == "fastant":
+      color = "#4F6F6A"
+    elif crate == "minstant":
+      color = "#8B5E3C"
+    elif crate == "std":
+      color = "#9A8A3A"
+
+    # Crate label (left)
+    parts.append(
+      text_el(left - 12, bar_center_y + 5, crate, 16, family=MONO, anchor="end",
+              color=(TACH_FG if crate == "tach" else TEXT_FG),
+              weight=("600" if crate == "tach" else None))
+    )
+
+    s = stats[crate]
+    median_x = left + (s["median"] / global_max) * bar_area_w
+    min_x = left + (s["min"] / global_max) * bar_area_w
+    max_x = left + (s["max"] / global_max) * bar_area_w
+
+    # Bar (0 → median)
+    parts.append(
+      f'<rect x="{left:g}" y="{bar_top_y:g}" width="{median_x - left:g}" '
+      f'height="{bar_h}" fill="{color}"/>'
+    )
+
+    # Whiskers (min → max), drawn over the bar area
+    whisker_y = bar_center_y
+    cap_half = 5
+    parts.append(
+      f'<line x1="{min_x:g}" y1="{whisker_y:g}" x2="{max_x:g}" y2="{whisker_y:g}" '
+      f'stroke="{TEXT_FG}" stroke-width="1.2"/>'
+    )
+    # Min cap
+    parts.append(
+      f'<line x1="{min_x:g}" y1="{whisker_y - cap_half:g}" x2="{min_x:g}" y2="{whisker_y + cap_half:g}" '
+      f'stroke="{TEXT_FG}" stroke-width="1.2"/>'
+    )
+    # Max cap
+    parts.append(
+      f'<line x1="{max_x:g}" y1="{whisker_y - cap_half:g}" x2="{max_x:g}" y2="{whisker_y + cap_half:g}" '
+      f'stroke="{TEXT_FG}" stroke-width="1.2"/>'
+    )
+
+    # Value label on right
+    label = f"{fmt_ns(s['median'])} ns  [{fmt_ns(s['min'])}–{fmt_ns(s['max'])}]"
+    parts.append(
+      text_el(right + 8, bar_center_y + 5, label, 14, family=MONO, anchor="start",
+              color=(TACH_FG if crate == "tach" else TEXT_FG),
+              weight=("600" if crate == "tach" else None))
+    )
+
+  total_h = len(CRATES) * row_h + 10
+  return "\n".join(parts), total_h
+
+
+def build_lambda_report(runs: list[dict], cell_name: str, title: str, subtitle: str) -> str:
+  """Build the Lambda variant of the per-cell SVG."""
+  title_y = 36
+  subtitle_y = 66
+  y = HEADER_H
+
+  now_label_y = y
+  y += SECTION_LABEL_H
+  now_chart, now_h = build_lambda_bar_chart(runs, "now", y)
+  y += now_h + PAD
+
+  elapsed_label_y = y
+  y += SECTION_LABEL_H
+  elapsed_chart, elapsed_h = build_lambda_bar_chart(runs, "elapsed", y)
+  y += elapsed_h + PAD
+
+  # Re-shape runs into the form build_table expects: {crate: {median_ns, lower_ns, upper_ns}}
+  # Use the run-median for median_ns, min/max as the bounds.
+  def aggregate(metric: str) -> dict[str, dict]:
+    out = {}
+    for crate in CRATES:
+      samples = sorted(r[crate][metric] for r in runs)
+      out[crate] = {
+        "median_ns": samples[len(samples) // 2],
+        "lower_ns": samples[0],
+        "upper_ns": samples[-1],
+      }
+    return out
+
+  table_label_y = y
+  y += SECTION_LABEL_H
+  table_fragment, table_bottom = build_table(aggregate("now"), aggregate("elapsed"), y, range_label="min–max")
+  y = table_bottom + PAD
+
+  total_height = int(y)
+  width = TARGET_WIDTH
+
+  parts = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    f'<svg xmlns="http://www.w3.org/2000/svg" '
+    f'width="{width}" height="{total_height}" viewBox="0 0 {width} {total_height}">',
+    f'<rect width="{width}" height="{total_height}" fill="{BACKGROUND}"/>',
+
+    text_el(PAD, title_y, title, 28, weight="600"),
+    text_el(PAD, subtitle_y, subtitle, 14, family=MONO, color=MUTED_FG),
+
+    build_section_label(f"Instant::now() — median (bar) and min–max across {len(runs)} runs", now_label_y),
+    build_section_label(f"Instant::now() + elapsed() — median (bar) and min–max across {len(runs)} runs", elapsed_label_y),
+    build_section_label("Per-crate aggregate (nanoseconds)", table_label_y),
+
+    now_chart,
+    elapsed_chart,
+    table_fragment,
+
+    '</svg>',
+  ]
+  return "\n".join(parts) + "\n"
+
+
 def main() -> int:
   ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
   ap.add_argument("cell_name", help="Cell identifier used as output filename")
@@ -328,19 +486,31 @@ def main() -> int:
     "--criterion-dir",
     type=Path,
     default=DEFAULT_CRITERION_DIR,
-    help=f"Directory containing criterion output (default: {DEFAULT_CRITERION_DIR})",
+    help=f"Criterion output directory (criterion mode; default: {DEFAULT_CRITERION_DIR})",
+  )
+  ap.add_argument(
+    "--lambda-runs",
+    type=Path,
+    help="Directory with run*.json files from the Lambda harness (selects Lambda mode)",
   )
   args = ap.parse_args()
 
-  if not args.criterion_dir.exists():
-    print(f"error: {args.criterion_dir} not found. Run `cargo bench --bench instant` first.", file=sys.stderr)
-    return 2
-
   title = args.title if args.title else args.cell_name
-
   OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
   output_path = OUTPUT_DIR / f"{args.cell_name}.svg"
-  output_path.write_text(build_report(args.criterion_dir, args.cell_name, title, args.subtitle))
+
+  if args.lambda_runs is not None:
+    if not args.lambda_runs.exists():
+      print(f"error: {args.lambda_runs} not found.", file=sys.stderr)
+      return 2
+    runs = read_lambda_runs(args.lambda_runs)
+    output_path.write_text(build_lambda_report(runs, args.cell_name, title, args.subtitle))
+  else:
+    if not args.criterion_dir.exists():
+      print(f"error: {args.criterion_dir} not found. Run `cargo bench --bench instant` first.", file=sys.stderr)
+      return 2
+    output_path.write_text(build_report(args.criterion_dir, args.cell_name, title, args.subtitle))
+
   print(f"wrote {output_path} ({output_path.stat().st_size:,} bytes)")
   return 0
 
