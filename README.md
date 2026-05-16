@@ -8,14 +8,16 @@ A replacement for `std::time::Instant` that reads the architectural counter dire
 ## usage
 
 ```rust
-use tach::Instant;
+use tach::{Instant, OrderedInstant};
 
 let start = Instant::now();
-// ...work...
 let elapsed = start.elapsed();
+
+let ordered = OrderedInstant::now();
+let elapsed = ordered.elapsed();
 ```
 
-`tach::Instant` is a drop-in replacement for `std::time::Instant`: same surface (`now`, `elapsed`, `duration_since`, `checked_*`, arithmetic with `Duration`). On supported targets it compiles to a single counter instruction; on unsupported architectures it falls back to the platform monotonic clock (`clock_gettime`, `mach_absolute_time`, `QueryPerformanceCounter`, or `Performance.now()` on wasm).
+`tach::Instant` is a drop-in replacement for `std::time::Instant`: same surface (`now`, `elapsed`, `duration_since`, `checked_*`, arithmetic with `Duration`). On supported targets it compiles to a single counter instruction; on unsupported architectures it falls back to the platform monotonic clock (`clock_gettime`, `mach_absolute_time`, `QueryPerformanceCounter`, or `Performance.now()` on wasm). `OrderedInstant` is the same API plus an architectural barrier; see [ordered reads](#ordered-reads).
 
 ## benchmark
 
