@@ -150,4 +150,74 @@ mod tests {
     assert!(elapsed.as_millis() >= 9, "elapsed_unordered too short: {elapsed:?}");
     assert!(elapsed.as_millis() < 200, "elapsed_unordered too long: {elapsed:?}");
   }
+
+  #[test]
+  fn instant_duration_since_saturates_when_earlier_is_later() {
+    let early = Instant::now();
+    std::thread::sleep(Duration::from_millis(5));
+    let late = Instant::now();
+    assert_eq!(early.duration_since(late), Duration::ZERO);
+    assert!(late.duration_since(early) >= Duration::from_millis(4));
+  }
+
+  #[test]
+  fn instant_checked_duration_since_returns_none_when_earlier_is_later() {
+    let early = Instant::now();
+    std::thread::sleep(Duration::from_millis(5));
+    let late = Instant::now();
+    assert!(early.checked_duration_since(late).is_none());
+    assert!(late.checked_duration_since(early).is_some());
+  }
+
+  #[test]
+  fn instant_sub_instant_returns_elapsed() {
+    let a = Instant::now();
+    std::thread::sleep(Duration::from_millis(5));
+    let b = Instant::now();
+    let diff: Duration = b - a;
+    assert!(diff.as_millis() >= 4 && diff.as_millis() < 200, "unexpected diff: {diff:?}");
+  }
+
+  #[test]
+  fn instant_add_duration_advances_time() {
+    let now = Instant::now();
+    let later = now + Duration::from_secs(1);
+    let diff = later.duration_since(now);
+    let drift = diff.abs_diff(Duration::from_secs(1));
+    // Q32 reciprocal round-trip; sub-microsecond drift is the tolerance.
+    assert!(drift < Duration::from_micros(1), "round-trip drift: {drift:?}");
+  }
+
+  #[test]
+  fn instant_sub_duration_and_add_assign() {
+    let now = Instant::now();
+    let earlier = now - Duration::from_millis(100);
+    let diff = now.duration_since(earlier);
+    assert!(
+      diff.as_millis() >= 99 && diff.as_millis() <= 101,
+      "expected ~100ms, got {diff:?}",
+    );
+
+    let mut t = now;
+    t += Duration::from_secs(1);
+    t -= Duration::from_millis(500);
+    let delta = t.duration_since(now);
+    let drift = delta.abs_diff(Duration::from_millis(500));
+    assert!(drift < Duration::from_micros(2), "round-trip drift: {drift:?}");
+  }
+
+  #[test]
+  fn ordered_instant_arithmetic_mirrors_instant() {
+    let a = OrderedInstant::now();
+    std::thread::sleep(Duration::from_millis(5));
+    let b = OrderedInstant::now();
+    let diff: Duration = b - a;
+    assert!(diff.as_millis() >= 4 && diff.as_millis() < 200, "diff: {diff:?}");
+    assert_eq!(a.duration_since(b), Duration::ZERO);
+    assert!(b.checked_duration_since(a).is_some());
+
+    let later = a + Duration::from_secs(1);
+    let drift = later.duration_since(a).abs_diff(Duration::from_secs(1));
+    assert!(drift < Duration::from_micros(1), "drift: {drift:?}");
+  }
 }

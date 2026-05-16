@@ -15,9 +15,13 @@ let start = Instant::now();
 let elapsed = start.elapsed();
 ```
 
-`tach::Instant` is API-compatible with `std::time::Instant` for `now()` and `elapsed()`. On supported targets it compiles to a single counter instruction; on unsupported architectures it falls back to the platform monotonic clock (`clock_gettime`, `mach_absolute_time`, `QueryPerformanceCounter`, or `Performance.now()` on wasm).
+`tach::Instant` is a drop-in replacement for `std::time::Instant`: same surface (`now`, `elapsed`, `duration_since`, `checked_*`, arithmetic with `Duration`). On supported targets it compiles to a single counter instruction; on unsupported architectures it falls back to the platform monotonic clock (`clock_gettime`, `mach_absolute_time`, `QueryPerformanceCounter`, or `Performance.now()` on wasm).
 
-See [BENCHMARKS.md](BENCHMARKS.md) for measurements across six environments.
+## benchmark
+
+![benchmark](benches/summary.png)
+
+Methodology and per-target reports: [BENCHMARKS.md](BENCHMARKS.md).
 
 ## semantics
 
@@ -59,7 +63,6 @@ Other architectures fall back to the platform monotonic clock. The crate is `#![
 ## non-goals
 
 - Strict cross-thread monotonicity. Use `std::time::Instant`.
-- A full superset of `std::time::Instant`'s API. Only `now()` and `elapsed()` (plus the `Ordered*` variants) are exposed.
 - Clock-skew correction across machines. This is a per-process counter.
 
 ## msrv

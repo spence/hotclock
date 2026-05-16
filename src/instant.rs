@@ -1,3 +1,4 @@
+use core::ops::{Add, AddAssign, Sub, SubAssign};
 use core::time::Duration;
 
 use crate::arch;
@@ -48,9 +49,90 @@ impl Instant {
     ticks_to_duration(delta)
   }
 
+  /// Returns the duration elapsed from `earlier` to `self`, or zero if
+  /// `earlier` is later. Matches modern [`std::time::Instant::duration_since`]
+  /// (which saturates rather than panicking).
+  #[inline]
+  #[must_use]
+  pub fn duration_since(&self, earlier: Instant) -> Duration {
+    self.checked_duration_since(earlier).unwrap_or_default()
+  }
+
+  /// Returns the duration elapsed from `earlier` to `self`, or `None` if
+  /// `earlier` is later than `self`.
+  #[inline]
+  #[must_use]
+  pub fn checked_duration_since(&self, earlier: Instant) -> Option<Duration> {
+    self.0.checked_sub(earlier.0).map(ticks_to_duration)
+  }
+
+  /// Saturating equivalent of [`Self::duration_since`] — same behavior in
+  /// modern std. Returns zero if `earlier` is later than `self`.
+  #[inline]
+  #[must_use]
+  pub fn saturating_duration_since(&self, earlier: Instant) -> Duration {
+    self.duration_since(earlier)
+  }
+
+  /// Returns `Some(self + duration)` if it can be represented as an
+  /// `Instant`, otherwise `None`. Headroom is ~580 years on a 1 GHz
+  /// counter — overflow is theoretical, not practical.
+  #[inline]
+  #[must_use]
+  pub fn checked_add(&self, duration: Duration) -> Option<Self> {
+    let delta = duration_to_ticks(duration)?;
+    self.0.checked_add(delta).map(Self)
+  }
+
+  /// Returns `Some(self - duration)` if it can be represented as an
+  /// `Instant`, otherwise `None`.
+  #[inline]
+  #[must_use]
+  pub fn checked_sub(&self, duration: Duration) -> Option<Self> {
+    let delta = duration_to_ticks(duration)?;
+    self.0.checked_sub(delta).map(Self)
+  }
+
   #[inline(always)]
   pub(crate) fn from_raw_ticks(ticks: u64) -> Self {
     Self(ticks)
+  }
+}
+
+impl Add<Duration> for Instant {
+  type Output = Instant;
+  fn add(self, rhs: Duration) -> Instant {
+    self
+      .checked_add(rhs)
+      .expect("overflow when adding duration to instant")
+  }
+}
+
+impl AddAssign<Duration> for Instant {
+  fn add_assign(&mut self, rhs: Duration) {
+    *self = *self + rhs;
+  }
+}
+
+impl Sub<Duration> for Instant {
+  type Output = Instant;
+  fn sub(self, rhs: Duration) -> Instant {
+    self
+      .checked_sub(rhs)
+      .expect("overflow when subtracting duration from instant")
+  }
+}
+
+impl SubAssign<Duration> for Instant {
+  fn sub_assign(&mut self, rhs: Duration) {
+    *self = *self - rhs;
+  }
+}
+
+impl Sub<Instant> for Instant {
+  type Output = Duration;
+  fn sub(self, rhs: Instant) -> Duration {
+    self.duration_since(rhs)
   }
 }
 
@@ -142,6 +224,84 @@ impl OrderedInstant {
   pub fn as_unordered(&self) -> Instant {
     Instant::from_raw_ticks(self.0)
   }
+
+  /// See [`Instant::duration_since`]. Cross-type calls (against a plain
+  /// `Instant`) are deliberately not provided — downgrade with
+  /// [`Self::as_unordered`] first if you need to compare.
+  #[inline]
+  #[must_use]
+  pub fn duration_since(&self, earlier: OrderedInstant) -> Duration {
+    self.checked_duration_since(earlier).unwrap_or_default()
+  }
+
+  /// See [`Instant::checked_duration_since`].
+  #[inline]
+  #[must_use]
+  pub fn checked_duration_since(&self, earlier: OrderedInstant) -> Option<Duration> {
+    self.0.checked_sub(earlier.0).map(ticks_to_duration)
+  }
+
+  /// See [`Instant::saturating_duration_since`].
+  #[inline]
+  #[must_use]
+  pub fn saturating_duration_since(&self, earlier: OrderedInstant) -> Duration {
+    self.duration_since(earlier)
+  }
+
+  /// See [`Instant::checked_add`]. The returned `OrderedInstant` is a
+  /// synthetic point in the timeline; no architectural fence runs (fences
+  /// only matter for *reads*).
+  #[inline]
+  #[must_use]
+  pub fn checked_add(&self, duration: Duration) -> Option<Self> {
+    let delta = duration_to_ticks(duration)?;
+    self.0.checked_add(delta).map(Self)
+  }
+
+  /// See [`Instant::checked_sub`].
+  #[inline]
+  #[must_use]
+  pub fn checked_sub(&self, duration: Duration) -> Option<Self> {
+    let delta = duration_to_ticks(duration)?;
+    self.0.checked_sub(delta).map(Self)
+  }
+}
+
+impl Add<Duration> for OrderedInstant {
+  type Output = OrderedInstant;
+  fn add(self, rhs: Duration) -> OrderedInstant {
+    self
+      .checked_add(rhs)
+      .expect("overflow when adding duration to ordered instant")
+  }
+}
+
+impl AddAssign<Duration> for OrderedInstant {
+  fn add_assign(&mut self, rhs: Duration) {
+    *self = *self + rhs;
+  }
+}
+
+impl Sub<Duration> for OrderedInstant {
+  type Output = OrderedInstant;
+  fn sub(self, rhs: Duration) -> OrderedInstant {
+    self
+      .checked_sub(rhs)
+      .expect("overflow when subtracting duration from ordered instant")
+  }
+}
+
+impl SubAssign<Duration> for OrderedInstant {
+  fn sub_assign(&mut self, rhs: Duration) {
+    *self = *self - rhs;
+  }
+}
+
+impl Sub<OrderedInstant> for OrderedInstant {
+  type Output = Duration;
+  fn sub(self, rhs: OrderedInstant) -> Duration {
+    self.duration_since(rhs)
+  }
 }
 
 // Q32 fixed-point conversion: nanos = (ticks * scale) >> 32 where
@@ -157,4 +317,23 @@ fn ticks_to_duration(ticks: u64) -> Duration {
   // the branch and elide the internal divide in Duration::new. Avoids
   // a divide by 1e9 on the hot path (~10 ns on virtualized x86).
   if nanos < 1_000_000_000 { Duration::new(0, nanos as u32) } else { Duration::from_nanos(nanos) }
+}
+
+// Inverse of `ticks_to_duration`. Returns None when the Duration is large
+// enough to overflow either the u128 intermediate (shift-left by 32) or the
+// final u64 tick count. Headroom: at 1 GHz, u64 ticks represent ~580 years;
+// overflow is theoretical, not practical.
+#[inline]
+fn duration_to_ticks(d: Duration) -> Option<u64> {
+  let nanos = d.as_nanos();
+  let q32 = arch::nanos_per_tick_q32();
+  if q32 == 0 {
+    return None;
+  }
+  // nanos = (ticks * q32) >> 32  ⇒  ticks = (nanos << 32) / q32
+  nanos
+    .checked_shl(32)?
+    .checked_div(u128::from(q32))?
+    .try_into()
+    .ok()
 }
