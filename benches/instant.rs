@@ -6,88 +6,60 @@ use std::time::Instant as StdInstant;
 use criterion::{Criterion, criterion_group, criterion_main};
 use tach::Instant;
 
-fn bench_tach_now(c: &mut Criterion) {
-  c.bench_function("tach::Instant::now()", |b| b.iter(|| black_box(Instant::now())));
+fn bench_now(c: &mut Criterion) {
+  // Prime the lazy frequency calibration so it doesn't land in the first
+  // measured sample.
+  quanta::Instant::now();
+  fastant::Instant::now();
+  minstant::Instant::now();
+
+  let mut g = c.benchmark_group("Instant::now()");
+  g.bench_function("tach", |b| b.iter(|| black_box(Instant::now())));
+  g.bench_function("quanta", |b| b.iter(|| black_box(quanta::Instant::now())));
+  g.bench_function("fastant", |b| b.iter(|| black_box(fastant::Instant::now())));
+  g.bench_function("minstant", |b| b.iter(|| black_box(minstant::Instant::now())));
+  g.bench_function("std", |b| b.iter(|| black_box(StdInstant::now())));
+  g.finish();
 }
 
-fn bench_tach_elapsed(c: &mut Criterion) {
-  c.bench_function("tach::Instant (now + elapsed)", |b| {
+fn bench_elapsed(c: &mut Criterion) {
+  quanta::Instant::now();
+  fastant::Instant::now();
+  minstant::Instant::now();
+
+  let mut g = c.benchmark_group("Instant::now() + elapsed()");
+  g.bench_function("tach", |b| {
     b.iter(|| {
       let start = Instant::now();
       black_box(start.elapsed())
     });
   });
-}
-
-fn bench_quanta_now(c: &mut Criterion) {
-  quanta::Instant::now();
-  c.bench_function("quanta::Instant::now()", |b| b.iter(|| black_box(quanta::Instant::now())));
-}
-
-fn bench_quanta_elapsed(c: &mut Criterion) {
-  quanta::Instant::now();
-  c.bench_function("quanta::Instant (now + elapsed)", |b| {
+  g.bench_function("quanta", |b| {
     b.iter(|| {
       let start = quanta::Instant::now();
       black_box(start.elapsed())
     });
   });
-}
-
-fn bench_fastant_now(c: &mut Criterion) {
-  fastant::Instant::now();
-  c.bench_function("fastant::Instant::now()", |b| b.iter(|| black_box(fastant::Instant::now())));
-}
-
-fn bench_fastant_elapsed(c: &mut Criterion) {
-  fastant::Instant::now();
-  c.bench_function("fastant::Instant (now + elapsed)", |b| {
+  g.bench_function("fastant", |b| {
     b.iter(|| {
       let start = fastant::Instant::now();
       black_box(start.elapsed())
     });
   });
-}
-
-fn bench_minstant_now(c: &mut Criterion) {
-  minstant::Instant::now();
-  c.bench_function("minstant::Instant::now()", |b| b.iter(|| black_box(minstant::Instant::now())));
-}
-
-fn bench_minstant_elapsed(c: &mut Criterion) {
-  minstant::Instant::now();
-  c.bench_function("minstant::Instant (now + elapsed)", |b| {
+  g.bench_function("minstant", |b| {
     b.iter(|| {
       let start = minstant::Instant::now();
       black_box(start.elapsed())
     });
   });
-}
-
-fn bench_std_now(c: &mut Criterion) {
-  c.bench_function("std::time::Instant::now()", |b| b.iter(|| black_box(StdInstant::now())));
-}
-
-fn bench_std_elapsed(c: &mut Criterion) {
-  c.bench_function("std::time::Instant (now + elapsed)", |b| {
+  g.bench_function("std", |b| {
     b.iter(|| {
       let start = StdInstant::now();
       black_box(start.elapsed())
     });
   });
+  g.finish();
 }
 
-criterion_group!(
-  benches,
-  bench_tach_now,
-  bench_tach_elapsed,
-  bench_quanta_now,
-  bench_quanta_elapsed,
-  bench_fastant_now,
-  bench_fastant_elapsed,
-  bench_minstant_now,
-  bench_minstant_elapsed,
-  bench_std_now,
-  bench_std_elapsed,
-);
+criterion_group!(benches, bench_now, bench_elapsed);
 criterion_main!(benches);
