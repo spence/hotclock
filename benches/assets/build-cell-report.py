@@ -69,6 +69,36 @@ def find_group_dir(criterion_dir: Path, group_label: str) -> Path:
   return candidates[0]
 
 
+def read_pdf_small(criterion_dir: Path, group_label: str, crate: str) -> tuple[str, float, float]:
+  """Read criterion's per-crate pdf_small.svg. Returns (inner_content, width, height)."""
+  group_dir = find_group_dir(criterion_dir, group_label)
+  svg_path = group_dir / crate / "report" / "pdf_small.svg"
+  if not svg_path.exists():
+    raise FileNotFoundError(f"Missing pdf_small SVG at {svg_path}")
+  return _extract_svg_body(svg_path.read_text(), svg_path)
+
+
+def _extract_svg_body(text: str, svg_path: Path) -> tuple[str, float, float]:
+  outer = re.search(r"<svg\b([^>]*)>", text)
+  if not outer:
+    raise ValueError(f"No <svg> root in {svg_path}")
+  attrs = outer.group(1)
+  w_match = re.search(r'width="([0-9.]+)"', attrs)
+  h_match = re.search(r'height="([0-9.]+)"', attrs)
+  if w_match and h_match:
+    width = float(w_match.group(1))
+    height = float(h_match.group(1))
+  else:
+    vb = re.search(r'viewBox="[\d.]+\s+[\d.]+\s+([\d.]+)\s+([\d.]+)"', attrs)
+    if not vb:
+      raise ValueError(f"Couldn't determine dimensions of {svg_path}")
+    width, height = float(vb.group(1)), float(vb.group(2))
+  body_start = outer.end()
+  body_end = text.rfind("</svg>")
+  inner = text[body_start:body_end].strip()
+  return inner, width, height
+
+
 def read_violin(criterion_dir: Path, group_label: str) -> tuple[str, float, float]:
   """Read criterion's violin SVG. Returns (inner_content, width, height).
   Handles both gnuplot (`<g id="gnuplot_canvas">…</g>` wrapped) and plotters
@@ -80,28 +110,7 @@ def read_violin(criterion_dir: Path, group_label: str) -> tuple[str, float, floa
     raise FileNotFoundError(f"Missing violin SVG at {svg_path}")
   text = svg_path.read_text()
 
-  outer = re.search(r"<svg\b([^>]*)>", text)
-  if not outer:
-    raise ValueError(f"No <svg> root in {svg_path}")
-  attrs = outer.group(1)
-
-  # Pull width/height — prefer explicit width/height attrs, fall back to viewBox.
-  w_match = re.search(r'width="([0-9.]+)"', attrs)
-  h_match = re.search(r'height="([0-9.]+)"', attrs)
-  if w_match and h_match:
-    width = float(w_match.group(1))
-    height = float(h_match.group(1))
-  else:
-    vb = re.search(r'viewBox="[\d.]+\s+[\d.]+\s+([\d.]+)\s+([\d.]+)"', attrs)
-    if not vb:
-      raise ValueError(f"Couldn't determine dimensions of {svg_path}")
-    width, height = float(vb.group(1)), float(vb.group(2))
-
-  # Extract inner content: everything between the opening <svg ...> and </svg>.
-  body_start = outer.end()
-  body_end = text.rfind("</svg>")
-  inner = text[body_start:body_end].strip()
-  return inner, width, height
+  return _extract_svg_body(text, svg_path)
 
 
 def read_estimates(criterion_dir: Path, group_label: str, crate: str) -> dict:
@@ -207,6 +216,41 @@ def embed_violin(inner: str, src_w: float, src_h: float, y_offset: float) -> tup
   return f'<g transform="{transform}">{inner}</g>', rendered_h
 
 
+def embed_pdf_row(
+  criterion_dir: Path, group_label: str, y_offset: float
+) -> tuple[str, float]:
+  """Lay out one pdf_small per crate horizontally. Returns (svg_fragment, rendered_height)."""
+  pdfs = [read_pdf_small(criterion_dir, group_label, c) for c in CRATES]
+  src_w = pdfs[0][1]
+  src_h = pdfs[0][2]
+  n = len(CRATES)
+  gap = 8
+  inner_pad = PAD
+  available = TARGET_WIDTH - 2 * inner_pad
+  cell_w = (available - gap * (n - 1)) / n
+  scale = cell_w / src_w
+  cell_h = src_h * scale
+  label_h = 22
+
+  parts = []
+  for i, (crate, (inner, _, _)) in enumerate(zip(CRATES, pdfs)):
+    x = inner_pad + i * (cell_w + gap)
+    label_color = TACH_FG if crate == "tach" else TEXT_FG
+    label_weight = "600" if crate == "tach" else None
+    parts.append(
+      text_el(
+        x + cell_w / 2, y_offset + label_h - 6, crate,
+        16, family=MONO, color=label_color, anchor="middle", weight=label_weight,
+      )
+    )
+    parts.append(
+      f'<g transform="translate({x:g}, {y_offset + label_h:g}) scale({scale:g})">{inner}</g>'
+    )
+
+  total_h = label_h + cell_h
+  return "\n".join(parts), total_h
+
+
 def build_report(criterion_dir: Path, cell_name: str, title: str, subtitle: str) -> str:
   now_inner, now_w, now_h = read_violin(criterion_dir, GROUP_NOW)
   elapsed_inner, el_w, el_h = read_violin(criterion_dir, GROUP_ELAPSED)
@@ -219,17 +263,25 @@ def build_report(criterion_dir: Path, cell_name: str, title: str, subtitle: str)
 
   y = HEADER_H
 
-  # now() section
+  # now() section: violin + per-crate distributions
   now_label_y = y
   y += SECTION_LABEL_H
   now_violin_fragment, now_rendered_h = embed_violin(now_inner, now_w, now_h, y)
-  y += now_rendered_h
+  y += now_rendered_h + 8
+  now_dist_label_y = y
+  y += SECTION_LABEL_H
+  now_pdf_fragment, now_pdf_h = embed_pdf_row(criterion_dir, GROUP_NOW, y)
+  y += now_pdf_h + PAD
 
-  # elapsed section
+  # elapsed section: violin + per-crate distributions
   elapsed_label_y = y
   y += SECTION_LABEL_H
   elapsed_violin_fragment, elapsed_rendered_h = embed_violin(elapsed_inner, el_w, el_h, y)
-  y += elapsed_rendered_h
+  y += elapsed_rendered_h + 8
+  elapsed_dist_label_y = y
+  y += SECTION_LABEL_H
+  elapsed_pdf_fragment, elapsed_pdf_h = embed_pdf_row(criterion_dir, GROUP_ELAPSED, y)
+  y += elapsed_pdf_h + PAD
 
   # Table section
   table_label_y = y
@@ -250,11 +302,15 @@ def build_report(criterion_dir: Path, cell_name: str, title: str, subtitle: str)
     text_el(PAD, subtitle_y, subtitle, 14, family=MONO, color=MUTED_FG),
 
     build_section_label("Instant::now()", now_label_y),
+    build_section_label("Instant::now() — per-crate distribution", now_dist_label_y),
     build_section_label("Instant::now() + elapsed()", elapsed_label_y),
+    build_section_label("Instant::now() + elapsed() — per-crate distribution", elapsed_dist_label_y),
     build_section_label("Per-crate medians and 95% confidence intervals (nanoseconds)", table_label_y),
 
     now_violin_fragment,
+    now_pdf_fragment,
     elapsed_violin_fragment,
+    elapsed_pdf_fragment,
     table_fragment,
 
     '</svg>',
