@@ -37,8 +37,20 @@ DEFAULT_CRITERION_DIR = REPO_ROOT / "target" / "criterion"
 
 GROUP_NOW = "Instant__now()"
 GROUP_ELAPSED = "Instant__now() + elapsed()"
+GROUP_ORDERED = "Ordered Instant__now()"
 
 CRATES = ["tach", "quanta", "fastant", "minstant", "std"]
+
+# (criterion subdir, display label, highlight?) tuples for the ordered group.
+# Criterion replaces `::` with `__` in subdir names; the display labels
+# restore the original form.
+ORDERED_ENTRIES = [
+  ("tach__OrderedInstant", "tach::OrderedInstant", True),
+  ("tach__OrderedInstant (now + elapsed)", "OrderedInstant (now+elapsed)", True),
+  ("tach__Instant (unordered reference)", "tach::Instant (unordered ref)", False),
+  ("std__time__Instant", "std::time::Instant", False),
+  ("std__time__Instant (now + elapsed)", "std::Instant (now+elapsed)", False),
+]
 
 BACKGROUND = "#FBF6EC"
 FONT = "Avenir Next, Helvetica, Arial, sans-serif"
@@ -257,11 +269,93 @@ def embed_pdf_row(
   return "\n".join(parts), total_h
 
 
+def embed_pdf_row_entries(
+  criterion_dir: Path,
+  group_label: str,
+  entries: list[tuple[str, str, bool]],
+  y_offset: float,
+) -> tuple[str, float]:
+  """Same shape as embed_pdf_row but takes custom (subdir, label, highlight) tuples."""
+  pdfs = [read_pdf_small(criterion_dir, group_label, subdir) for subdir, _, _ in entries]
+  src_w = pdfs[0][1]
+  src_h = pdfs[0][2]
+  n = len(entries)
+  gap = 8
+  inner_pad = PAD
+  available = TARGET_WIDTH - 2 * inner_pad
+  cell_w = (available - gap * (n - 1)) / n
+  scale = cell_w / src_w
+  cell_h = src_h * scale
+  label_h = 22
+
+  parts = []
+  for i, ((_, label, highlight), (inner, _, _)) in enumerate(zip(entries, pdfs)):
+    x = inner_pad + i * (cell_w + gap)
+    color = TACH_FG if highlight else TEXT_FG
+    weight = "600" if highlight else None
+    parts.append(
+      text_el(
+        x + cell_w / 2, y_offset + label_h - 6, label,
+        13, family=MONO, color=color, anchor="middle", weight=weight,
+      )
+    )
+    parts.append(
+      f'<g transform="translate({x:g}, {y_offset + label_h:g}) scale({scale:g})">{inner}</g>'
+    )
+
+  return "\n".join(parts), label_h + cell_h
+
+
+def build_ordered_table(
+  criterion_dir: Path,
+  group_label: str,
+  entries: list[tuple[str, str, bool]],
+  y_top: float,
+) -> tuple[str, float]:
+  """Single-column table for the heterogeneous ordered-bench entries.
+  Each row: bench label, median, 95% CI."""
+  parts = []
+  col_x_label = PAD + 20
+  col_x_median = PAD + 760
+  col_x_ci = PAD + 1080
+
+  hy = y_top + 26
+  parts.append(text_el(col_x_label, hy, "bench", 16, family=MONO, color=MUTED_FG, weight="600"))
+  parts.append(text_el(col_x_median, hy, "median", 16, family=MONO, color=MUTED_FG, weight="600", anchor="end"))
+  parts.append(text_el(col_x_ci, hy, "95% CI", 16, family=MONO, color=MUTED_FG, weight="600", anchor="end"))
+  underline_y = hy + 8
+  parts.append(
+    f'<line x1="{PAD}" y1="{underline_y:g}" x2="{TARGET_WIDTH - PAD}" y2="{underline_y:g}" '
+    f'stroke="{MUTED_FG}" stroke-width="0.5" opacity="0.5"/>'
+  )
+
+  for i, (subdir, label, highlight) in enumerate(entries):
+    ry = underline_y + 12 + (i + 1) * TABLE_ROW_H - 12
+    color = TACH_FG if highlight else TEXT_FG
+    weight = "600" if highlight else None
+    est = read_estimates(criterion_dir, group_label, subdir)
+    parts.append(text_el(col_x_label, ry, label, 18, family=MONO, color=color, weight=weight))
+    parts.append(text_el(col_x_median, ry, f"{fmt_ns(est['median_ns'])} ns",
+                          18, family=MONO, color=color, weight=weight, anchor="end"))
+    ci = f"[{fmt_ns(est['lower_ns'])}, {fmt_ns(est['upper_ns'])}]"
+    parts.append(text_el(col_x_ci, ry, ci, 16, family=MONO, color=MUTED_FG, anchor="end"))
+
+  return "\n".join(parts), y_top + TABLE_HEADER_H + len(entries) * TABLE_ROW_H + 12
+
+
 def build_report(criterion_dir: Path, cell_name: str, title: str, subtitle: str) -> str:
   now_inner, now_w, now_h = read_violin(criterion_dir, GROUP_NOW)
   elapsed_inner, el_w, el_h = read_violin(criterion_dir, GROUP_ELAPSED)
   now_data = {c: read_estimates(criterion_dir, GROUP_NOW, c) for c in CRATES}
   elapsed_data = {c: read_estimates(criterion_dir, GROUP_ELAPSED, c) for c in CRATES}
+
+  # Ordered group is optional — only present if the bench was run with the
+  # OrderedInstant group enabled.
+  try:
+    ordered_inner, ord_w, ord_h = read_violin(criterion_dir, GROUP_ORDERED)
+    has_ordered = True
+  except FileNotFoundError:
+    has_ordered = False
 
   # Header
   title_y = 36
@@ -295,6 +389,25 @@ def build_report(criterion_dir: Path, cell_name: str, title: str, subtitle: str)
   table_fragment, table_bottom = build_table(now_data, elapsed_data, y)
   y = table_bottom + PAD
 
+  # Ordered section: violin + per-entry distributions + ordered table
+  if has_ordered:
+    ordered_label_y = y
+    y += SECTION_LABEL_H
+    ordered_violin_fragment, ordered_rendered_h = embed_violin(ordered_inner, ord_w, ord_h, y)
+    y += ordered_rendered_h + 8
+    ordered_dist_label_y = y
+    y += SECTION_LABEL_H
+    ordered_pdf_fragment, ordered_pdf_h = embed_pdf_row_entries(
+      criterion_dir, GROUP_ORDERED, ORDERED_ENTRIES, y,
+    )
+    y += ordered_pdf_h + PAD
+    ordered_table_label_y = y
+    y += SECTION_LABEL_H
+    ordered_table_fragment, ordered_table_bottom = build_ordered_table(
+      criterion_dir, GROUP_ORDERED, ORDERED_ENTRIES, y,
+    )
+    y = ordered_table_bottom + PAD
+
   total_height = int(y)
   width = TARGET_WIDTH
 
@@ -318,9 +431,19 @@ def build_report(criterion_dir: Path, cell_name: str, title: str, subtitle: str)
     elapsed_violin_fragment,
     elapsed_pdf_fragment,
     table_fragment,
-
-    '</svg>',
   ]
+
+  if has_ordered:
+    parts.extend([
+      build_section_label("Ordered Instant::now() — Acquire-ordered counter reads", ordered_label_y),
+      build_section_label("Ordered Instant::now() — per-bench distribution", ordered_dist_label_y),
+      build_section_label("Ordered bench medians and 95% confidence intervals (nanoseconds)", ordered_table_label_y),
+      ordered_violin_fragment,
+      ordered_pdf_fragment,
+      ordered_table_fragment,
+    ])
+
+  parts.append('</svg>')
 
   return "\n".join(parts) + "\n"
 
