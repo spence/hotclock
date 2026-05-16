@@ -7,18 +7,18 @@ Two input modes:
     per-crate pdf_small.svg + estimates.json, builds a report with violin
     + per-crate distribution + medians table.
 
-      python3 benches/assets/build-cell-report.py <cell-name> \\
+      python3 benches/results/build.py <cell-name> \\
         --title "..." --subtitle "..." [--criterion-dir <path>]
 
 (2) Lambda mode — reads N run JSONs produced by the standalone
     tach-lambda-bench handler, builds a bar-and-whisker chart of the
     medians plus min/max ranges across runs.
 
-      python3 benches/assets/build-cell-report.py lambda-x86_64 \\
+      python3 benches/results/build.py lambda-x86_64 \\
         --title "..." --subtitle "..." \\
         --lambda-runs <dir-containing-run*.json>
 
-Output path: benches/results/<cell-name>.svg
+Output path: written next to this script (benches/results/<cell-name>.svg).
 """
 
 from __future__ import annotations
@@ -31,9 +31,9 @@ import sys
 from pathlib import Path
 
 
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+OUTPUT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = OUTPUT_DIR.parent.parent
 DEFAULT_CRITERION_DIR = REPO_ROOT / "target" / "criterion"
-OUTPUT_DIR = REPO_ROOT / "benches" / "results"
 
 GROUP_NOW = "Instant__now()"
 GROUP_ELAPSED = "Instant__now() + elapsed()"

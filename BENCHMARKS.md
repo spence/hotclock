@@ -157,18 +157,18 @@ python3 benches/assets/render.py
 
 ## Per-cell reports
 
-Each cell has a standalone SVG report at `benches/results/<cell>.svg` showing the violin distribution, per-crate density plots, and a medians table — composed from criterion's output by `benches/assets/build-cell-report.py`.
+Each cell has a standalone SVG report at `benches/results/<cell>.svg` showing the violin distribution, per-crate density plots, and a medians table — composed from criterion's output by `benches/results/build.py`.
 
 After running `cargo bench --bench instant` on a target machine:
 
 ```bash
 # Criterion mode (default; reads target/criterion):
-python3 benches/assets/build-cell-report.py <cell-name> \
+python3 benches/results/build.py <cell-name> \
   --title "Pretty Cell Title" \
   --subtitle "target-triple"
 
 # Or compose from criterion data stored elsewhere on disk:
-python3 benches/assets/build-cell-report.py <cell-name> \
+python3 benches/results/build.py <cell-name> \
   --criterion-dir path/to/criterion \
   --title "..." --subtitle "..."
 ```
@@ -178,7 +178,7 @@ Output: `benches/results/<cell-name>.svg`. Handles both gnuplot- and plotters-ge
 For AWS Lambda (which can't host criterion), use the standalone `tach-lambda-bench` handler at `/tmp/tach-lambda-bench/`, invoke it N times, save each response as `runs/runN.json`, then:
 
 ```bash
-python3 benches/assets/build-cell-report.py lambda-x86_64 \
+python3 benches/results/build.py lambda-x86_64 \
   --title "AWS Lambda — provided.al2023" \
   --subtitle "x86_64-unknown-linux-gnu · 1024 MB / Firecracker" \
   --lambda-runs path/to/runs
