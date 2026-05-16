@@ -8,7 +8,7 @@ Each supported target compiles `Instant::now()` directly to the fastest wall-clo
 
 - `Instant`-compatible API
 - Inlined hardware counter
-- Ordered counter reads via `OrderedInstant` — a contract no other Rust time crate offers
+- Ordered counter reads via `OrderedInstant` — for correlating timestamps with `Acquire`-ordered atomic loads; see [ordered reads](#ordered-reads)
 - Zero dependencies
 
 ## performance
@@ -42,7 +42,7 @@ let deadline = scheduler.load(Ordering::Acquire);
 let now = tach::Instant::now();   // ← can be sampled BEFORE `deadline` is observed
 ```
 
-On aarch64 `mrs cntvct_el0` is a system-register read; on x86 `rdtsc` is not a serializing instruction. Memory fences (including the `Acquire` load) do not constrain when those reads execute, so the timestamp can drift earlier than the synchronization point. No other fast Rust time crate (`quanta`, `fastant`, `minstant`) addresses this; `std::time::Instant` only does on Windows (kernel boundary via `QueryPerformanceCounter`). `tach::OrderedInstant` (described below) does.
+On aarch64 `mrs cntvct_el0` is a system-register read; on x86 `rdtsc` is not a serializing instruction. Memory fences (including the `Acquire` load) do not constrain when those reads execute, so the timestamp can drift earlier than the synchronization point. Of the comparable crates we benchmark against (`quanta`, `fastant`, `minstant`), none address this — they all use raw `_rdtsc()` / `mrs cntvct_el0` without a fence (verified in their source). `std::time::Instant` does only on Windows (kernel boundary via `QueryPerformanceCounter`); on Linux / macOS the vDSO and libsystem paths read the counter in userspace without `lfence` / `isb`, the same hazard. `tach::OrderedInstant` (below) provides the ordered contract directly.
 
 Use `OrderedInstant` when you need the contract *"my timestamp is sampled after any prior `Acquire`-or-stronger observation"*:
 

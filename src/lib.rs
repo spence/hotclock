@@ -27,6 +27,36 @@
 //! cross-thread monotonic** — raw hardware counters can disagree across CPUs by
 //! sub-microsecond sync slop on most hosts. For strict cross-thread monotonicity,
 //! use [`std::time::Instant`].
+//!
+//! # Ordering against atomics: [`OrderedInstant`]
+//!
+//! Plain [`Instant::now()`] is intentionally minimal — one counter instruction
+//! with no synchronization barrier. That's a hazard if you correlate timestamps
+//! with atomic loads:
+//!
+//! ```ignore
+//! let deadline = scheduler.load(Ordering::Acquire);
+//! let now = tach::Instant::now();    // ← may be sampled BEFORE `deadline` is observed
+//! ```
+//!
+//! On aarch64 `mrs cntvct_el0` is a system-register read; on x86 `rdtsc` is not
+//! serializing. Memory fences alone don't constrain when those execute, so the
+//! timestamp can drift earlier than the synchronization point. Use
+//! [`OrderedInstant`] when you need *"my timestamp is sampled after any prior
+//! `Acquire`-or-stronger observation"*:
+//!
+//! ```ignore
+//! let deadline = scheduler.load(Ordering::Acquire);
+//! let now = tach::OrderedInstant::now();   // safe to correlate with `deadline`
+//! ```
+//!
+//! [`OrderedInstant::now()`] emits the arch-appropriate barrier before the
+//! counter read (`isb sy` on aarch64, `lfence` on x86; best-effort
+//! `fence iorw, iorw` on riscv64 and `dbar 0` on loongarch64 — CSR-vs-memory
+//! ordering is implementation-defined on those archs). Cost is ~5–20 ns more
+//! than [`Instant::now()`] depending on architecture, still substantially
+//! faster than [`std::time::Instant::now()`] on Linux and macOS (which use the
+//! vDSO / libsystem path but do not themselves guarantee this ordering).
 
 mod arch;
 #[cfg(not(any(
