@@ -11,7 +11,9 @@ description = "ultra-fast drop-in replacement for std::time::Instant"
 keywords = ["timer", "clock", "benchmark", "profiling", "rdtsc"]
 categories = ["hardware-support", "development-tools::profiling"]
 exclude = [
-  "benches/assets/**",
+  "benches/*.svg",
+  "benches/*.png",
+  "benches/*.py",
   "BENCHMARKS.md",
 ]
 

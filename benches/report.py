@@ -7,18 +7,18 @@ Two input modes:
     per-crate pdf_small.svg + estimates.json, builds a report with violin
     + per-crate distribution + medians table.
 
-      python3 benches/results/build.py <cell-name> \\
+      python3 benches/report.py <cell-name> \\
         --title "..." --subtitle "..." [--criterion-dir <path>]
 
 (2) Lambda mode — reads N run JSONs produced by the standalone
     tach-lambda-bench handler, builds a bar-and-whisker chart of the
     medians plus min/max ranges across runs.
 
-      python3 benches/results/build.py lambda-x86_64 \\
+      python3 benches/report.py lambda-x86_64 \\
         --title "..." --subtitle "..." \\
         --lambda-runs <dir-containing-run*.json>
 
-Output path: written next to this script (benches/results/<cell-name>.svg).
+Output path: written next to this script (benches/report-<cell-name>.svg).
 """
 
 from __future__ import annotations
@@ -32,7 +32,7 @@ from pathlib import Path
 
 
 OUTPUT_DIR = Path(__file__).resolve().parent
-REPO_ROOT = OUTPUT_DIR.parent.parent
+REPO_ROOT = OUTPUT_DIR.parent
 DEFAULT_CRITERION_DIR = REPO_ROOT / "target" / "criterion"
 
 GROUP_NOW = "Instant__now()"
@@ -497,7 +497,7 @@ def main() -> int:
 
   title = args.title if args.title else args.cell_name
   OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-  output_path = OUTPUT_DIR / f"{args.cell_name}.svg"
+  output_path = OUTPUT_DIR / f"report-{args.cell_name}.svg"
 
   if args.lambda_runs is not None:
     if not args.lambda_runs.exists():

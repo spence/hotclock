@@ -5,8 +5,7 @@ use crate::arch;
 /// A sampled point in the process-wide counter timeline.
 ///
 /// Drop-in replacement for [`std::time::Instant`] backed by the architectural
-/// wall-clock counter (RDTSC, CNTVCT_EL0, rdtime). [`Instant::now()`] compiles
-/// to a single counter read on supported targets.
+/// wall-clock counter (RDTSC, CNTVCT_EL0, rdtime).
 ///
 /// `Instant` is wall-clock-rate: it keeps ticking through park, suspension, and
 /// descheduling. The same source is used across every thread in the process,
@@ -62,9 +61,5 @@ fn ticks_to_duration(ticks: u64) -> Duration {
   // secs=0 + subsec_nanos. The compiler can prove `nanos_u32 < 1e9` from
   // the branch and elide the internal divide in Duration::new. Avoids
   // a divide by 1e9 on the hot path (~10 ns on virtualized x86).
-  if nanos < 1_000_000_000 {
-    Duration::new(0, nanos as u32)
-  } else {
-    Duration::from_nanos(nanos)
-  }
+  if nanos < 1_000_000_000 { Duration::new(0, nanos as u32) } else { Duration::from_nanos(nanos) }
 }

@@ -28,7 +28,7 @@ environment cells. All numbers are nanoseconds per call (lower is better).
 | `x86_64-unknown-linux-gnu` | AWS Lambda (Firecracker) | provided.al2023 | **31.93** | 50.86 | 51.79 | 135.75 | 106.36 |
 | `x86_64-pc-windows-msvc` | GitHub Actions | windows-2025 | **24.70** | 25.48 | 104.51 | 104.44 | 85.68 |
 
-Chart: [`benches/assets/benchmark.png`](benches/assets/benchmark.png) — one cell per target environment. Each crate row shows `Instant::now()` (dark portion of bar) and the full `now() + elapsed()` roundtrip (lighter extension), with numeric times as `now / elapsed` on the right.
+Chart: [`benches/summary.png`](benches/summary.png) — one cell per target environment. Each crate row shows `Instant::now()` (dark portion of bar) and the full `now() + elapsed()` roundtrip (lighter extension), with numeric times as `now / elapsed` on the right.
 
 **Not included**: `x86_64-apple-darwin` (GitHub Actions `macos-13`) — could not land an Intel macOS runner allocation across multiple `workflow_dispatch` attempts. The GitHub-hosted Intel macOS runner pool has very low capacity.
 
@@ -147,50 +147,50 @@ aws lambda delete-function --function-name tach-lambda-bench \
 
 ## Updating the chart
 
-After collecting new measurements, edit `NOW_GROUPS` and `ELAPSED_GROUPS` in `benches/assets/render.py`, then:
+After collecting new measurements, edit `NOW_GROUPS` and `ELAPSED_GROUPS` in `benches/summary.py`, then:
 
 ```bash
-python3 benches/assets/render.py
+python3 benches/summary.py
 ```
 
 `rsvg-convert` is required (`brew install librsvg` on macOS, `apt install librsvg2-bin` on Debian).
 
 ## Per-cell reports
 
-Each cell has a standalone SVG report at `benches/results/<cell>.svg` showing the violin distribution, per-crate density plots, and a medians table — composed from criterion's output by `benches/results/build.py`.
+Each cell has a standalone SVG report at `benches/report-<cell>.svg` showing the violin distribution, per-crate density plots, and a medians table — composed from criterion's output by `benches/report.py`.
 
 After running `cargo bench --bench instant` on a target machine:
 
 ```bash
 # Criterion mode (default; reads target/criterion):
-python3 benches/results/build.py <cell-name> \
+python3 benches/report.py <cell-name> \
   --title "Pretty Cell Title" \
   --subtitle "target-triple"
 
 # Or compose from criterion data stored elsewhere on disk:
-python3 benches/results/build.py <cell-name> \
+python3 benches/report.py <cell-name> \
   --criterion-dir path/to/criterion \
   --title "..." --subtitle "..."
 ```
 
-Output: `benches/results/<cell-name>.svg`. Handles both gnuplot- and plotters-generated criterion violins.
+Output: `benches/report-<cell-name>.svg`. Handles both gnuplot- and plotters-generated criterion violins.
 
 For AWS Lambda (which can't host criterion), use the standalone `tach-lambda-bench` handler at `/tmp/tach-lambda-bench/`, invoke it N times, save each response as `runs/runN.json`, then:
 
 ```bash
-python3 benches/results/build.py lambda-x86_64 \
+python3 benches/report.py lambda-x86_64 \
   --title "AWS Lambda — provided.al2023" \
   --subtitle "x86_64-unknown-linux-gnu · 1024 MB / Firecracker" \
   --lambda-runs path/to/runs
 ```
 
-Output: same `benches/results/lambda-x86_64.svg` location, with bar-and-whisker chart (median + min/max across runs).
+Output: same `benches/report-lambda-x86_64.svg` location, with bar-and-whisker chart (median + min/max across runs).
 
 Current cells:
 
-- `benches/results/local-catalyst.svg` — Apple Silicon M1 MBP
-- `benches/results/c7g-4xlarge.svg` — AWS Graviton 3
-- `benches/results/t3-medium.svg` — AWS Intel Burst
-- `benches/results/m7i-metal-24xl.svg` — Docker Alpine on AWS Metal
-- `benches/results/lambda-x86_64.svg` — AWS Lambda
-- `benches/results/github-windows-x86_64.svg` — GitHub Actions Windows
+- `benches/report-apple-silicon-m1.svg` — Apple Silicon M1 MBP
+- `benches/report-c7g-4xlarge.svg` — AWS Graviton 3
+- `benches/report-t3-medium.svg` — AWS Intel Burst
+- `benches/report-m7i-metal-24xl.svg` — Docker Alpine on AWS Metal
+- `benches/report-lambda-x86_64.svg` — AWS Lambda
+- `benches/report-github-windows-x86_64.svg` — GitHub Actions Windows

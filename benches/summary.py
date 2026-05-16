@@ -10,8 +10,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent
-SVG_PATH = ROOT / "benchmark.svg"
-PNG_PATH = ROOT / "benchmark.png"
+SVG_PATH = ROOT / "summary.svg"
+PNG_PATH = ROOT / "summary.png"
 
 BACKGROUND = "#FBF6EC"
 FONT = "Avenir Next, Helvetica, Arial, sans-serif"

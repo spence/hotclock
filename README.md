@@ -12,7 +12,7 @@ Each supported target compiles `Instant::now()` directly to the fastest wall-clo
 
 ## performance
 
-![Cross-target Instant benchmark](benches/assets/benchmark.png)
+![Cross-target Instant benchmark](benches/summary.png)
 Methodology and per-target baselines: [BENCHMARKS.md](BENCHMARKS.md)
 
 ## usage
