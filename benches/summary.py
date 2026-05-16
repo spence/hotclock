@@ -12,6 +12,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 SVG_PATH = ROOT / "summary.svg"
 PNG_PATH = ROOT / "summary.png"
+SVG_WIDE_PATH = ROOT / "summary-wide.svg"
+PNG_WIDE_PATH = ROOT / "summary-wide.png"
 
 BACKGROUND = "#FBF6EC"
 FONT = "Avenir Next, Helvetica, Arial, sans-serif"
@@ -273,12 +275,43 @@ def render_svg(now_groups, elapsed_groups, crates) -> str:
   return "\n".join(parts) + "\n"
 
 
+# Wide layout overrides: 3 columns × 2 rows with smaller fonts. Used for
+# GitHub's wider rendering column; the tall 2×3 default fits crates.io
+# better. Keys are module-global names mutated before the second render.
+WIDE_OVERRIDES = {
+  "GRID_COLS": 3,
+  "GRID_CELL_W": 620,
+  "GRID_CELL_H": 360,
+  "GRID_COL_GAP": 28,
+  "GRID_ROW_GAP": 36,
+  "GRID_CELL_PAD": 24,
+  "GRID_TITLE_FONT_SIZE": 32,
+  "GRID_SUBTITLE_FONT_SIZE": 18,
+  "GRID_LABEL_FONT_SIZE": 20,
+  "GRID_VALUE_FONT_SIZE": 19,
+  "GRID_ROW_HEIGHT": 42,
+  "GRID_BAR_HEIGHT": 24,
+  "GRID_CRATE_LABEL_WIDTH": 104,
+  "GRID_VALUE_RESERVE": 150,
+  "GRID_HEADER_HEIGHT": 80,
+  "GRID_HEADER_BAR_WIDTH": 480,
+  "GRID_HEADER_BAR_HEIGHT": 18,
+}
+
+
 def main() -> None:
-  SVG_PATH.write_text(render_svg(NOW_GROUPS, ELAPSED_GROUPS, CRATES))
   rsvg_convert = shutil.which("rsvg-convert")
   if rsvg_convert is None:
     raise SystemExit("rsvg-convert is required to render the benchmark PNG")
+
+  # Tall 2×3 layout (crates.io)
+  SVG_PATH.write_text(render_svg(NOW_GROUPS, ELAPSED_GROUPS, CRATES))
   subprocess.run([rsvg_convert, "-o", str(PNG_PATH), str(SVG_PATH)], check=True)
+
+  # Apply wide-layout overrides and render again for GitHub
+  globals().update(WIDE_OVERRIDES)
+  SVG_WIDE_PATH.write_text(render_svg(NOW_GROUPS, ELAPSED_GROUPS, CRATES))
+  subprocess.run([rsvg_convert, "-o", str(PNG_WIDE_PATH), str(SVG_WIDE_PATH)], check=True)
 
 
 if __name__ == "__main__":

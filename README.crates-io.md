@@ -21,9 +21,9 @@ let elapsed = ordered.elapsed();
 
 ## benchmark
 
-![benchmark](benches/summary-wide.png)
+![benchmark](https://raw.githubusercontent.com/spence/tach/main/benches/summary.png)
 
-Methodology and per-target reports: [BENCHMARKS.md](BENCHMARKS.md).
+Methodology and per-target reports: [BENCHMARKS.md](https://github.com/spence/tach/blob/main/BENCHMARKS.md).
 
 ## semantics
 
