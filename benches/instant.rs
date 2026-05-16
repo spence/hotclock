@@ -4,7 +4,7 @@ use std::hint::black_box;
 use std::time::Instant as StdInstant;
 
 use criterion::{Criterion, criterion_group, criterion_main};
-use tach::Instant;
+use tach::{Instant, OrderedInstant};
 
 fn bench_now(c: &mut Criterion) {
   // Prime the lazy frequency calibration so it doesn't land in the first
@@ -61,5 +61,31 @@ fn bench_elapsed(c: &mut Criterion) {
   g.finish();
 }
 
-criterion_group!(benches, bench_now, bench_elapsed);
+fn bench_ordered(c: &mut Criterion) {
+  let mut g = c.benchmark_group("Ordered Instant::now()");
+  g.bench_function("tach::OrderedInstant", |b| {
+    b.iter(|| black_box(OrderedInstant::now()));
+  });
+  g.bench_function("tach::OrderedInstant (now + elapsed)", |b| {
+    b.iter(|| {
+      let start = OrderedInstant::now();
+      black_box(start.elapsed())
+    });
+  });
+  g.bench_function("tach::Instant (unordered reference)", |b| {
+    b.iter(|| black_box(Instant::now()));
+  });
+  g.bench_function("std::time::Instant", |b| {
+    b.iter(|| black_box(StdInstant::now()));
+  });
+  g.bench_function("std::time::Instant (now + elapsed)", |b| {
+    b.iter(|| {
+      let start = StdInstant::now();
+      black_box(start.elapsed())
+    });
+  });
+  g.finish();
+}
+
+criterion_group!(benches, bench_now, bench_elapsed, bench_ordered);
 criterion_main!(benches);

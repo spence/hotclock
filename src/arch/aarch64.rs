@@ -16,6 +16,27 @@ pub fn cntvct() -> u64 {
   cnt
 }
 
+/// Ordered CNTVCT_EL0 read. `isb sy` drains the instruction pipeline before
+/// the system-register read, so the timestamp cannot be sampled before a
+/// prior `Acquire`-or-stronger observation (`mrs` is a system-register
+/// access; memory fences alone do not constrain when it executes).
+#[inline(always)]
+#[allow(clippy::inline_always)]
+pub fn cntvct_ordered() -> u64 {
+  let cnt: u64;
+  // SAFETY: `isb sy; mrs cntvct_el0` only reads the architectural counter and forces a
+  // pipeline sync; neither instruction touches memory or the stack.
+  unsafe {
+    asm!(
+        "isb sy",
+        "mrs {}, cntvct_el0",
+        out(reg) cnt,
+        options(nostack, nomem, preserves_flags)
+    );
+  }
+  cnt
+}
+
 #[inline]
 pub fn cntfrq() -> u64 {
   let freq: u64;

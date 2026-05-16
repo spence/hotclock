@@ -15,7 +15,7 @@ pub mod x86;
 pub mod x86_64;
 
 mod direct;
-pub use direct::ticks;
+pub use direct::{ticks, ticks_ordered};
 
 // Cached at first elapsed() call. Stored as fixed-point Q32:
 //   nanos_per_tick_q32 = (1e9 << 32) / frequency

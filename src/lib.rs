@@ -39,7 +39,7 @@ mod arch;
 mod calibration;
 mod instant;
 
-pub use instant::Instant;
+pub use instant::{Instant, OrderedInstant};
 
 #[cfg(test)]
 extern crate std;

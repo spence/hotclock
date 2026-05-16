@@ -8,6 +8,7 @@ Each supported target compiles `Instant::now()` directly to the fastest wall-clo
 
 - `Instant`-compatible API
 - Inlined hardware counter
+- Ordered counter reads via `OrderedInstant` — a contract no other Rust time crate offers
 - Zero dependencies
 
 ## performance
@@ -18,10 +19,7 @@ Methodology and per-target baselines: [BENCHMARKS.md](BENCHMARKS.md)
 ## usage
 
 ```rust
-use tach::Instant;
-
-let start = Instant::now();
-// ... work ...
+let start = tach::Instant::now();
 let elapsed = start.elapsed();
 ```
 
@@ -35,6 +33,30 @@ let elapsed = start.elapsed();
 
 Use `Instant` for: timeouts, deadlines, latency measurements, request budgets — anywhere you want fast wall-clock time and aren't relying on strict cross-thread ordering for correctness.
 
+## ordered reads
+
+Plain `Instant::now()` is intentionally minimal — a single counter instruction with no synchronization barrier. That's a hazard if you correlate timestamps with atomics:
+
+```rust
+let deadline = scheduler.load(Ordering::Acquire);
+let now = tach::Instant::now();   // ← can be sampled BEFORE `deadline` is observed
+```
+
+On aarch64 `mrs cntvct_el0` is a system-register read; on x86 `rdtsc` is not a serializing instruction. Memory fences (including the `Acquire` load) do not constrain when those reads execute, so the timestamp can drift earlier than the synchronization point. No fast Rust time crate (`quanta`, `fastant`, `minstant`, or `tach`) addresses this; `std::time::Instant` only does on Windows (kernel boundary via `QueryPerformanceCounter`).
+
+Use `OrderedInstant` when you need the contract *"my timestamp is sampled after any prior `Acquire`-or-stronger observation"*:
+
+```rust
+let deadline = scheduler.load(Ordering::Acquire);
+let now = tach::OrderedInstant::now();  // safe to correlate with `deadline`
+```
+
+`OrderedInstant::now()` emits the arch-appropriate barrier before the counter read (`isb sy` on aarch64, `lfence` on x86, `fence ir, ir` on riscv64, `dbar 0` on loongarch64). Fallback paths (`clock_gettime`, `mach_absolute_time`, WASI `clock_time_get`, `Performance.now()`) already cross a kernel / runtime / JS boundary that serializes naturally.
+
+Cost is ~5–20 ns more than `Instant::now()` depending on architecture; still substantially faster than `std::time::Instant::now()` on Linux and macOS, where std uses the vDSO / libsystem path but does not itself guarantee this ordering against atomics.
+
+`OrderedInstant::elapsed_unordered()` is an explicit escape hatch for "ordered start, fast end" — only use it when the end of the measurement is for logging or coarse reporting and doesn't itself need to come after a synchronization point. `OrderedInstant::as_unordered()` returns a plain `Instant` carrying the same tick value (useful when storing in a struct field typed as `Instant`); there is no inverse, since an unordered read can't retroactively be ordered.
+
 ## platform / architecture support
 
 Dispatch is compile-time: `Instant::now()` compiles directly to the architectural counter on every supported target — no runtime check, no fallback path.
@@ -47,6 +69,21 @@ Dispatch is compile-time: `Instant::now()` compiles directly to the architectura
 | riscv64                         | rdtime                     |
 | loongarch64                     | rdtime.d                   |
 | wasm32 (browser / Node host)    | `Performance.now()`        |
+
+
+| Platform / target       | `Instant` clock      | OS fallback                |
+|-------------------------|----------------------|----------------------------|
+| Linux (x86_64)          | RDTSC                | clock_gettime              |
+| Linux (x86)             | RDTSC                | clock_gettime              |
+| Linux (aarch64)         | CNTVCT_EL0           | clock_gettime              |
+| Linux (riscv64)         | rdtime               | clock_gettime              |
+| Linux (loongarch64)     | rdtime.d             | clock_gettime              |
+| macOS (aarch64)         | CNTVCT_EL0           | —                          |
+| macOS (x86_64)          | RDTSC                | mach_absolute_time         |
+| Windows (x86_64)        | RDTSC                | QueryPerformanceCounter    |
+| Windows (aarch64)       | CNTVCT_EL0           | QueryPerformanceCounter    |
+| Unix / other            | OS timer             | clock_gettime              |
+
 
 On any other target architecture, `Instant::now()` uses the platform monotonic clock: `mach_absolute_time` on macOS, `clock_gettime(CLOCK_MONOTONIC)` on Unix, `clock_time_get(MONOTONIC)` on WASI.
 
