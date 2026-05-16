@@ -154,3 +154,32 @@ python3 benches/assets/render.py
 ```
 
 `rsvg-convert` is required (`brew install librsvg` on macOS, `apt install librsvg2-bin` on Debian).
+
+## Per-cell criterion reports
+
+Each cell has a standalone SVG report at `benches/violins/<cell>.svg`. It combines criterion's auto-generated violin plots for both `Instant::now()` and `Instant::now() + elapsed()` plus a per-crate medians + 95% CI table into one file.
+
+Generated with `benches/assets/build-cell-report.py`. After running `cargo bench --bench instant` on a target machine, run the tool with the cell name and optional header text:
+
+```bash
+# On the machine that just ran the bench:
+python3 benches/assets/build-cell-report.py <cell-name> \
+  --title "<Pretty Cell Title>" \
+  --subtitle "<target-triple>"
+
+# Or pointing at criterion data from elsewhere on disk:
+python3 benches/assets/build-cell-report.py <cell-name> \
+  --criterion-dir path/to/criterion \
+  --title "..." --subtitle "..."
+```
+
+The tool reads `<criterion-dir>/Instant__now()/report/violin.svg`, the matching `+ elapsed()` group, and the per-crate `estimates.json` files, then writes `benches/violins/<cell-name>.svg`. Handles both gnuplot- and plotters-generated violins (gnuplot is used when installed locally; plotters is criterion's default on most EC2 AMIs).
+
+Current cells with reports:
+
+- `benches/violins/local-catalyst.svg` — Apple Silicon M1 MBP
+- `benches/violins/c7g-4xlarge.svg` — AWS Graviton 3
+- `benches/violins/t3-medium.svg` — AWS Intel Burst
+- `benches/violins/m7i-metal-24xl.svg` — Docker Alpine on AWS Metal
+- `benches/violins/github-windows-x86_64.svg` — GitHub Actions Windows
+- `benches/violins/lambda-x86_64/` — AWS Lambda has no criterion violin (filesystem restrictions); raw harness output in `runs/run{1,2,3}.json`
