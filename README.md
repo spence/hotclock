@@ -49,16 +49,22 @@ On riscv64 (`fence iorw, iorw`) and loongarch64 (`dbar 0`) the strongest availab
 
 ## platform support
 
-| target_arch  | counter        |
-|--------------|----------------|
-| x86_64       | RDTSC          |
-| x86          | RDTSC          |
-| aarch64      | CNTVCT_EL0     |
-| riscv64      | rdtime         |
-| loongarch64  | rdtime.d       |
-| wasm32       | Performance.now() (browser/Node host) |
+| Platform / target               | `Instant` clock                  |
+|---------------------------------|----------------------------------|
+| Linux (x86_64)                  | RDTSC                            |
+| Linux (x86)                     | RDTSC                            |
+| Linux (aarch64)                 | CNTVCT_EL0                       |
+| Linux (riscv64)                 | rdtime                           |
+| Linux (loongarch64)             | rdtime.d                         |
+| macOS (aarch64)                 | CNTVCT_EL0                       |
+| macOS (x86_64)                  | RDTSC                            |
+| Windows (x86_64)                | RDTSC                            |
+| Windows (aarch64)               | CNTVCT_EL0                       |
+| wasm32 (browser / Node host)    | `Performance.now()`              |
+| WASI (wasm32-wasip{1,2})        | `clock_time_get(MONOTONIC)`      |
+| Unix / other                    | `clock_gettime(CLOCK_MONOTONIC)` |
 
-Other architectures fall back to the platform monotonic clock. The crate is `#![no_std]`. The only dependency is `wasm-bindgen`, pulled in only for `wasm32-unknown-unknown` / `wasm32v1-none`.
+The crate is `#![no_std]`. `wasm-bindgen` is the only dependency, pulled in only for `wasm32-unknown-unknown` and `wasm32v1-none` (the targets that go through `Performance.now()`).
 
 ## non-goals
 
