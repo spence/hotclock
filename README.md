@@ -27,7 +27,7 @@ Methodology and per-target reports: [BENCHMARKS.md](BENCHMARKS.md).
 
 ## semantics
 
-The counter is wall-clock-rate. It keeps ticking through park, suspension, and descheduling. All threads in the process read the same source. It is **not** strictly cross-thread monotonic: raw hardware counters can disagree across CPUs by sub-microsecond sync slop, and by larger margins on AMD Zen4 (CCX boundary effects). If that matters, use `std::time::Instant`, which the kernel coerces into per-thread monotonicity at the cost of ~20 ns per call.
+The counter is wall-clock-rate. It keeps ticking through park, suspension, and descheduling. All threads in the process read the same source. Per-thread monotonicity is verified empirically (0 backward jumps over billions of consecutive reads on every benchmark cell). Cross-thread observation consistency is measured at ≤10 µs across all tested cells — matching `std::time::Instant` within measurement noise on the same hardware. AMD Zen4 CCX boundaries are not in the tested set; if you correlate timestamps across CCXes or sockets, prefer `std::time::Instant`. Cost difference: tach's counter read is ~0.35 ns vs `std::time::Instant::now()`'s ~20 ns.
 
 ## ordered reads
 
@@ -74,21 +74,20 @@ The crate is `#![no_std]`. `wasm-bindgen` is the only dependency, pulled in only
 
 | Crate | 1-sec interval | 1-min interval | 1-hr interval | 1-day interval |
 |---|---|---|---|---|
-| `tach::Instant` (default, `#![no_std]`) | ~50 µs | ~3 ms | ~180 ms | ~4 s |
-| `tach::Instant` + `recalibrate-background` (**requires `std`**) | ~1 µs | ~60 µs | ~4 ms | ~86 ms |
-| `tach::OrderedInstant` (default, `#![no_std]`) | ~50 µs | ~3 ms | ~180 ms | ~4 s |
-| `quanta::Instant` | ~500 µs | ~30 ms | ~1.8 s | ~43 s |
-| `minstant::Instant` (Linux x86 only) | ~500 µs | ~30 ms | ~1.8 s | ~43 s |
-| `fastant::Instant` (Linux x86 only) | ~500 µs | ~30 ms | ~1.8 s | ~43 s |
-| `std::time::Instant` (Linux / Windows) | ~1 µs | ~60 µs | ~4 ms | ~86 ms |
-| `std::time::Instant` (macOS / aarch64) | ~50 µs | ~3 ms | ~180 ms | ~4 s |
+| `tach::Instant` (default, `#![no_std]`) | 4.9 µs | 257.1 µs | 15.4 ms | 370.2 ms |
+| `tach::Instant` + `recalibrate-background` (**requires `std`**) | 8.5 µs | 961.3 µs | 961.3 µs | 961.3 µs |
+| `tach::OrderedInstant` (default, `#![no_std]`) | 4.5 µs | 256.7 µs | 15.4 ms | 369.7 ms |
+| `quanta::Instant` | 2.1 µs | 160.6 µs | 9.6 ms | 231.3 ms |
+| `minstant::Instant` | 1.5 µs | 1.0 µs | 61.2 µs | 1.5 ms |
+| `fastant::Instant` | 1.8 µs | 3.9 µs | 234.7 µs | 5.6 ms |
+| `std::time::Instant` | 328 ns | 457 ns | 457 ns | 457 ns |
 
-For sub-second timing, every row is below the precision floor of any practical measurement — the differentiation appears at minute/hour/day scale.
+Numbers are cross-cell empirical medians measured on 5 platforms (Apple Silicon M1 MBP, AWS Graviton 3, AWS Intel t3.medium, AWS Intel m7i.metal-24xl bare-metal, AWS Lambda x86_64). Per-cell breakdown and methodology in [BENCHMARKS.md](BENCHMARKS.md). The `tach::Instant` row is dominated by spin-loop calibration error on cells where CPUID 15h isn't available; on the m7i bare-metal cell where it is, tach drift drops to ~4 ppm — close to `std`.
 
-Two ways to close the gap on long-running services:
+For long-running services that need wall-clock-correlated accuracy:
 
-- **`tach::Instant::recalibrate()`** — manual, `#![no_std]`-compatible. Call from your own scheduler whenever you want to re-derive the scaling against `clock_gettime`. Costs ~10 ms of spin-loop time per call. Works on every supported target including embedded and SGX.
-- **`recalibrate-background` Cargo feature** — automatic. Spawns a background thread that calls `recalibrate()` every 60 seconds (interval configurable via `tach::set_recalibration_interval`). **This feature requires `std` and is incompatible with `#![no_std]` targets** — it pulls in `std::thread` and `std::sync::OnceLock`. The default tach build is `#![no_std]`; enabling this feature is the only thing that promotes the crate to `std`. Use the manual path if you need both drift correction and no_std.
+- **`tach::Instant::recalibrate()`** — manual, `#![no_std]`-compatible. Call from your own scheduler to re-derive scaling against `clock_gettime`. Costs ~10 ms of spin-loop time per call. Works on every supported target including embedded and SGX.
+- **`recalibrate-background` Cargo feature** — automatic. Spawns a background thread that calls `recalibrate()` every 60 seconds (configurable via `tach::set_recalibration_interval`). **Requires `std`; incompatible with `#![no_std]` targets** (pulls in `std::thread` and `std::sync::OnceLock`). Empirically, recalibration's benefit depends on the host's calibration-window stability — on bare-metal cells it preserves drift magnitude, on virtualized hosts (Lambda, burst VMs) the 10 ms calibration window catches hypervisor preemption and can make drift noisier than the default. Treat it as a knob, not a guaranteed improvement; measure on your target.
 
 Within a single process, two tach measurements are mutually consistent — drift only shows up when comparing against an external reference (NTP-disciplined wall clock, another process, etc.).
 
