@@ -99,14 +99,17 @@ impl Instant {
   /// Call from a background scheduler or after a long sleep. Cost is
   /// ~10 ms of spin-loop time per call; do not invoke from a hot path.
   ///
-  /// No-op on platforms where the frequency is exact: aarch64 (`cntfrq_el0`),
-  /// macOS (`mach_timebase_info`), Windows (`QueryPerformanceFrequency`),
-  /// WASI, and the wasm host. Only x86 / x86_64 Linux (and other Unixes)
-  /// have crystal drift the kernel doesn't already correct.
+  /// No-op on platforms where the frequency is exact: aarch64
+  /// (`cntfrq_el0`), macOS (`mach_timebase_info`), WASI, and the wasm host.
+  /// On x86 / x86_64 (Linux, other Unixes, and Windows) the kernel doesn't
+  /// continuously correct crystal drift, so recalibration measures the
+  /// actual rate against the platform monotonic clock
+  /// (`clock_gettime(CLOCK_MONOTONIC)` on Unix, `QueryPerformanceCounter`
+  /// on Windows).
   ///
   /// `recalibrate` itself is `#![no_std]`-compatible — it uses the same
-  /// `clock_gettime` path the crate already calls during startup
-  /// calibration. Safe from embedded, kernel, and SGX targets.
+  /// platform-monotonic spin-loop path the crate already calls during
+  /// startup calibration. Safe from embedded, kernel, and SGX targets.
   ///
   /// For services that prefer not to drive this themselves, enabling the
   /// `recalibrate-background` Cargo feature spawns a background thread
@@ -130,9 +133,7 @@ impl Instant {
 impl Add<Duration> for Instant {
   type Output = Instant;
   fn add(self, rhs: Duration) -> Instant {
-    self
-      .checked_add(rhs)
-      .expect("overflow when adding duration to instant")
+    self.checked_add(rhs).expect("overflow when adding duration to instant")
   }
 }
 
@@ -145,9 +146,7 @@ impl AddAssign<Duration> for Instant {
 impl Sub<Duration> for Instant {
   type Output = Instant;
   fn sub(self, rhs: Duration) -> Instant {
-    self
-      .checked_sub(rhs)
-      .expect("overflow when subtracting duration from instant")
+    self.checked_sub(rhs).expect("overflow when subtracting duration from instant")
   }
 }
 
@@ -298,9 +297,7 @@ impl OrderedInstant {
 impl Add<Duration> for OrderedInstant {
   type Output = OrderedInstant;
   fn add(self, rhs: Duration) -> OrderedInstant {
-    self
-      .checked_add(rhs)
-      .expect("overflow when adding duration to ordered instant")
+    self.checked_add(rhs).expect("overflow when adding duration to ordered instant")
   }
 }
 
@@ -359,9 +356,5 @@ fn duration_to_ticks(d: Duration) -> Option<u64> {
     return None;
   }
   // nanos = (ticks * q32) >> 32  ⇒  ticks = (nanos << 32) / q32
-  nanos
-    .checked_shl(32)?
-    .checked_div(u128::from(q32))?
-    .try_into()
-    .ok()
+  nanos.checked_shl(32)?.checked_div(u128::from(q32))?.try_into().ok()
 }

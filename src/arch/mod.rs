@@ -71,18 +71,6 @@ fn read_frequency() -> u64 {
   1_000_000_000u64 * u64::from(info.denom) / u64::from(info.numer)
 }
 
-#[cfg(all(not(target_arch = "aarch64"), target_os = "windows"))]
-#[inline]
-fn read_frequency() -> u64 {
-  unsafe extern "system" {
-    fn QueryPerformanceFrequency(lpFrequency: *mut i64) -> i32;
-  }
-  let mut freq: i64 = 0;
-  // SAFETY: `QueryPerformanceFrequency` writes a single i64.
-  unsafe { QueryPerformanceFrequency(&mut freq) };
-  freq as u64
-}
-
 #[cfg(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))]
 #[inline]
 fn read_frequency() -> u64 {
@@ -97,14 +85,17 @@ fn read_frequency() -> u64 {
   1_000_000_000
 }
 
-// x86 (non-macOS, non-Windows): prefer CPUID leaf 15h when available — modern
-// Intel (Skylake+) and AMD (Zen2+) expose the exact architectural TSC
-// frequency, eliminating the ~500 ppm error baked into spin-loop calibration.
-// Fall back to calibration on older / virtualized CPUs that zero the leaf.
-#[cfg(all(
-  any(target_arch = "x86_64", target_arch = "x86"),
-  not(any(target_os = "macos", target_os = "windows")),
-))]
+// x86 (non-macOS): prefer CPUID leaf 15h when available — modern Intel
+// (Skylake+) and AMD (Zen2+) expose the exact architectural TSC frequency,
+// eliminating the ~500 ppm error baked into spin-loop calibration. Fall back
+// to calibration on older / virtualized CPUs that zero the leaf (typical on
+// Firecracker, Azure VMs, and some Hyper-V guests).
+//
+// On Windows, calibration uses QueryPerformanceCounter as the wall-clock
+// reference. Reading QPF directly here would be wrong — QPF reports the QPC
+// frequency (~10 MHz on modern Windows), not the RDTSC tick rate (~3 GHz);
+// the two are unrelated.
+#[cfg(all(any(target_arch = "x86_64", target_arch = "x86"), not(target_os = "macos")))]
 #[inline]
 fn read_frequency() -> u64 {
   #[cfg(target_arch = "x86_64")]
@@ -123,7 +114,6 @@ fn read_frequency() -> u64 {
   target_arch = "x86_64",
   target_arch = "x86",
   target_os = "macos",
-  target_os = "windows",
   target_os = "wasi",
   all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
 )))]
@@ -138,32 +128,29 @@ fn read_frequency() -> u64 {
 /// load in `nanos_per_tick_q32`.
 ///
 /// On platforms where the frequency comes from an authoritative register or
-/// OS API (aarch64 `cntfrq_el0`, macOS `mach_timebase_info`, Windows
-/// `QueryPerformanceFrequency`, WASI / wasm fixed at 1 GHz), this is a
-/// no-op — re-reading would just yield the same value.
+/// OS API (aarch64 `cntfrq_el0`, macOS `mach_timebase_info`, WASI / wasm
+/// fixed at 1 GHz), this is a no-op — re-reading would just yield the same
+/// value. On x86 / x86_64 (Linux, other Unixes, and Windows) the kernel
+/// doesn't continuously correct crystal drift, so recalibration measures
+/// the actual rate against the platform monotonic clock
+/// (`clock_gettime(CLOCK_MONOTONIC)` on Unix, `QueryPerformanceCounter` on
+/// Windows).
 ///
 /// `recalibrate` is `#![no_std]`-compatible; it uses the same spin-loop +
-/// `clock_gettime` path that already runs at startup.
+/// platform-monotonic path that already runs at startup.
 pub fn recalibrate() {
-  #[cfg(all(
-    any(target_arch = "x86_64", target_arch = "x86"),
-    not(any(target_os = "macos", target_os = "windows")),
-  ))]
+  #[cfg(all(any(target_arch = "x86_64", target_arch = "x86"), not(target_os = "macos")))]
   {
     // Skip CPUID 15h: it reports *nominal* frequency, which doesn't change.
     // Recalibration's job is to track *actual* frequency drift over uptime,
-    // so we go straight to clock_gettime-based spin-loop calibration.
+    // so we go straight to the platform-monotonic spin-loop calibration.
     let new_hz = crate::calibration::calibrate_frequency();
     if new_hz > 0 {
-      let scale =
-        u64::try_from(NANOS_PER_SECOND_Q32 / u128::from(new_hz)).unwrap_or(u64::MAX);
+      let scale = u64::try_from(NANOS_PER_SECOND_Q32 / u128::from(new_hz)).unwrap_or(u64::MAX);
       NANOS_PER_TICK_Q32.store(scale, Ordering::Release);
     }
   }
-  #[cfg(not(all(
-    any(target_arch = "x86_64", target_arch = "x86"),
-    not(any(target_os = "macos", target_os = "windows")),
-  )))]
+  #[cfg(not(all(any(target_arch = "x86_64", target_arch = "x86"), not(target_os = "macos"))))]
   {
     // No-op on platforms where the frequency source is authoritative.
   }

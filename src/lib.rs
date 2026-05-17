@@ -62,7 +62,6 @@ mod arch;
 #[cfg(not(any(
   target_arch = "aarch64",
   target_os = "macos",
-  target_os = "windows",
   target_os = "wasi",
   all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
 )))]
@@ -208,10 +207,7 @@ mod tests {
     let now = Instant::now();
     let earlier = now - Duration::from_millis(100);
     let diff = now.duration_since(earlier);
-    assert!(
-      diff.as_millis() >= 99 && diff.as_millis() <= 101,
-      "expected ~100ms, got {diff:?}",
-    );
+    assert!(diff.as_millis() >= 99 && diff.as_millis() <= 101, "expected ~100ms, got {diff:?}",);
 
     let mut t = now;
     t += Duration::from_secs(1);
@@ -263,5 +259,27 @@ mod tests {
     let _ = crate::arch::x86_64::cpuid_tsc_hz();
     #[cfg(target_arch = "x86")]
     let _ = crate::arch::x86::cpuid_tsc_hz();
+  }
+
+  // Proving test: tach's elapsed() must track std's elapsed() within ±5%
+  // across a 100ms sleep. Catches:
+  //  - Windows freq-vs-counter mismatch (was ~300× off; QPF Hz on RDTSC ticks)
+  //  - macOS mach_timebase_info numerator/denominator transposition
+  //  - CPUID 15h numerator/denominator transposition
+  //  - aarch64 cntfrq misreporting (e.g. exposing crystal Hz instead of Hz)
+  // ±5% is a generous noise budget over a 100 ms window — schedule jitter
+  // and elapsed-call overhead are << 1%; any real scaling bug blows past it.
+  #[test]
+  fn elapsed_tracks_std_within_5_percent() {
+    let ts = std::time::Instant::now();
+    let tt = Instant::now();
+    std::thread::sleep(Duration::from_millis(100));
+    let s_ns = ts.elapsed().as_nanos() as f64;
+    let t_ns = tt.elapsed().as_nanos() as f64;
+    let ratio = t_ns / s_ns;
+    assert!(
+      ratio > 0.95 && ratio < 1.05,
+      "tach/std ratio = {ratio} (std={s_ns} ns, tach={t_ns} ns)",
+    );
   }
 }

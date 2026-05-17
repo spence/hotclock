@@ -10,7 +10,7 @@ pub fn rdtsc() -> u64 {
 
 /// Read the architectural TSC frequency from CPUID leaf 15h. See
 /// `x86_64::cpuid_tsc_hz` for the formula and supported-CPU notes.
-#[allow(dead_code)] // unused on macOS/Windows where the OS API is authoritative
+#[allow(dead_code)] // unused on macOS where mach_timebase_info is authoritative
 pub fn cpuid_tsc_hz() -> Option<u64> {
   let basic = __cpuid(0);
   if basic.eax < 0x15 {

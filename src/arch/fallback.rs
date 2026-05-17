@@ -67,3 +67,48 @@ mod wasi {
 
 #[cfg(target_os = "wasi")]
 pub use wasi::*;
+
+#[cfg(all(target_os = "windows", not(target_arch = "aarch64")))]
+mod qpc {
+  use core::sync::atomic::{AtomicI64, Ordering};
+
+  unsafe extern "system" {
+    fn QueryPerformanceCounter(c: *mut i64) -> i32;
+    fn QueryPerformanceFrequency(f: *mut i64) -> i32;
+  }
+
+  // QueryPerformanceFrequency is constant for the lifetime of the system, so
+  // cache it on first read. Without this, calibration's tight spin-loop polls
+  // QPF on every iteration and the syscall overhead inflates the measured
+  // wall-elapsed by tens of nanoseconds per call.
+  static QPC_FREQ: AtomicI64 = AtomicI64::new(0);
+
+  #[inline]
+  fn freq() -> i64 {
+    let cached = QPC_FREQ.load(Ordering::Relaxed);
+    if cached != 0 {
+      return cached;
+    }
+    let mut f: i64 = 0;
+    // SAFETY: writes a single i64.
+    unsafe {
+      QueryPerformanceFrequency(&mut f);
+    }
+    QPC_FREQ.store(f, Ordering::Relaxed);
+    f
+  }
+
+  #[inline(always)]
+  pub fn qpc_now_ns() -> u64 {
+    let f = freq();
+    let mut c: i64 = 0;
+    // SAFETY: writes a single i64.
+    unsafe {
+      QueryPerformanceCounter(&mut c);
+    }
+    ((c as u128) * 1_000_000_000u128 / (f as u128)) as u64
+  }
+}
+
+#[cfg(all(target_os = "windows", not(target_arch = "aarch64")))]
+pub use qpc::*;

@@ -17,7 +17,7 @@ pub fn rdtsc() -> u64 {
 /// Formula per Intel SDM Vol 2: `tsc_hz = crystal_hz * ratio_num / ratio_den`
 /// where `ecx` is the crystal frequency, `ebx` is the TSC numerator, and
 /// `eax` is the TSC denominator.
-#[allow(dead_code)] // unused on macOS/Windows where the OS API is authoritative
+#[allow(dead_code)] // unused on macOS where mach_timebase_info is authoritative
 pub fn cpuid_tsc_hz() -> Option<u64> {
   let basic = __cpuid(0);
   if basic.eax < 0x15 {
