@@ -74,15 +74,15 @@ The crate is `#![no_std]`. `wasm-bindgen` is the only dependency, pulled in only
 
 | Crate | 1-sec interval | 1-min interval | 1-hr interval | 1-day interval |
 |---|---|---|---|---|
-| `tach::Instant` (default, `#![no_std]`) | 4.9 µs | 257.1 µs | 15.4 ms | 370.2 ms |
-| `tach::Instant` + `recalibrate-background` (**requires `std`**) | 8.5 µs | 961.3 µs | 961.3 µs | 961.3 µs |
-| `tach::OrderedInstant` (default, `#![no_std]`) | 4.5 µs | 256.7 µs | 15.4 ms | 369.7 ms |
-| `quanta::Instant` | 2.1 µs | 160.6 µs | 9.6 ms | 231.3 ms |
-| `minstant::Instant` | 1.5 µs | 1.0 µs | 61.2 µs | 1.5 ms |
-| `fastant::Instant` | 1.8 µs | 3.9 µs | 234.7 µs | 5.6 ms |
-| `std::time::Instant` | 328 ns | 457 ns | 457 ns | 457 ns |
+| `tach::Instant` (default, `#![no_std]`) | 9.0 µs | 802.6 µs | 48.2 ms | 1.16 s |
+| `tach::Instant` + `recalibrate-background` (**requires `std`**) | 10.7 µs | 1.2 ms | 1.2 ms | 1.2 ms |
+| `tach::OrderedInstant` (default, `#![no_std]`) | 9.0 µs | 521.6 µs | 31.3 ms | 751.1 ms |
+| `quanta::Instant` | 1.5 µs | 100.7 µs | 6.0 ms | 145.0 ms |
+| `minstant::Instant` | 1.9 µs | 13.6 µs | 818.2 µs | 19.6 ms |
+| `fastant::Instant` | 1.9 µs | 16.9 µs | 1.0 ms | 24.4 ms |
+| `std::time::Instant` | 314 ns | 428 ns | 428 ns | 428 ns |
 
-Numbers are cross-cell empirical medians measured on 5 platforms (Apple Silicon M1 MBP, AWS Graviton 3, AWS Intel t3.medium, AWS Intel m7i.metal-24xl bare-metal, AWS Lambda x86_64). Per-cell breakdown and methodology in [BENCHMARKS.md](BENCHMARKS.md). The `tach::Instant` row is dominated by spin-loop calibration error on cells where CPUID 15h isn't available; on the m7i bare-metal cell where it is, tach drift drops to ~4 ppm — close to `std`.
+Numbers are cross-cell empirical medians measured on 6 platforms (Apple Silicon M1 MBP, AWS Graviton 3, AWS Intel t3.medium, AWS Intel m7i.metal-24xl bare-metal, AWS Lambda x86_64, GitHub Actions windows-2025). Per-cell breakdown and methodology in [BENCHMARKS.md](BENCHMARKS.md). The `tach::Instant` row is dominated by spin-loop calibration error on cells where CPUID 15h isn't available; on the m7i bare-metal cell where it is, tach drift drops to ~4 ppm — close to `std`. **Known issue**: on Windows x86_64 the `read_frequency` path returns `QueryPerformanceFrequency` (10 MHz) while `Instant::now()` reads RDTSC (~3 GHz), so the tick-to-nanosecond scaling is off by ~300× and `elapsed()` is unusable on that target until a TSC-vs-QPC calibration is added. The cross-thread/per-thread monotonicity measurements on Windows are still valid (ticks themselves are monotonic).
 
 For long-running services that need wall-clock-correlated accuracy:
 

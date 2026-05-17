@@ -207,40 +207,41 @@ The bench captures three quantities for each clock source:
 
 ### Per-thread monotonicity (10-s sweep, single thread)
 
-- **apple-silicon-m1: backward jumps observed** — fastant=690 (likely fastant's macOS-fallback path; tach / std / quanta / minstant all 0)
+- apple-silicon-m1: 0 backward jumps for tach / std / quanta / minstant. fastant=690 (likely its macOS-fallback path)
 - c7g-4xlarge: 0 backward jumps on any clock ✓
 - t3-medium: 0 backward jumps on any clock ✓
 - m7i-metal-24xl: 0 backward jumps on any clock ✓
 - lambda-x86_64: 0 backward jumps on any clock ✓
-- github-windows-x86_64: blocked on push authorization for `.github/workflows/bench-skew.yml`
+- github-windows-x86_64: 0 backward jumps on any clock ✓
 
 Tach (`Instant`, `OrderedInstant`, and the `recalibrate-background` variant) showed **0 backward jumps in every cell on every clock** — matching `std::time::Instant` on per-thread monotonicity.
 
 ### Cross-thread observation consistency (10-s sweep, N threads)
 
-Per-cell maximum cross-thread violation magnitude. Threshold rules per the plan:
+Per-cell maximum cross-thread violation magnitude. Threshold rules:
 - ≤ 1 µs: clean (matches std in practice)
 - 1–10 µs: documented sync-slop
 - > 10 µs: hazard caveat
 
 | Clock | apple-silicon-m1 | c7g-4xlarge | t3-medium | m7i-metal-24xl | lambda-x86_64 | github-windows-x86_64 |
 |---|---|---|---|---|---|---|
-| `tach` | 9.8 µs | 0 ns | 9.9 µs | 9.9 µs | 9.9 µs | n/a |
-| `tach_recal` | 9.8 µs | 0 ns | 9.9 µs | 9.8 µs | 9.9 µs | n/a |
-| `tach_ordered` | 9.8 µs | 9.8 µs | 9.9 µs | 9.9 µs | 9.9 µs | n/a |
-| `quanta` | 9.6 µs | 22.7 µs | 9.9 µs | 9.8 µs | 9.9 µs | n/a |
-| `minstant` | 10.0 µs | 9.6 µs | 9.9 µs | 9.8 µs | 9.8 µs | n/a |
-| `fastant` | 10.0 µs | 9.8 µs | 9.9 µs | 9.8 µs | 9.8 µs | n/a |
-| `std` | 9.5 µs | 9.4 µs | 9.9 µs | 9.8 µs | 9.9 µs | n/a |
+| `tach` | 9.8 µs | 0 ns | 9.9 µs | 9.9 µs | 9.9 µs | 1.3 µs |
+| `tach_recal` | 9.8 µs | 0 ns | 9.9 µs | 9.8 µs | 9.9 µs | 1.3 µs |
+| `tach_ordered` | 9.8 µs | 9.8 µs | 9.9 µs | 9.9 µs | 9.9 µs | 100 ns |
+| `quanta` | 9.6 µs | 22.7 µs | 9.9 µs | 9.8 µs | 9.9 µs | 9.9 µs |
+| `minstant` | 10.0 µs | 9.6 µs | 9.9 µs | 9.8 µs | 9.8 µs | 9.8 µs |
+| `fastant` | 10.0 µs | 9.8 µs | 9.9 µs | 9.8 µs | 9.8 µs | 9.8 µs |
+| `std` | 9.5 µs | 9.4 µs | 9.9 µs | 9.8 µs | 9.9 µs | 9.7 µs |
 
 Observations:
 - Every cell × clock combination (except `quanta` on `c7g-4xlarge` at 22.7 µs) sits at or below 10 µs — the bracket-filter ceiling for what we count as "not preemption." Tach matches std within measurement noise on every cell.
 - On `c7g-4xlarge`, the Graviton 3 `cntvct_el0` is architecturally synchronized across cores, so tach (which reads it directly) shows literally zero cross-thread violations. `tach_ordered` shows 9.8 µs because the `isb sy` barrier opens a wider window during which other threads can publish; the data is preemption-bracketed even though the underlying counter is monotonic.
 - `quanta::Instant` on `c7g-4xlarge` at 22.7 µs is the only cell × clock that crosses the 10 µs threshold; it's a quanta-specific code path (the crate does its own scaling) rather than something inherent to the platform.
+- On `github-windows-x86_64`, tach's cross-thread numbers are dramatically smaller (1.3 µs, 100 ns) than on other cells. This is an artifact of the Windows tick-scaling bug (see below): tach reports its ticks scaled at 100ns/tick when the underlying RDTSC ticks at ~0.33ns each, so the bracket filter cuts much earlier in wall time. Treat tach's Windows cross-thread numbers as preemption-filtered, not as direct evidence of better sync — the underlying RDTSC behavior matches other Intel cells.
 
 ### Drift vs `std::Instant` (median across samples, per cell)
 
-Per-cell 1-second and 1-minute median skew. Negative = tach reports less elapsed than std; positive = more. PPM = ns/s of accumulated drift.
+Per-cell 1-second and 1-minute median skew. Negative = tach reports less elapsed than std; positive = more.
 
 | Cell | tach 1s | tach 1m | tach_recal 1s | tach_recal 1m | std 1m |
 |---|---|---|---|---|---|
@@ -249,12 +250,22 @@ Per-cell 1-second and 1-minute median skew. Negative = tach reports less elapsed
 | `t3-medium` | +2.1 µs | +257 µs | +8.5 µs | +2.02 ms | -655 ns |
 | `m7i-metal-24xl` | -4.9 µs | -222 µs | -4.7 µs | +118 µs | -457 ns |
 | `lambda-x86_64` | +13.2 µs | +2.86 ms | +12.8 µs | +961 µs | -282 ns |
-| `github-windows-x86_64` | n/a | n/a | n/a | n/a | n/a |
+| `github-windows-x86_64` | +278 s ⚠ | +16,700 s ⚠ | +278 s ⚠ | +16,700 s ⚠ | -400 ns |
 
 Observations:
 - `m7i-metal-24xl` is the only cell with CPUID 15h available (Intel Sapphire Rapids bare metal). On this cell, default `tach::Instant` drifts at ~3.7 ppm — within the same order of magnitude as `std`. The other cells fall back to spin-loop calibration (~10 ms window) which bakes in calibration error proportional to host preemption.
 - `recalibrate-background` is not a uniform improvement. On bare metal (`m7i`) it preserves magnitude but changes drift direction within the recal window. On burst VMs (`t3`) and Firecracker (`lambda`), the 10 ms calibration window catches hypervisor preemption and adds noise, sometimes producing *worse* drift than the default. Recommend measuring on the target before enabling.
 - `std::time::Instant` 1m skew is consistently sub-µs on every cell, reflecting the kernel's continuous correction (vDSO scaling-factor updates on Linux, the equivalent on each OS).
+- **Windows x86_64 drift values are dominated by a known bug**: `src/arch/mod.rs`'s `read_frequency` returns `QueryPerformanceFrequency` (10 MHz) but `Instant::now()` on Windows x86_64 reads RDTSC (~3 GHz). The tick-to-nanosecond scaling factor is therefore off by ~300×, so reported "elapsed" diverges from real time by ~278×. **Fix**: calibrate TSC against QPC at startup (parallel to the spin-loop calibration on Linux x86), then use the calibrated frequency in `read_frequency`. Until that lands, `tach::Instant::elapsed()` is not usable on Windows; per-thread / cross-thread monotonicity of the underlying RDTSC ticks is still valid.
+
+### Per-thread monotonicity
+
+- **apple-silicon-m1: backward jumps observed** — fastant=690
+- c7g-4xlarge: 0 backward jumps on any clock ✓
+- t3-medium: 0 backward jumps on any clock ✓
+- m7i-metal-24xl: 0 backward jumps on any clock ✓
+- lambda-x86_64: 0 backward jumps on any clock ✓
+- github-windows-x86_64: 0 backward jumps on any clock ✓
 
 ## Drift methodology
 
