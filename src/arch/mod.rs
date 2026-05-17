@@ -21,9 +21,13 @@ pub use direct::{ticks, ticks_ordered};
 //   nanos_per_tick_q32 = (1e9 << 32) / frequency
 // Then converting ticks to nanos becomes (ticks * scale) >> 32, replacing
 // the per-call u128 division with a multiply + shift.
-static NANOS_PER_TICK_Q32: AtomicU64 = AtomicU64::new(0);
+//
+// `pub(crate)` so the background-recal thread can issue its own
+// Acquire/Release cycle without going through the wholesale-replace
+// public `recalibrate()` path.
+pub(crate) static NANOS_PER_TICK_Q32: AtomicU64 = AtomicU64::new(0);
 
-const NANOS_PER_SECOND_Q32: u128 = 1_000_000_000u128 << 32;
+pub(crate) const NANOS_PER_SECOND_Q32: u128 = 1_000_000_000u128 << 32;
 
 #[inline]
 #[must_use]
@@ -136,22 +140,48 @@ fn read_frequency() -> u64 {
 /// (`clock_gettime(CLOCK_MONOTONIC)` on Unix, `QueryPerformanceCounter` on
 /// Windows).
 ///
+/// This is the manual / wholesale-replace path — the new scale takes
+/// effect immediately. The background-recal thread (when the
+/// `recalibrate-background` feature is enabled) feeds new measurements
+/// through an EMA blender instead via [`recalibrate_measure`], so a single
+/// noisy calibration window can't jolt the scale on virtualized hosts.
+///
 /// `recalibrate` is `#![no_std]`-compatible; it uses the same spin-loop +
 /// platform-monotonic path that already runs at startup.
 pub fn recalibrate() {
+  if let Some(new_hz) = measure_frequency_for_recal() {
+    let scale = u64::try_from(NANOS_PER_SECOND_Q32 / u128::from(new_hz)).unwrap_or(u64::MAX);
+    NANOS_PER_TICK_Q32.store(scale, Ordering::Release);
+  }
+}
+
+/// Re-measure the architectural counter's frequency against the platform
+/// monotonic clock without committing it to the global scale. Used by the
+/// background-recal thread to feed an EMA blender; callers of the public
+/// [`crate::Instant::recalibrate`] get wholesale-replace semantics via
+/// [`recalibrate`] above.
+///
+/// Returns `None` on platforms where there's nothing to measure (aarch64,
+/// macOS, WASI, wasm — frequency source is authoritative).
+#[cfg(feature = "recalibrate-background")]
+pub(crate) fn recalibrate_measure() -> Option<u64> {
+  measure_frequency_for_recal()
+}
+
+// Skip CPUID 15h here: it reports *nominal* frequency, which doesn't change.
+// Recalibration's job is to track *actual* frequency drift over uptime, so we
+// go straight to the platform-monotonic spin-loop calibration. Returns None
+// (don't update) when the rate measurement was unusable, e.g. survivor-list
+// fallback returned 0.
+#[inline]
+fn measure_frequency_for_recal() -> Option<u64> {
   #[cfg(all(any(target_arch = "x86_64", target_arch = "x86"), not(target_os = "macos")))]
   {
-    // Skip CPUID 15h: it reports *nominal* frequency, which doesn't change.
-    // Recalibration's job is to track *actual* frequency drift over uptime,
-    // so we go straight to the platform-monotonic spin-loop calibration.
-    let new_hz = crate::calibration::calibrate_frequency();
-    if new_hz > 0 {
-      let scale = u64::try_from(NANOS_PER_SECOND_Q32 / u128::from(new_hz)).unwrap_or(u64::MAX);
-      NANOS_PER_TICK_Q32.store(scale, Ordering::Release);
-    }
+    let hz = crate::calibration::calibrate_frequency();
+    if hz > 0 { Some(hz) } else { None }
   }
   #[cfg(not(all(any(target_arch = "x86_64", target_arch = "x86"), not(target_os = "macos"))))]
   {
-    // No-op on platforms where the frequency source is authoritative.
+    None
   }
 }
