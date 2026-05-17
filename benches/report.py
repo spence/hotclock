@@ -600,6 +600,167 @@ def build_lambda_report(runs: list[dict], cell_name: str, title: str, subtitle: 
   return "\n".join(parts) + "\n"
 
 
+SKEWMONO_CLOCKS = [
+  ("tach", "tach::Instant", True),
+  ("tach_ordered", "tach::OrderedInstant", True),
+  ("tach_recal", "tach::Instant + recal-bg", True),
+  ("std", "std::time::Instant", False),
+  ("quanta", "quanta::Instant", False),
+  ("minstant", "minstant::Instant", False),
+  ("fastant", "fastant::Instant", False),
+]
+
+
+def _fmt_skew_ns(ns: int | float) -> str:
+  if ns is None:
+    return "n/a"
+  abs_ns = abs(ns)
+  sign = "-" if ns < 0 else ""
+  if abs_ns >= 1_000_000:
+    return f"{sign}{abs_ns/1_000_000:.2f} ms"
+  if abs_ns >= 1_000:
+    return f"{sign}{abs_ns/1_000:.2f} µs"
+  return f"{sign}{abs_ns:.0f} ns"
+
+
+def _fmt_count(n: int | float) -> str:
+  if n is None:
+    return "n/a"
+  if n == 0:
+    return "0"
+  if n >= 1_000_000_000:
+    return f"{n/1_000_000_000:.2f}B"
+  if n >= 1_000_000:
+    return f"{n/1_000_000:.2f}M"
+  if n >= 1_000:
+    return f"{n/1_000:.1f}k"
+  return f"{n:.0f}"
+
+
+def build_skewmono_report(data: dict, cell_name: str, title: str, subtitle: str) -> str:
+  """Render a single-cell skew+monotonicity SVG.
+
+  Layout:
+    - header (cell, target_triple, host info)
+    - per-thread monotonicity table (expected all-zero; flagged red if not)
+    - cross-thread monotonicity table (max violation magnitude per clock)
+    - skew table (1s + 1m median per clock; ppm)
+    - footer (methodology one-liner)
+  """
+  width = 1100
+  margin = 32
+  row_h = 26
+  header_h = 130
+  body = []
+
+  body.append(
+    f'<rect width="{width}" height="900" fill="{BACKGROUND}"/>'
+  )
+  body.append(text_el(margin, 40, title, 26, weight="bold"))
+  if subtitle:
+    body.append(text_el(margin, 64, subtitle, 14, color=MUTED_FG))
+
+  host = data.get("host", {})
+  meta_lines = [
+    f"target: {data.get('target_triple', '?')}  ·  cpu: {host.get('cpu_model','?')}  ·  cpus: {host.get('num_cpus','?')}  ·  kernel: {host.get('kernel','?')}",
+    f"tach freq: {data.get('tach_freq_hz', 0):,} Hz  ·  CPUID 15h: {data.get('tach_used_cpuid_15h')}",
+  ]
+  for i, line in enumerate(meta_lines):
+    body.append(text_el(margin, 90 + i * 16, line, 11, color=MUTED_FG, family="monospace"))
+
+  clocks = data.get("clocks", {})
+
+  # Per-thread monotonicity
+  y = header_h + 28
+  body.append(text_el(margin, y, "Per-thread monotonicity (backward jumps in tight single-thread loop)", 14, weight="bold"))
+  y += 8
+  cols = [(margin, "Clock"), (380, "Violations"), (520, "Total reads"), (660, "Max jump"), (800, "Duration")]
+  body.append(f'<line x1="{margin}" y1="{y+8}" x2="{width-margin}" y2="{y+8}" stroke="{MUTED_FG}" stroke-width="0.5"/>')
+  for x, label in cols:
+    body.append(text_el(x, y, label, 11, color=MUTED_FG, weight="bold"))
+  y += row_h
+
+  for key, label, highlight in SKEWMONO_CLOCKS:
+    cr = clocks.get(key)
+    if not cr:
+      continue
+    pt = cr.get("per_thread", {})
+    violations = pt.get("violations", 0)
+    color = TEXT_FG if violations == 0 else "#cc4444"
+    weight = "bold" if highlight else None
+    body.append(text_el(margin, y, label, 12, weight=weight))
+    body.append(text_el(380, y, _fmt_count(violations), 12, family="monospace", color=color))
+    body.append(text_el(520, y, _fmt_count(pt.get("total_reads", 0)), 12, family="monospace"))
+    body.append(text_el(660, y, _fmt_skew_ns(pt.get("max_violation_ns", 0)), 12, family="monospace"))
+    body.append(text_el(800, y, f"{pt.get('duration_ns',0)/1e9:.1f} s", 12, family="monospace"))
+    y += row_h
+
+  # Cross-thread monotonicity
+  y += 20
+  body.append(text_el(margin, y, "Cross-thread observation consistency (10s, N threads, atomic-max race)", 14, weight="bold"))
+  y += 8
+  cols = [(margin, "Clock"), (380, "Max viol"), (520, "Total viol"), (660, "Threads"), (800, "Preempt dropped")]
+  body.append(f'<line x1="{margin}" y1="{y+8}" x2="{width-margin}" y2="{y+8}" stroke="{MUTED_FG}" stroke-width="0.5"/>')
+  for x, label in cols:
+    body.append(text_el(x, y, label, 11, color=MUTED_FG, weight="bold"))
+  y += row_h
+
+  for key, label, highlight in SKEWMONO_CLOCKS:
+    cr = clocks.get(key)
+    if not cr:
+      continue
+    ct = cr.get("cross_thread", {})
+    max_v = ct.get("max_violation_ns", 0)
+    color = TEXT_FG if max_v <= 1000 else ("#cc8844" if max_v <= 10000 else "#cc4444")
+    weight = "bold" if highlight else None
+    body.append(text_el(margin, y, label, 12, weight=weight))
+    body.append(text_el(380, y, _fmt_skew_ns(max_v), 12, family="monospace", color=color))
+    body.append(text_el(520, y, _fmt_count(ct.get("total_violations", 0)), 12, family="monospace"))
+    body.append(text_el(660, y, str(ct.get("threads", 0)), 12, family="monospace"))
+    body.append(text_el(800, y, _fmt_count(ct.get("preemption_dropped", 0)), 12, family="monospace"))
+    y += row_h
+
+  # Skew table
+  y += 20
+  body.append(text_el(margin, y, "Drift vs std::Instant reference clock", 14, weight="bold"))
+  y += 8
+  cols = [(margin, "Clock"), (380, "1s median"), (520, "1s ppm"), (660, "1m median"), (800, "1m ppm")]
+  body.append(f'<line x1="{margin}" y1="{y+8}" x2="{width-margin}" y2="{y+8}" stroke="{MUTED_FG}" stroke-width="0.5"/>')
+  for x, label in cols:
+    body.append(text_el(x, y, label, 11, color=MUTED_FG, weight="bold"))
+  y += row_h
+
+  for key, label, highlight in SKEWMONO_CLOCKS:
+    cr = clocks.get(key)
+    if not cr:
+      continue
+    s1 = cr.get("skew_1s") or {}
+    s60 = cr.get("skew_1m") or {}
+    weight = "bold" if highlight else None
+    body.append(text_el(margin, y, label, 12, weight=weight))
+    body.append(text_el(380, y, _fmt_skew_ns(s1.get("median_skew_ns", 0)), 12, family="monospace"))
+    body.append(text_el(520, y, f"{s1.get('median_skew_ppm', 0):+.2f}", 12, family="monospace"))
+    body.append(text_el(660, y, _fmt_skew_ns(s60.get("median_skew_ns")) if s60 else "n/a", 12, family="monospace"))
+    body.append(text_el(800, y, f"{s60.get('median_skew_ppm', 0):+.2f}" if s60 else "n/a", 12, family="monospace"))
+    y += row_h
+
+  # Footer
+  y += 32
+  footer = (
+    "Methodology: per-thread = tight loop for 10s; cross-thread = N threads "
+    "racing on shared atomic-max with bracket-read filter for preemption; "
+    "skew vs std::Instant; medians of 30 (1s) / 5 (1m) samples."
+  )
+  body.append(text_el(margin, y, footer, 11, color=MUTED_FG))
+
+  total_h = y + 40
+  svg_open = (
+    f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {total_h}" '
+    f'width="{width}" height="{total_h}">'
+  )
+  return svg_open + "\n".join(body) + "</svg>"
+
+
 def main() -> int:
   ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
   ap.add_argument("cell_name", help="Cell identifier used as output filename")
@@ -616,19 +777,32 @@ def main() -> int:
     type=Path,
     help="Directory with run*.json files from the Lambda harness (selects Lambda mode)",
   )
+  ap.add_argument(
+    "--skewmono-json",
+    type=Path,
+    help="Path to a tach-skew-bench/v1 JSON file (selects skewmono mode)",
+  )
   args = ap.parse_args()
 
   title = args.title if args.title else args.cell_name
   OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-  output_path = OUTPUT_DIR / f"report-{args.cell_name}.svg"
 
-  if args.lambda_runs is not None:
+  if args.skewmono_json is not None:
+    if not args.skewmono_json.exists():
+      print(f"error: {args.skewmono_json} not found.", file=sys.stderr)
+      return 2
+    output_path = OUTPUT_DIR / f"report-skewmono-{args.cell_name}.svg"
+    data = json.loads(args.skewmono_json.read_text())
+    output_path.write_text(build_skewmono_report(data, args.cell_name, title, args.subtitle))
+  elif args.lambda_runs is not None:
+    output_path = OUTPUT_DIR / f"report-{args.cell_name}.svg"
     if not args.lambda_runs.exists():
       print(f"error: {args.lambda_runs} not found.", file=sys.stderr)
       return 2
     runs = read_lambda_runs(args.lambda_runs)
     output_path.write_text(build_lambda_report(runs, args.cell_name, title, args.subtitle))
   else:
+    output_path = OUTPUT_DIR / f"report-{args.cell_name}.svg"
     if not args.criterion_dir.exists():
       print(f"error: {args.criterion_dir} not found. Run `cargo bench --bench instant` first.", file=sys.stderr)
       return 2
