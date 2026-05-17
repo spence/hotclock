@@ -93,6 +93,34 @@ impl Instant {
     self.0.checked_sub(delta).map(Self)
   }
 
+  /// Re-derive the tick-to-nanosecond scaling against the platform
+  /// monotonic clock to correct for crystal drift over long uptime.
+  ///
+  /// Call from a background scheduler or after a long sleep. Cost is
+  /// ~10 ms of spin-loop time per call; do not invoke from a hot path.
+  ///
+  /// No-op on platforms where the frequency is exact: aarch64 (`cntfrq_el0`),
+  /// macOS (`mach_timebase_info`), Windows (`QueryPerformanceFrequency`),
+  /// WASI, and the wasm host. Only x86 / x86_64 Linux (and other Unixes)
+  /// have crystal drift the kernel doesn't already correct.
+  ///
+  /// `recalibrate` itself is `#![no_std]`-compatible — it uses the same
+  /// `clock_gettime` path the crate already calls during startup
+  /// calibration. Safe from embedded, kernel, and SGX targets.
+  ///
+  /// For services that prefer not to drive this themselves, enabling the
+  /// `recalibrate-background` Cargo feature spawns a background thread
+  /// that calls this every 60 seconds (interval configurable via
+  /// `tach::set_recalibration_interval`). **That feature requires `std`
+  /// and is incompatible with `#![no_std]` targets** — it pulls in
+  /// `std::thread` and `std::sync::OnceLock`.
+  ///
+  /// Affects both [`Instant`] and [`crate::OrderedInstant`]; they share
+  /// the same scaling cache.
+  pub fn recalibrate() {
+    arch::recalibrate();
+  }
+
   #[inline(always)]
   pub(crate) fn from_raw_ticks(ticks: u64) -> Self {
     Self(ticks)

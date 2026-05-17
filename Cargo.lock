@@ -530,6 +530,8 @@ dependencies = [
  "fastant",
  "minstant",
  "quanta",
+ "serde",
+ "serde_json",
  "wasm-bindgen",
 ]
 

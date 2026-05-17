@@ -35,6 +35,13 @@ pub fn nanos_per_tick_q32() -> u64 {
   let freq = read_frequency();
   let scale = u64::try_from(NANOS_PER_SECOND_Q32 / u128::from(freq)).unwrap_or(u64::MAX);
   NANOS_PER_TICK_Q32.store(scale, Ordering::Relaxed);
+
+  // Spawn the periodic recalibration thread on first use. Only compiled
+  // when the `recalibrate-background` feature is enabled — which is the
+  // only feature that pulls in `std`.
+  #[cfg(feature = "recalibrate-background")]
+  crate::background::ensure_thread();
+
   scale
 }
 
@@ -90,8 +97,31 @@ fn read_frequency() -> u64 {
   1_000_000_000
 }
 
+// x86 (non-macOS, non-Windows): prefer CPUID leaf 15h when available — modern
+// Intel (Skylake+) and AMD (Zen2+) expose the exact architectural TSC
+// frequency, eliminating the ~500 ppm error baked into spin-loop calibration.
+// Fall back to calibration on older / virtualized CPUs that zero the leaf.
+#[cfg(all(
+  any(target_arch = "x86_64", target_arch = "x86"),
+  not(any(target_os = "macos", target_os = "windows")),
+))]
+#[inline]
+fn read_frequency() -> u64 {
+  #[cfg(target_arch = "x86_64")]
+  if let Some(hz) = x86_64::cpuid_tsc_hz() {
+    return hz;
+  }
+  #[cfg(target_arch = "x86")]
+  if let Some(hz) = x86::cpuid_tsc_hz() {
+    return hz;
+  }
+  crate::calibration::calibrate_frequency()
+}
+
 #[cfg(not(any(
   target_arch = "aarch64",
+  target_arch = "x86_64",
+  target_arch = "x86",
   target_os = "macos",
   target_os = "windows",
   target_os = "wasi",
@@ -100,4 +130,41 @@ fn read_frequency() -> u64 {
 #[inline]
 fn read_frequency() -> u64 {
   crate::calibration::calibrate_frequency()
+}
+
+/// Re-derive the tick-to-nanosecond scaling against the platform monotonic
+/// clock and atomically replace the cached Q32 reciprocal. The next
+/// `ticks_to_duration` call observes the new value via the Acquire/Relaxed
+/// load in `nanos_per_tick_q32`.
+///
+/// On platforms where the frequency comes from an authoritative register or
+/// OS API (aarch64 `cntfrq_el0`, macOS `mach_timebase_info`, Windows
+/// `QueryPerformanceFrequency`, WASI / wasm fixed at 1 GHz), this is a
+/// no-op — re-reading would just yield the same value.
+///
+/// `recalibrate` is `#![no_std]`-compatible; it uses the same spin-loop +
+/// `clock_gettime` path that already runs at startup.
+pub fn recalibrate() {
+  #[cfg(all(
+    any(target_arch = "x86_64", target_arch = "x86"),
+    not(any(target_os = "macos", target_os = "windows")),
+  ))]
+  {
+    // Skip CPUID 15h: it reports *nominal* frequency, which doesn't change.
+    // Recalibration's job is to track *actual* frequency drift over uptime,
+    // so we go straight to clock_gettime-based spin-loop calibration.
+    let new_hz = crate::calibration::calibrate_frequency();
+    if new_hz > 0 {
+      let scale =
+        u64::try_from(NANOS_PER_SECOND_Q32 / u128::from(new_hz)).unwrap_or(u64::MAX);
+      NANOS_PER_TICK_Q32.store(scale, Ordering::Release);
+    }
+  }
+  #[cfg(not(all(
+    any(target_arch = "x86_64", target_arch = "x86"),
+    not(any(target_os = "macos", target_os = "windows")),
+  )))]
+  {
+    // No-op on platforms where the frequency source is authoritative.
+  }
 }

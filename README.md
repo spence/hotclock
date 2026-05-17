@@ -68,6 +68,30 @@ On riscv64 (`fence iorw, iorw`) and loongarch64 (`dbar 0`) the strongest availab
 
 The crate is `#![no_std]`. `wasm-bindgen` is the only dependency, pulled in only for `wasm32-unknown-unknown` and `wasm32v1-none` (the targets that go through `Performance.now()`).
 
+## drift
+
+`elapsed()` can diverge from true wall-clock time over long intervals. Drift is *per-interval* — a 1-minute measurement made 5 seconds into the process has the same drift as one made 100 days in. Numbers below assume room-temperature operation; rows marked kernel-corrected assume no NTP, with active discipline they drop another order of magnitude.
+
+| Crate | 1-sec interval | 1-min interval | 1-hr interval | 1-day interval |
+|---|---|---|---|---|
+| `tach::Instant` (default, `#![no_std]`) | ~50 µs | ~3 ms | ~180 ms | ~4 s |
+| `tach::Instant` + `recalibrate-background` (**requires `std`**) | ~1 µs | ~60 µs | ~4 ms | ~86 ms |
+| `tach::OrderedInstant` (default, `#![no_std]`) | ~50 µs | ~3 ms | ~180 ms | ~4 s |
+| `quanta::Instant` | ~500 µs | ~30 ms | ~1.8 s | ~43 s |
+| `minstant::Instant` (Linux x86 only) | ~500 µs | ~30 ms | ~1.8 s | ~43 s |
+| `fastant::Instant` (Linux x86 only) | ~500 µs | ~30 ms | ~1.8 s | ~43 s |
+| `std::time::Instant` (Linux / Windows) | ~1 µs | ~60 µs | ~4 ms | ~86 ms |
+| `std::time::Instant` (macOS / aarch64) | ~50 µs | ~3 ms | ~180 ms | ~4 s |
+
+For sub-second timing, every row is below the precision floor of any practical measurement — the differentiation appears at minute/hour/day scale.
+
+Two ways to close the gap on long-running services:
+
+- **`tach::Instant::recalibrate()`** — manual, `#![no_std]`-compatible. Call from your own scheduler whenever you want to re-derive the scaling against `clock_gettime`. Costs ~10 ms of spin-loop time per call. Works on every supported target including embedded and SGX.
+- **`recalibrate-background` Cargo feature** — automatic. Spawns a background thread that calls `recalibrate()` every 60 seconds (interval configurable via `tach::set_recalibration_interval`). **This feature requires `std` and is incompatible with `#![no_std]` targets** — it pulls in `std::thread` and `std::sync::OnceLock`. The default tach build is `#![no_std]`; enabling this feature is the only thing that promotes the crate to `std`. Use the manual path if you need both drift correction and no_std.
+
+Within a single process, two tach measurements are mutually consistent — drift only shows up when comparing against an external reference (NTP-disciplined wall clock, another process, etc.).
+
 ## non-goals
 
 - Strict cross-thread monotonicity. Use `std::time::Instant`.

@@ -71,8 +71,23 @@ mod instant;
 
 pub use instant::{Instant, OrderedInstant};
 
-#[cfg(test)]
+// The crate is strictly `#![no_std]` by default. Two opt-in features bring std
+// in: `recalibrate-background` (for the periodic-recalibration thread) and
+// `bench-internal` (for the monotonicity + skew measurement primitives used by
+// benches/ and the out-of-repo Lambda handler). The single `extern crate std`
+// below covers both, plus `cfg(test)` for unit tests.
+#[cfg(any(test, feature = "recalibrate-background", feature = "bench-internal"))]
 extern crate std;
+
+#[cfg(feature = "recalibrate-background")]
+mod background;
+
+#[cfg(feature = "recalibrate-background")]
+pub use background::set_recalibration_interval;
+
+#[cfg(feature = "bench-internal")]
+#[doc(hidden)]
+pub mod bench;
 
 #[cfg(test)]
 mod tests {
@@ -219,5 +234,34 @@ mod tests {
     let later = a + Duration::from_secs(1);
     let drift = later.duration_since(a).abs_diff(Duration::from_secs(1));
     assert!(drift < Duration::from_micros(1), "drift: {drift:?}");
+  }
+
+  #[test]
+  fn recalibrate_does_not_perturb_elapsed() {
+    let start = Instant::now();
+    std::thread::sleep(Duration::from_millis(20));
+    Instant::recalibrate();
+    let elapsed = start.elapsed();
+    assert!(
+      elapsed.as_millis() >= 19 && elapsed.as_millis() < 500,
+      "unexpected elapsed across recalibration: {elapsed:?}",
+    );
+  }
+
+  #[test]
+  fn recalibrate_is_safe_to_call_repeatedly() {
+    for _ in 0..3 {
+      Instant::recalibrate();
+    }
+    let _ = Instant::now().elapsed();
+  }
+
+  #[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
+  #[test]
+  fn cpuid_15h_returns_something_or_none() {
+    #[cfg(target_arch = "x86_64")]
+    let _ = crate::arch::x86_64::cpuid_tsc_hz();
+    #[cfg(target_arch = "x86")]
+    let _ = crate::arch::x86::cpuid_tsc_hz();
   }
 }
