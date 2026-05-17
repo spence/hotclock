@@ -141,10 +141,7 @@ fn run_for<C: ClockSource>(args: &Args) -> ClockReport {
     Mode::Drift | Mode::All => {
       eprintln!("  skew-1m ({} samples)...", args.skew_1m_samples);
       let s60 = measure_skew::<C>(Duration::from_secs(60), args.skew_1m_samples, "1m");
-      eprintln!(
-        "    median skew: {} ns ({:.2} ppm)",
-        s60.median_skew_ns, s60.median_skew_ppm
-      );
+      eprintln!("    median skew: {} ns ({:.2} ppm)", s60.median_skew_ns, s60.median_skew_ppm);
       Some(s60)
     }
   };
@@ -255,16 +252,7 @@ fn parse_args() -> Args {
     }
   }
 
-  Args {
-    mode,
-    cell,
-    only_clock,
-    threads,
-    duration,
-    skew_1s_samples,
-    skew_1m_samples,
-    output,
-  }
+  Args { mode, cell, only_clock, threads, duration, skew_1s_samples, skew_1m_samples, output }
 }
 
 fn target_triple() -> &'static str {

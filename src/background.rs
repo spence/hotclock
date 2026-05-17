@@ -31,14 +31,12 @@ pub fn set_recalibration_interval(interval: Duration) {
 
 pub(crate) fn ensure_thread() {
   THREAD.get_or_init(|| {
-    let _ = thread::Builder::new()
-      .name("tach-recalibrate".into())
-      .spawn(|| {
-        loop {
-          let secs = INTERVAL_SECS.load(Ordering::Relaxed);
-          thread::sleep(Duration::from_secs(secs));
-          Instant::recalibrate();
-        }
-      });
+    let _ = thread::Builder::new().name("tach-recalibrate".into()).spawn(|| {
+      loop {
+        let secs = INTERVAL_SECS.load(Ordering::Relaxed);
+        thread::sleep(Duration::from_secs(secs));
+        Instant::recalibrate();
+      }
+    });
   });
 }
