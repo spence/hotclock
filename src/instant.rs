@@ -97,7 +97,9 @@ impl Instant {
   /// monotonic clock to correct for crystal drift over long uptime.
   ///
   /// Call from a background scheduler or after a long sleep. Cost is
-  /// ~10 ms of spin-loop time per call; do not invoke from a hot path.
+  /// ~700 ms of spin-loop time per call (7 × 100 ms calibration
+  /// windows; preempted samples are discarded and don't contribute
+  /// to the median); do not invoke from a hot path.
   ///
   /// No-op on platforms where the frequency is exact: aarch64
   /// (`cntfrq_el0`), macOS (`mach_timebase_info`), WASI, and the wasm host.

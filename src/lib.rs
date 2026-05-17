@@ -238,8 +238,13 @@ mod tests {
     std::thread::sleep(Duration::from_millis(20));
     Instant::recalibrate();
     let elapsed = start.elapsed();
+    // Recalibration itself spins for up to ~700 ms on platforms where it
+    // actually measures (Linux/Windows x86); no-op on aarch64 + macOS. The
+    // upper bound here is a sanity check that a buggy recalibration didn't
+    // jump the scaling so far that elapsed jumps to multi-second values,
+    // not an assertion about the recalibrate cost itself.
     assert!(
-      elapsed.as_millis() >= 19 && elapsed.as_millis() < 500,
+      elapsed.as_millis() >= 19 && elapsed.as_millis() < 2_000,
       "unexpected elapsed across recalibration: {elapsed:?}",
     );
   }
