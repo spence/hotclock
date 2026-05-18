@@ -16,7 +16,7 @@
 <text x="800" y="192" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">10.0 s</text>
 <text x="32" y="218" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" font-weight="bold" fill="#2E231B">tach::OrderedInstant</text>
 <text x="380" y="218" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">0</text>
-<text x="520" y="218" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">574.42M</text>
+<text x="520" y="218" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">573.64M</text>
 <text x="660" y="218" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">0 ns</text>
 <text x="800" y="218" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">10.0 s</text>
 <text x="32" y="244" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" font-weight="bold" fill="#2E231B">tach::Instant + recal-bg</text>
@@ -26,7 +26,7 @@
 <text x="800" y="244" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">10.0 s</text>
 <text x="32" y="270" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">std::time::Instant</text>
 <text x="380" y="270" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">0</text>
-<text x="520" y="270" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">513.67M</text>
+<text x="520" y="270" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">515.70M</text>
 <text x="660" y="270" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">0 ns</text>
 <text x="800" y="270" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">10.0 s</text>
 <text x="32" y="296" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">quanta::Instant</text>
@@ -36,12 +36,12 @@
 <text x="800" y="296" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">10.0 s</text>
 <text x="32" y="322" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">minstant::Instant</text>
 <text x="380" y="322" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">0</text>
-<text x="520" y="322" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">822.35M</text>
+<text x="520" y="322" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">822.21M</text>
 <text x="660" y="322" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">0 ns</text>
 <text x="800" y="322" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">10.0 s</text>
 <text x="32" y="348" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">fastant::Instant</text>
 <text x="380" y="348" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">0</text>
-<text x="520" y="348" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">822.80M</text>
+<text x="520" y="348" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">822.28M</text>
 <text x="660" y="348" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">0 ns</text>
 <text x="800" y="348" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">10.0 s</text>
 <text x="32" y="394" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="14" font-weight="bold" fill="#2E231B">Cross-thread observation consistency (10s, N threads, atomic-max race)</text>
@@ -52,40 +52,40 @@
 <text x="660" y="402" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" font-weight="bold" fill="#7A6E60">Threads</text>
 <text x="800" y="402" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" font-weight="bold" fill="#7A6E60">Preempt dropped</text>
 <text x="32" y="428" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" font-weight="bold" fill="#2E231B">tach::Instant</text>
-<text x="380" y="428" text-anchor="start" font-family="monospace" font-size="12" fill="#cc8844">9.90 µs</text>
-<text x="520" y="428" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">115.86M</text>
+<text x="380" y="428" text-anchor="start" font-family="monospace" font-size="12" fill="#cc8844">9.88 µs</text>
+<text x="520" y="428" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">109.98M</text>
 <text x="660" y="428" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">16</text>
-<text x="800" y="428" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">22.4k</text>
+<text x="800" y="428" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">112.3k</text>
 <text x="32" y="454" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" font-weight="bold" fill="#2E231B">tach::OrderedInstant</text>
-<text x="380" y="454" text-anchor="start" font-family="monospace" font-size="12" fill="#cc8844">9.92 µs</text>
-<text x="520" y="454" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">58.20M</text>
+<text x="380" y="454" text-anchor="start" font-family="monospace" font-size="12" fill="#cc8844">9.84 µs</text>
+<text x="520" y="454" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">128.30M</text>
 <text x="660" y="454" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">16</text>
-<text x="800" y="454" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">1.4k</text>
+<text x="800" y="454" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">23.4k</text>
 <text x="32" y="480" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" font-weight="bold" fill="#2E231B">tach::Instant + recal-bg</text>
-<text x="380" y="480" text-anchor="start" font-family="monospace" font-size="12" fill="#cc8844">9.83 µs</text>
-<text x="520" y="480" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">113.15M</text>
+<text x="380" y="480" text-anchor="start" font-family="monospace" font-size="12" fill="#cc8844">9.88 µs</text>
+<text x="520" y="480" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">116.73M</text>
 <text x="660" y="480" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">16</text>
-<text x="800" y="480" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">5.0k</text>
+<text x="800" y="480" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">5.1k</text>
 <text x="32" y="506" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">std::time::Instant</text>
-<text x="380" y="506" text-anchor="start" font-family="monospace" font-size="12" fill="#cc8844">9.77 µs</text>
-<text x="520" y="506" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">100.57M</text>
+<text x="380" y="506" text-anchor="start" font-family="monospace" font-size="12" fill="#cc8844">9.73 µs</text>
+<text x="520" y="506" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">126.68M</text>
 <text x="660" y="506" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">16</text>
-<text x="800" y="506" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">6.5k</text>
+<text x="800" y="506" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">398</text>
 <text x="32" y="532" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">quanta::Instant</text>
-<text x="380" y="532" text-anchor="start" font-family="monospace" font-size="12" fill="#cc8844">9.85 µs</text>
-<text x="520" y="532" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">112.91M</text>
+<text x="380" y="532" text-anchor="start" font-family="monospace" font-size="12" fill="#cc8844">9.86 µs</text>
+<text x="520" y="532" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">121.16M</text>
 <text x="660" y="532" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">16</text>
-<text x="800" y="532" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">60.9k</text>
+<text x="800" y="532" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">30.1k</text>
 <text x="32" y="558" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">minstant::Instant</text>
-<text x="380" y="558" text-anchor="start" font-family="monospace" font-size="12" fill="#cc8844">9.82 µs</text>
-<text x="520" y="558" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">102.04M</text>
+<text x="380" y="558" text-anchor="start" font-family="monospace" font-size="12" fill="#cc8844">9.83 µs</text>
+<text x="520" y="558" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">123.26M</text>
 <text x="660" y="558" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">16</text>
-<text x="800" y="558" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">66.8k</text>
+<text x="800" y="558" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">6.8k</text>
 <text x="32" y="584" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">fastant::Instant</text>
 <text x="380" y="584" text-anchor="start" font-family="monospace" font-size="12" fill="#cc8844">9.84 µs</text>
-<text x="520" y="584" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">113.94M</text>
+<text x="520" y="584" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">124.17M</text>
 <text x="660" y="584" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">16</text>
-<text x="800" y="584" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">3.0k</text>
+<text x="800" y="584" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">1.1k</text>
 <text x="32" y="630" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="14" font-weight="bold" fill="#2E231B">Drift vs std::Instant reference clock</text>
 <line x1="32" y1="646" x2="1068" y2="646" stroke="#7A6E60" stroke-width="0.5"/>
 <text x="32" y="638" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" font-weight="bold" fill="#7A6E60">Clock</text>
@@ -94,38 +94,38 @@
 <text x="660" y="638" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" font-weight="bold" fill="#7A6E60">1m median</text>
 <text x="800" y="638" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" font-weight="bold" fill="#7A6E60">1m ppm</text>
 <text x="32" y="664" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" font-weight="bold" fill="#2E231B">tach::Instant</text>
-<text x="380" y="664" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-4.93 µs</text>
-<text x="520" y="664" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-5.01</text>
-<text x="660" y="664" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-221.80 µs</text>
-<text x="800" y="664" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-3.83</text>
+<text x="380" y="664" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-4.31 µs</text>
+<text x="520" y="664" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-4.34</text>
+<text x="660" y="664" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-199.51 µs</text>
+<text x="800" y="664" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-3.25</text>
 <text x="32" y="690" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" font-weight="bold" fill="#2E231B">tach::OrderedInstant</text>
-<text x="380" y="690" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-4.52 µs</text>
-<text x="520" y="690" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-4.64</text>
-<text x="660" y="690" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-228.59 µs</text>
-<text x="800" y="690" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-3.78</text>
+<text x="380" y="690" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-4.34 µs</text>
+<text x="520" y="690" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-4.32</text>
+<text x="660" y="690" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-197.54 µs</text>
+<text x="800" y="690" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-3.37</text>
 <text x="32" y="716" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" font-weight="bold" fill="#2E231B">tach::Instant + recal-bg</text>
-<text x="380" y="716" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-4.71 µs</text>
-<text x="520" y="716" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-4.78</text>
-<text x="660" y="716" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">117.52 µs</text>
-<text x="800" y="716" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">+1.77</text>
+<text x="380" y="716" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-4.36 µs</text>
+<text x="520" y="716" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-4.50</text>
+<text x="660" y="716" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-27.55 µs</text>
+<text x="800" y="716" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-0.34</text>
 <text x="32" y="742" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">std::time::Instant</text>
-<text x="380" y="742" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-446 ns</text>
-<text x="520" y="742" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-0.45</text>
-<text x="660" y="742" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-457 ns</text>
+<text x="380" y="742" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-413 ns</text>
+<text x="520" y="742" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-0.40</text>
+<text x="660" y="742" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-414 ns</text>
 <text x="800" y="742" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-0.01</text>
 <text x="32" y="768" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">quanta::Instant</text>
-<text x="380" y="768" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">2.11 µs</text>
-<text x="520" y="768" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">+1.98</text>
-<text x="660" y="768" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">160.64 µs</text>
-<text x="800" y="768" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">+2.33</text>
+<text x="380" y="768" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-2.10 µs</text>
+<text x="520" y="768" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-2.06</text>
+<text x="660" y="768" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-75.80 µs</text>
+<text x="800" y="768" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-1.91</text>
 <text x="32" y="794" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">minstant::Instant</text>
-<text x="380" y="794" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-1.49 µs</text>
-<text x="520" y="794" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-1.46</text>
-<text x="660" y="794" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-26.25 µs</text>
-<text x="800" y="794" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-0.47</text>
+<text x="380" y="794" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-1.96 µs</text>
+<text x="520" y="794" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-1.99</text>
+<text x="660" y="794" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-47.38 µs</text>
+<text x="800" y="794" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-1.29</text>
 <text x="32" y="820" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="12" fill="#2E231B">fastant::Instant</text>
-<text x="380" y="820" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-1.62 µs</text>
-<text x="520" y="820" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-1.60</text>
-<text x="660" y="820" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-29.93 µs</text>
-<text x="800" y="820" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-0.49</text>
+<text x="380" y="820" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-1.92 µs</text>
+<text x="520" y="820" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-1.94</text>
+<text x="660" y="820" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">-40.84 µs</text>
+<text x="800" y="820" text-anchor="start" font-family="monospace" font-size="12" fill="#2E231B">+0.02</text>
 <text x="32" y="878" text-anchor="start" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="11" fill="#7A6E60">Methodology: per-thread = tight loop for 10s; cross-thread = N threads racing on shared atomic-max with bracket-read filter for preemption; skew vs std::Instant; medians of 30 (1s) / 5 (1m) samples.</text></svg>

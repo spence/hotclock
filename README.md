@@ -74,20 +74,20 @@ The crate is `#![no_std]`. `wasm-bindgen` is the only dependency, pulled in only
 
 | Crate | 1-sec interval | 1-min interval | 1-hr interval | 1-day interval |
 |---|---|---|---|---|
-| `tach::Instant` (default, `#![no_std]`) | 9.0 µs | 802.6 µs | 48.2 ms | 1.16 s |
-| `tach::Instant` + `recalibrate-background` (**requires `std`**) | 10.7 µs | 1.2 ms | 1.2 ms | 1.2 ms |
-| `tach::OrderedInstant` (default, `#![no_std]`) | 9.0 µs | 521.6 µs | 31.3 ms | 751.1 ms |
-| `quanta::Instant` | 1.5 µs | 100.7 µs | 6.0 ms | 145.0 ms |
-| `minstant::Instant` | 1.9 µs | 13.6 µs | 818.2 µs | 19.6 ms |
-| `fastant::Instant` | 1.9 µs | 16.9 µs | 1.0 ms | 24.4 ms |
-| `std::time::Instant` | 314 ns | 428 ns | 428 ns | 428 ns |
+| `tach::Instant` (default, `#![no_std]`) | 1.8 µs | 29.8 µs | 1.8 ms | 42.9 ms |
+| `tach::Instant` + `recalibrate-background` (**requires `std`**) | 1.4 µs | 37.6 µs | 37.6 µs | 37.6 µs |
+| `tach::OrderedInstant` (default, `#![no_std]`) | 2.2 µs | 19.5 µs | 1.2 ms | 28.1 ms |
+| `quanta::Instant` | 3.1 µs | 216.5 µs | 13.0 ms | 311.8 ms |
+| `minstant::Instant` | 2.3 µs | 37.9 µs | 2.3 ms | 54.5 ms |
+| `fastant::Instant` | 2.2 µs | 27.8 µs | 1.7 ms | 40.0 ms |
+| `std::time::Instant` | 346 ns | 454 ns | 454 ns | 454 ns |
 
-Numbers are cross-cell empirical medians measured on 6 platforms (Apple Silicon M1 MBP, AWS Graviton 3, AWS Intel t3.medium, AWS Intel m7i.metal-24xl bare-metal, AWS Lambda x86_64, GitHub Actions windows-2025). Per-cell breakdown and methodology in [BENCHMARKS.md](BENCHMARKS.md). The `tach::Instant` row is dominated by spin-loop calibration error on cells where CPUID 15h isn't available; on the m7i bare-metal cell where it is, tach drift drops to ~4 ppm — close to `std`. **Known issue**: on Windows x86_64 the `read_frequency` path returns `QueryPerformanceFrequency` (10 MHz) while `Instant::now()` reads RDTSC (~3 GHz), so the tick-to-nanosecond scaling is off by ~300× and `elapsed()` is unusable on that target until a TSC-vs-QPC calibration is added. The cross-thread/per-thread monotonicity measurements on Windows are still valid (ticks themselves are monotonic).
+Numbers are cross-cell empirical medians measured on 6 platforms (Apple Silicon M1 MBP, AWS Graviton 3, AWS Intel t3.medium, AWS Intel m7i.metal-24xl bare-metal, AWS Lambda x86_64, GitHub Actions windows-2025). Per-cell breakdown and methodology in [BENCHMARKS.md](BENCHMARKS.md). On Intel x86 the architectural TSC frequency comes from CPUID leaf 15h when the host exposes it (Skylake+ Intel, Zen2+ AMD bare metal); on hosts that zero the leaf (Firecracker, Azure VMs, GitHub Windows runners) tach falls back to a 100 ms × 7-sample spin-loop calibration with hypervisor-preemption discard. On Linux aarch64 (Graviton 3) the architectural `cntfrq_el0` register is exact by design but the underlying crystal carries a ~22 ppm offset that contributes most of the cross-cell-median drift; `std::time::Instant` corrects this via vDSO updates against NTP, which tach has no way to access without an external reference.
 
 For long-running services that need wall-clock-correlated accuracy:
 
-- **`tach::Instant::recalibrate()`** — manual, `#![no_std]`-compatible. Call from your own scheduler to re-derive scaling against `clock_gettime`. Costs ~10 ms of spin-loop time per call. Works on every supported target including embedded and SGX.
-- **`recalibrate-background` Cargo feature** — automatic. Spawns a background thread that calls `recalibrate()` every 60 seconds (configurable via `tach::set_recalibration_interval`). **Requires `std`; incompatible with `#![no_std]` targets** (pulls in `std::thread` and `std::sync::OnceLock`). Empirically, recalibration's benefit depends on the host's calibration-window stability — on bare-metal cells it preserves drift magnitude, on virtualized hosts (Lambda, burst VMs) the 10 ms calibration window catches hypervisor preemption and can make drift noisier than the default. Treat it as a knob, not a guaranteed improvement; measure on your target.
+- **`tach::Instant::recalibrate()`** — manual, `#![no_std]`-compatible. Call from your own scheduler to re-derive scaling against the platform monotonic clock (`clock_gettime(CLOCK_MONOTONIC)` on Unix, `QueryPerformanceCounter` on Windows). Costs ~700 ms of spin-loop time per call (7 × 100 ms samples, preempted samples discarded). Works on every supported target including embedded and SGX.
+- **`recalibrate-background` Cargo feature** — automatic. Spawns a background thread that re-measures the frequency every 60 seconds (configurable via `tach::set_recalibration_interval`) and EMA-blends the result into the cached scale (α ≈ 0.2 ≈ 5-sample averaging window), so a single noisy calibration window can't jolt the scale on virtualized hosts. **Requires `std`; incompatible with `#![no_std]` targets** (pulls in `std::thread` and `std::sync::OnceLock`). Empirically improves drift on Intel x86 virtualized hosts where startup calibration accumulates error: AWS Lambda goes from 0.75 ppm baseline to 0.58 ppm with recal, m7i.metal-24xl bare metal goes from -3.25 ppm to -0.34 ppm. No-op on aarch64 and macOS where the frequency source is already exact. On cells where startup calibration was already sub-ppm (t3.medium burst VM) the EMA's residual is within noise of baseline.
 
 Within a single process, two tach measurements are mutually consistent — drift only shows up when comparing against an external reference (NTP-disciplined wall clock, another process, etc.).
 
