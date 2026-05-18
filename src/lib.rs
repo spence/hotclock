@@ -59,12 +59,18 @@
 //! vDSO / libsystem path but do not themselves guarantee this ordering).
 
 mod arch;
-#[cfg(not(any(
-  target_arch = "aarch64",
-  target_os = "macos",
-  target_os = "wasi",
-  all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
-)))]
+// Calibration is needed wherever the architectural counter doesn't self-report
+// an NTP-corrected rate. That's: x86 / x86_64 on non-macOS (CPUID 15h is
+// nominal, kernel doesn't continuously correct), aarch64 Linux (cntfrq_el0 is
+// firmware-published nominal), and riscv64 / loongarch64. NOT needed on:
+// macOS (mach_timebase_info is measured per-die), Windows aarch64
+// (cntfrq_el0 is QPF-calibrated), wasm/WASI (host clock is the source).
+#[cfg(any(
+  all(any(target_arch = "x86_64", target_arch = "x86"), not(target_os = "macos")),
+  all(target_arch = "aarch64", target_os = "linux"),
+  target_arch = "riscv64",
+  target_arch = "loongarch64",
+))]
 mod calibration;
 mod instant;
 

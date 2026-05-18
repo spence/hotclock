@@ -49,10 +49,24 @@ pub fn nanos_per_tick_q32() -> u64 {
   scale
 }
 
-#[cfg(target_arch = "aarch64")]
+// aarch64 on macOS / Windows / non-Linux: `cntfrq_el0` is authoritative.
+// Apple writes the per-die measured timebase; Windows derives it from QPF.
+#[cfg(all(target_arch = "aarch64", not(target_os = "linux")))]
 #[inline]
 fn read_frequency() -> u64 {
   aarch64::cntfrq()
+}
+
+// aarch64 on Linux: `cntfrq_el0` is the firmware-published nominal value
+// (typically a round 1.000 GHz), not the actual crystal frequency. The
+// underlying crystal can be 10-30 ppm off — on Graviton 3 specifically it's
+// about -27 ppm. Calibrate against `clock_gettime(CLOCK_MONOTONIC)`, whose
+// vDSO scaling factor already includes the kernel's NTP correction, so the
+// measured rate ends up wall-clock-correct.
+#[cfg(all(target_arch = "aarch64", target_os = "linux"))]
+#[inline]
+fn read_frequency() -> u64 {
+  crate::calibration::calibrate_frequency()
 }
 
 #[cfg(all(not(target_arch = "aarch64"), target_os = "macos"))]
@@ -172,15 +186,22 @@ pub(crate) fn recalibrate_measure() -> Option<u64> {
 // Recalibration's job is to track *actual* frequency drift over uptime, so we
 // go straight to the platform-monotonic spin-loop calibration. Returns None
 // (don't update) when the rate measurement was unusable, e.g. survivor-list
-// fallback returned 0.
+// fallback returned 0, or when the platform's frequency source is already
+// authoritative (macOS, Windows aarch64, wasm).
 #[inline]
 fn measure_frequency_for_recal() -> Option<u64> {
-  #[cfg(all(any(target_arch = "x86_64", target_arch = "x86"), not(target_os = "macos")))]
+  #[cfg(any(
+    all(any(target_arch = "x86_64", target_arch = "x86"), not(target_os = "macos")),
+    all(target_arch = "aarch64", target_os = "linux"),
+  ))]
   {
     let hz = crate::calibration::calibrate_frequency();
     if hz > 0 { Some(hz) } else { None }
   }
-  #[cfg(not(all(any(target_arch = "x86_64", target_arch = "x86"), not(target_os = "macos"))))]
+  #[cfg(not(any(
+    all(any(target_arch = "x86_64", target_arch = "x86"), not(target_os = "macos")),
+    all(target_arch = "aarch64", target_os = "linux"),
+  )))]
   {
     None
   }
